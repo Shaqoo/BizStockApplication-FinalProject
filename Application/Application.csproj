@@ -1,0 +1,41 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Folder Include="Queries\DeliveryAgents\ViewMyDeliveries\" />
+    <Folder Include="Commands\DeliveryAgents\UpdateContact\" />
+    <Folder Include="Commands\Suppliers\UpdateDetails\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="AspNet.Security.OAuth.GitHub" Version="8.2.0" />
+    <PackageReference Include="BCrypt.Net-Next" Version="4.0.3" />
+    <PackageReference Include="EmojiSharp" Version="0.2.1" />
+    <PackageReference Include="Fido2.AspNet" Version="3.0.1" />
+    <PackageReference Include="FluentValidation" Version="12.0.0" />
+    <PackageReference Include="FluentValidation.AspNetCore" Version="11.3.1" />
+    <PackageReference Include="FluentValidation.DependencyInjectionExtensions" Version="12.0.0" />
+    <PackageReference Include="Google.Apis.Auth" Version="1.70.0" />
+    <PackageReference Include="Konscious.Security.Cryptography.Argon2.StrongNamed" Version="1.0.4" />
+    <PackageReference Include="Mailjet.Api" Version="3.0.0" />
+	  <PackageReference Include="MassTransit" Version="8.5.1" />
+	  <PackageReference Include="MassTransit.AspNetCore" Version="7.3.1" />
+	  <PackageReference Include="MassTransit.Extensions.DependencyInjection" Version="7.3.1" />
+	  <PackageReference Include="MassTransit.RabbitMQ" Version="8.5.1" />
+	  <PackageReference Include="Microsoft.AspNetCore.Authentication.Facebook" Version="8.0.11" />
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.Google" Version="8.0.11" />
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.MicrosoftAccount" Version="8.0.11" />
+    <PackageReference Include="Scrutor" Version="6.1.0" />
+    <PackageReference Include="sib_api_v3_sdk" Version="4.0.2" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Domain\Domain.csproj" />
+  </ItemGroup>
+
+</Project>

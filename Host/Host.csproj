@@ -1,0 +1,42 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <UserSecretsId>6a074419-87a1-4b9d-a25d-dafd0d1f156d</UserSecretsId>
+  </PropertyGroup>
+	<PropertyGroup>
+		<GenerateDocumentationFile>true</GenerateDocumentationFile>
+		<NoWarn>1591</NoWarn>
+	</PropertyGroup>
+	<ItemGroup>
+	  <Compile Remove="Extensions\CartSessionExtension.cs" />
+	</ItemGroup>
+	
+  <ItemGroup>
+	<PackageReference Include="BCrypt.Net-Next" Version="4.0.3" />
+	<PackageReference Include="HtmlSanitizer" Version="9.0.886" />
+	<PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="8.0.13" />
+    <PackageReference Include="AspNet.Security.OAuth.GitHub" Version="8.2.0" />
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.Facebook" Version="8.0.11" />
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.Google" Version="8.0.11" />
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.MicrosoftAccount" Version="8.0.11" />
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.Versioning.ApiExplorer" Version="5.1.0" />
+    <PackageReference Include="Microsoft.AspNetCore.ResponseCompression" Version="2.3.0" />
+    <PackageReference Include="prometheus-net.AspNetCore" Version="8.2.1" />
+    <PackageReference Include="Swashbuckle.AspNetCore" Version="9.0.3" />
+    <PackageReference Include="Swashbuckle.AspNetCore.Annotations" Version="9.0.3" />
+    <PackageReference Include="Swashbuckle.AspNetCore.Swagger" Version="9.0.3" />
+    <PackageReference Include="Swashbuckle.AspNetCore.SwaggerGen" Version="9.0.3" />
+    <PackageReference Include="Swashbuckle.AspNetCore.SwaggerUI" Version="9.0.3" />
+  </ItemGroup>
+	<ItemGroup>
+	<ProjectReference Include="..\Infrastructures\Infrastructures.csproj" />
+	<ProjectReference Include="..\Application\Application.csproj" />
+	<ProjectReference Include="..\Domain\Domain.csproj" />
+	</ItemGroup>
+
+
+
+</Project>

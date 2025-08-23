@@ -1,0 +1,60 @@
+﻿using Domain.Auditable;
+using Domain.Enums;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace Domain.Entities
+{
+    public class SalesOrder : BaseEntity
+    {
+        public string OrderNumber { get; private set; } = default!; 
+        public Guid CustomerId { get; private set; }
+        public Customer Customer { get; private set; } = default!;
+        public Invoice Invoice { get; private set; } = default!; 
+        public Guid InvoiceId { get; private set; }
+        public DateTime? ExpectedDeliveryDate { get; private set; }
+        public OrderStatus Status { get; private set; } = OrderStatus.Pending;
+        public decimal SubTotal { get; private set; }
+        public decimal Discount { get; private set; }
+        public decimal Tax { get; private set; }
+        public decimal Total => SubTotal - Discount + Tax;
+        public ICollection<SalesOrderItem> Items { get; private set; } = new HashSet<SalesOrderItem>();
+        public DeliveryAssignment DeliveryAssignment { get; private set; } = default!; 
+        public Guid? DeliveryAssignmentId { get; private set; }
+        public string? Note { get; private set; }
+
+        private SalesOrder() { }
+
+        public SalesOrder(string orderNumber, Guid customerId, decimal discount, decimal tax, DateTime? expectedDeliveryDate = null, string? note = null, Guid invoiceId = default, Guid? deliveryAssignmentId = null)
+        {
+            OrderNumber = orderNumber;
+            CustomerId = customerId;
+            Discount = discount;
+            Tax = tax;
+            ExpectedDeliveryDate = expectedDeliveryDate;
+            Note = note;
+            InvoiceId = invoiceId;
+            DeliveryAssignmentId = deliveryAssignmentId;
+        }
+
+        public void AddItem(Guid productId, string productName, int quantity, decimal unitPrice)
+        {
+            var item = new SalesOrderItem(productId, productName, quantity, unitPrice, this.Id);
+            Items.Add(item);
+            RecalculateTotals();
+        }
+
+        public void RecalculateTotals()
+        {
+            SubTotal = Items.Sum(i => i.TotalPrice);
+        }
+
+        public void MarkAsConfirmed() => Status = OrderStatus.Confirmed;
+        public void MarkAsCancelled() => Status = OrderStatus.Cancelled;
+        public void MarkAsDelivered() => Status = OrderStatus.Delivered;
+    }
+
+}

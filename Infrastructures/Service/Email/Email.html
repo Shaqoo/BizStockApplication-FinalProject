@@ -1,0 +1,70 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>BizStock Email</title>
+    <style>
+        body {
+            margin: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f5f6fa;
+            color: #333;
+        }
+
+        .email-container {
+            max-width: 600px;
+            margin: 40px auto;
+            background-color: #ffffff;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+        }
+
+        .header {
+            background-color: #003366;
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .logo {
+            max-height: 50px;
+            margin-bottom: 10px;
+        }
+
+        .body {
+            padding: 30px;
+            font-size: 16px;
+            line-height: 1.6;
+        }
+
+        .footer {
+            background-color: #f1f1f1;
+            padding: 15px;
+            text-align: center;
+            font-size: 13px;
+            color: #666;
+        }
+
+            .footer a {
+                color: #003366;
+                text-decoration: none;
+            }
+    </style>
+</head>
+<body>
+    <div class="email-container">
+        <div class="header">
+            <img src="https://localhost:7124/photos/3e6196fc-904d-4485-853e-4537cc2f44e5.jpg" alt="Your App Logo" class="logo" />
+            <h2>BizStock Application</h2>
+        </div>
+        <div class="body">
+            {{content}}
+        </div>
+        <div class="footer">
+            &copy; {{year}} BizStock. All rights reserved.<br>
+            <a href="https://yourdomain.com">Visit our website</a>
+        </div>
+    </div>
+</body>
+</html>
