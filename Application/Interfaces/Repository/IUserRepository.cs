@@ -1,4 +1,5 @@
-﻿using Application.Interfaces.Repository.BaseRepository;
+﻿using Application.Dto;
+using Application.Interfaces.Repository.BaseRepository;
 using Application.Pagination;
 using Domain.Entities;
 using Domain.Enums;
@@ -11,7 +12,7 @@ namespace Application.Interfaces.Repository
         Task AddCode(UserRecoveryCode userRecoveryCode);
         Task<User?> GetByRfreshToken(string rfreshToken);
         Task<User?> GetByEmailAsync(string email);
-        Task<PaginatedList<User>> GetUsersByRoleAsync(Role role,PageRequest pageRequest);
+        Task<PaginatedList<UserDto>> GetUsersByRoleAsync(Role role,PageRequest pageRequest);
         Task<bool> IsEmailUniqueAsync(string email);
         Task<bool> CheckIfExists(Expression<Func<User, bool>> expression);
         Task UpdateUserAsync(User user);

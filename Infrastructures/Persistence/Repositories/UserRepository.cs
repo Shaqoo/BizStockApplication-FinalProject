@@ -1,4 +1,6 @@
-﻿using Application.Interfaces.Repository;
+﻿using Application.Dto;
+using Application.Extensions;
+using Application.Interfaces.Repository;
 using Application.Pagination;
 using Domain.Entities;
 using Domain.Enums;
@@ -63,20 +65,20 @@ namespace Infrastructures.Persistence.Repositories
                 .FirstOrDefaultAsync(u => u.Email == new Email(email));
         }
 
-        public async Task<PaginatedList<User>> GetUsersByRoleAsync(Role role, PageRequest pageRequest)
+        public async Task<PaginatedList<UserDto>> GetUsersByRoleAsync(Role role, PageRequest pageRequest)
         {
             var query = _context.Users
-                .Where(u => u.UserRoles.Any(r => r.Role == role));
+                .Where(u => u.UserRoles.Any(r => r.Role == role)).Select(a => a.UserAsDto());
 
             var totalCount = await query.CountAsync();
 
             var items = await query
-                .OrderBy(u => u.FullName)
+                .OrderBy(u => u.fullName)
                 .Skip((pageRequest.Page - 1) * pageRequest.PageSize)
                 .Take(pageRequest.PageSize)
                 .ToListAsync();
 
-            return new PaginatedList<User>(items, totalCount, pageRequest.Page, pageRequest.PageSize);
+            return new PaginatedList<UserDto>(items, totalCount, pageRequest.Page, pageRequest.PageSize);
         }
 
         public async Task<bool> IsEmailUniqueAsync(string email)

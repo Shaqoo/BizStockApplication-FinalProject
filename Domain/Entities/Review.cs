@@ -20,6 +20,8 @@ namespace Domain.Entities
         public Guid? SupplierId { get; private set; }
         public Supplier? Supplier { get; private set; }
 
+        public SalesOrder Order { get; private set; } = default!;
+        public Guid? OrderId { get; private set; }
         public Guid? DeliveryAgentId { get; private set; }
         public DeliveryAgent? DeliveryAgent { get; private set; }
 

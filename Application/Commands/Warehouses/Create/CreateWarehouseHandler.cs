@@ -26,7 +26,7 @@ namespace Application.Commands.Warehouses.Create
                 return Result<WarehouseDto>.Failure("Invalid request payload.");
             }
             var isUnique = await warehouseRepository.IsNameUnique(request.WarehouseDto.Name);
-            if (!isUnique)
+            if (isUnique)
             {
                 return Result<WarehouseDto>.Failure("Warehouse name is already in use.");
             }

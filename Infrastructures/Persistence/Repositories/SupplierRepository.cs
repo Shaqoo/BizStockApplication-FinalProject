@@ -2,6 +2,7 @@
 using Application.Pagination;
 using Domain.Entities;
 using Domain.Exceptions;
+using Domain.ValueObjects;
 using Infrastructures.Persistence.Context;
 using Microsoft.EntityFrameworkCore;
 using System;
@@ -53,11 +54,10 @@ namespace Infrastructures.Persistence.Repositories
             return await _context.Suppliers.Where(predicate).ToListAsync();
         }
 
-        public async Task<Supplier> GetByEmailAsync(string email)
+        public async Task<Supplier?> GetByEmailAsync(string email)
         {
             return await _context.Suppliers
-                .FirstOrDefaultAsync(s => (string)s.Email == email)
-                ?? throw new EntityNotFoundException("Supplier","Email");
+                .FirstOrDefaultAsync(s => s.Email == new Email(email));
         }
 
         public async Task UpdateSupplierAsync(Supplier supplier)
@@ -93,10 +93,9 @@ namespace Infrastructures.Persistence.Repositories
             return new PaginatedList<Supplier>(items, total, pageRequest.Page, pageRequest.PageSize);
         }
 
-        public async Task<Supplier> GetByExpression(Expression<Func<Supplier, bool>> predicate)
+        public async Task<Supplier?> GetByExpression(Expression<Func<Supplier, bool>> predicate)
         {
-            return await _context.Suppliers.FirstOrDefaultAsync(predicate) ??
-                throw new EntityNotFoundException("Supplier","Predicate");
+            return await _context.Suppliers.FirstOrDefaultAsync(predicate);
         }
     }
 

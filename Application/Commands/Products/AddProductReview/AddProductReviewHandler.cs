@@ -39,8 +39,14 @@ namespace Application.Commands.Products.AddProductReview
         {
             var dto = request.Dto;
 
+            var userId = _authService.CurrentUser()!.Id;
+            var exist = await _reviewRepository.FindAsync(a => a.ProductId == dto.ProductId && a.ReviewerId == userId);
+            if (exist.Any())
+            {
+                return Result<Guid>.Failure("You Can Only Update A Review Not Comment Twice");
+            }
             var review = new Review(
-                reviewerId: _authService.CurrentUser()!.Id,
+                reviewerId: userId,
                 rating: dto.Rating,
                 comment: dto.Comment ?? string.Empty,
                 productId: dto.ProductId
@@ -50,7 +56,7 @@ namespace Application.Commands.Products.AddProductReview
             await _reviewRepository.AddAsync(review);
 
             await _auditLogRepository.AddAsync(new AuditLog(
-                userId: _authService.CurrentUser()!.Id,
+                userId: userId,
                 action: "Reviewed Product",
                 entityName: "Review",
                 entityId: review.Id,

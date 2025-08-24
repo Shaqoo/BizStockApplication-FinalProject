@@ -11,7 +11,7 @@ namespace Application.Interfaces.Repository
 {
     public interface IDeliveryAgentRepository : IBaseRepository<DeliveryAgent>
     {
-        Task<DeliveryAgent> GetByEmailAsync(string email);
+        Task<DeliveryAgent?> GetByEmailAsync(string email);
         Task UpdateDeliveryAgentAsync(DeliveryAgent deliveryAgent);
         Task DeleteDeliveryAgentAsync(Guid deliveryAgentId);
         Task<PaginatedList<DeliveryAgent>> GetDeliveryAgentsByStatusAsync(string status, PageRequest pageRequest);

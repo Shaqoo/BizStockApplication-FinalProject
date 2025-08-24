@@ -1,14 +1,10 @@
 ﻿using Application.Interfaces.Repository;
 using Application.Pagination;
 using Domain.Entities;
+using Domain.ValueObjects;
 using Infrastructures.Persistence.Context;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Linq.Expressions;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Infrastructures.Persistence.Repositories
 {
@@ -51,11 +47,10 @@ namespace Infrastructures.Persistence.Repositories
             return await _context.DeliveryAgents.Where(predicate).ToListAsync();
         }
 
-        public async Task<DeliveryAgent> GetByEmailAsync(string email)
+        public async Task<DeliveryAgent?> GetByEmailAsync(string email)
         {
             return await _context.DeliveryAgents
-                .FirstOrDefaultAsync(a => a.Email.Value.ToLower() == email.ToLower())
-                ?? throw new KeyNotFoundException("Delivery agent not found by email.");
+                .FirstOrDefaultAsync(a => a.Email == new Email(email));
         }
 
         public async Task UpdateDeliveryAgentAsync(DeliveryAgent deliveryAgent)
@@ -121,10 +116,9 @@ namespace Infrastructures.Persistence.Repositories
             return new PaginatedList<DeliveryAgent>(items, totalCount, pageRequest.Page, pageRequest.PageSize);
         }
 
-        public async Task<DeliveryAgent> GetByExpression(Expression<Func<DeliveryAgent, bool>> predicate)
+        public async Task<DeliveryAgent?> GetByExpression(Expression<Func<DeliveryAgent, bool>> predicate)
         {
-            return await _context.DeliveryAgents.FirstOrDefaultAsync(predicate) ??
-                throw new ArgumentNullException("Delivery Agent Not Found");
+            return await _context.DeliveryAgents.FirstOrDefaultAsync(predicate);
         }
     }
 

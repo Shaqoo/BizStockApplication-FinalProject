@@ -132,15 +132,15 @@ namespace Infrastructures.Persistence.Repositories
             _context.Reviews.Update(review);
         }
 
-        public async Task<Review> GetByExpression(Expression<Func<Review, bool>> predicate)
+        public async Task<Review?> GetByExpression(Expression<Func<Review, bool>> predicate)
         {
-            return await _context.Reviews.FirstOrDefaultAsync(predicate) ??
-               throw new KeyNotFoundException("Review Not Found");
+            return await _context.Reviews.FirstOrDefaultAsync(predicate);
         }
 
         public async Task UpdateAsync(Review review)
         {
             _context.Reviews.Update(review);
+            await Task.CompletedTask;
         }
     }
 

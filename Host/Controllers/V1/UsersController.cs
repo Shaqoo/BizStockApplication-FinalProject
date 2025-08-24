@@ -24,10 +24,12 @@ using Application.Pagination;
 using Application.Queries.Users.GetAllUsers;
 using Application.Queries.Users.GetByEmail;
 using Application.Queries.Users.GetById;
+using Application.Queries.Users.GetByRole;
 using Application.Queries.Users.GetLostAccessRequests;
 using Application.Queries.Users.GetMyProfile;
 using Application.Queries.Users.GetUserStats;
 using Application.Queries.Users.SearchBykeyword;
+using Domain.Enums;
 using Fido2NetLib;
 using Host.Extensions;
 using MediatR;
@@ -100,6 +102,22 @@ namespace Host.Controllers.V1
         public async Task<IActionResult> GetCurrentUser(CancellationToken cancellationToken)
         {
             var result = await _mediator.Send(new GetMyProfileQuery(), cancellationToken);
+            return Ok(result);
+        }
+
+        /// <summary>
+        /// Get users filtered by role.
+        /// </summary>
+        /// <param name="role">The role of the users (e.g., Admin, Supplier, DeliveryAgent)</param>
+        /// <param name="pageNumber">Page number for pagination</param>
+        /// <param name="pageSize">Page size for pagination</param>
+        /// <returns>Paginated list of users matching the specified role</returns>
+        [HttpGet("by-role/{role}")]
+        [ProducesResponseType(typeof(Result<PaginatedList<UserDto>>), StatusCodes.Status200OK)]
+        public async Task<IActionResult> GetUsersByRole(Role role, [FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 20)
+        {
+            var query = new GetUsersByRoleQuery(role, new PageRequest { Page = pageNumber, PageSize = pageSize });
+            var result = await _mediator.Send(query);
             return Ok(result);
         }
 

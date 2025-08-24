@@ -9,6 +9,6 @@ using System.Threading.Tasks;
 
 namespace Application.Queries.Products.GetProductsByWarehouseId
 {
-    public record GetProductsByWarehouseIdQuery(Guid WarehouseId, PageRequest PageRequest) : IRequest<Result<PaginatedList<ProductDto>>>;
+    public record GetProductsByWarehouseIdQuery(Guid WarehouseId, PageRequest PageRequest) : IRequest<Result<PaginatedList<WarehouseProductDto>>>;
 
 }

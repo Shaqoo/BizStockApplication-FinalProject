@@ -1,10 +1,12 @@
 ﻿using Application.Commands.Suppliers.Create;
 using Application.Dto;
 using Application.Dto.RequestModels;
+using Application.Queries.Suppliers;
+using Application.Queries.Suppliers.GetByEmail;
 using Host.Extensions;
-using MediatR;
 using Microsoft.AspNetCore.Mvc;
-using System.Threading.Tasks;
+using System.Net;
+using IMediator = MediatR.IMediator;
 
 namespace Host.Controllers.V1
 {
@@ -13,13 +15,18 @@ namespace Host.Controllers.V1
     /// </summary>
     /// <remarks>This controller is part of API version 1.0 and is accessible via the route pattern
     /// "api/v{version}/suppliers". It uses the mediator pattern to handle requests and responses.</remarks>
-    /// <param name="mediator"></param>
+    /// <param ></param>
     [ApiController]
     [ApiVersion("1.0")]
     [Route("api/v{version:apiVersion}/[controller]")]
 
-    public class SuppliersController(IMediator mediator) : ControllerBase
+    public class SuppliersController : ControllerBase
     {
+        private readonly IMediator _mediator;
+        public SuppliersController(IMediator mediator)
+        {
+            _mediator = mediator;
+        }
 
         /// <summary>
         /// Creates a new supplier based on the provided request data.
@@ -39,7 +46,7 @@ namespace Host.Controllers.V1
                 return BadRequest(ModelState);
 
             var command = new CreateSupplierCommand(request, Request.GetRequestMetadata());
-            var result = await mediator.Send(command);
+            var result = await _mediator.Send(command);
 
             if (!result.IsSuccess)
                 return BadRequest(result);
@@ -47,6 +54,39 @@ namespace Host.Controllers.V1
             return CreatedAtAction(nameof(CreateSupplier), new { id = result.Data }, result);
         }
 
+
+        /// <summary>
+        /// View the details of a supplier.
+        /// </summary>
+        /// <returns>Supplier details</returns>
+        [HttpGet("supplier-me")]
+        [ProducesResponseType(typeof(Result<SupplierDto>), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<IActionResult> ViewSupplierDetails()
+        {
+            var query = new ViewSupplierDetailsQuery(); 
+            var result = await _mediator.Send(query);
+            return Ok(result);
+        }
+
+        /// <summary>
+        /// Retrieves a supplier by their email address.
+        /// </summary>
+        /// <param name="email">The email of the supplier.</param>
+        /// <returns>The supplier details.</returns>
+        [HttpGet("by-email/{email}")]
+        [ProducesResponseType(typeof(SupplierDto), (int)HttpStatusCode.OK)]
+        [ProducesResponseType((int)HttpStatusCode.NotFound)]
+        public async Task<IActionResult> GetByEmail(string email)
+        {
+            var query = new GetSuppliersByEmailQuery(email);
+            var result = await _mediator.Send(query);
+
+            if (!result.IsSuccess || result.Data == null)
+                return NotFound(result);
+
+            return Ok(result);
+        }
 
     }
 }

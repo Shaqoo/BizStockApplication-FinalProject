@@ -56,7 +56,8 @@ namespace Infrastructures.Persistence.Repositories
 
         public async Task<PaginatedList<WarehouseItem>> GetItemsByWarehouseIdAsync(Guid warehouseId, PageRequest pageRequest)
         {
-            var query = _context.WarehouseItems
+            var query = _context.WarehouseItems.Include(a => a.Product)
+                .Include(a => a.Warehouse)
                 .Where(w => w.WarehouseId == warehouseId);
 
             var total = await query.CountAsync();

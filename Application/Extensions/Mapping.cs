@@ -63,6 +63,12 @@ namespace Application.Extensions
             return new CategoryDto(category.Id, category.Name, category.Description,category.Depth ,category.ParentCategoryId,category.Products.Count);
         }
 
+        public static WarehouseProductDto WarehouseProductDto(this WarehouseItem warehouseItem)
+        {
+            return new WarehouseProductDto(warehouseItem.Product.Id,warehouseItem.WarehouseId,warehouseItem.Quantity,
+                warehouseItem.ReorderLevel,warehouseItem.Product.Name,warehouseItem.Warehouse.Name,warehouseItem.Product.ImageUrl,
+                warehouseItem.Warehouse.Location,warehouseItem.Product.SKU,warehouseItem.Product.UnitOfMeasure);
+        }
 
         public static ProductDto ToDto(this Product product)
         {
@@ -73,17 +79,17 @@ namespace Application.Extensions
                 SKU = product.SKU,
                 Barcode = product.Barcode,
                 QrCodeValue = product.QrCodeValue,
-                Description = product.Description,
+                Description = product.Description!,
                 ImageUrl = product.ImageUrl,
                 CostPrice = product.CostPrice,
                 SellingPrice = product.SellingPrice,
                 UnitOfMeasure = product.UnitOfMeasure.ToString(),
 
                  
-                CategoryId = product.Category?.Id ?? Guid.Empty,
+                CategoryId = product.CategoryId,
                 CategoryName = product.Category?.Name ?? string.Empty,
 
-                BrandId = product.Brand?.Id ?? Guid.Empty,
+                BrandId = product.Brand.Id,
                 BrandName = product.Brand?.Name ?? string.Empty,
 
                  
