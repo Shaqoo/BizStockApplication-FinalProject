@@ -9,6 +9,6 @@ namespace Application.Interfaces.Repository.BaseRepository
         Task<T?> GetByIdAsync(Guid id);
         Task<PaginatedList<T>> GetAllAsync(PageRequest pageRequest);
         Task<IEnumerable<T>> FindAsync(Expression<Func<T, bool>> predicate);
-        Task<T> GetByExpression(Expression<Func<T, bool>> predicate);
+        Task<T?> GetByExpression(Expression<Func<T, bool>> predicate);
     }
 }

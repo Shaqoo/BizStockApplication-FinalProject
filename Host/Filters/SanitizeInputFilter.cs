@@ -17,7 +17,7 @@ namespace Host.Filters
         public void OnActionExecuted(ActionExecutedContext context)
         {
             var action = context.ActionDescriptor.DisplayName;
-            Debug.WriteLine($"[HtmlAction] Action executed: {action} At {DateTime.Now}");
+            Console.WriteLine($"[HtmlAction] Action executed: {action} At {DateTime.Now}");
         }
 
         public void OnActionExecuting(ActionExecutingContext context)

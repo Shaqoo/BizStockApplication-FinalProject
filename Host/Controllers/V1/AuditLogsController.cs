@@ -49,14 +49,15 @@ public class AuditLogsController : ControllerBase
     /// <summary>
     /// Get audit logs by action (paginated)
     /// </summary>
-    [HttpGet("action/{action}")]
+    [HttpGet("by-action/{actionName}")]
     [ProducesResponseType(typeof(PaginatedList<AuditLog>), (int)HttpStatusCode.OK)]
-    public async Task<IActionResult> GetByAction(string action, [FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 20)
+    public async Task<IActionResult> GetByAction(string actionName, [FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 20)
     {
-        var query = new GetAuditLogsByActionQuery(action, new PageRequest { Page = pageNumber, PageSize = pageSize });
+        var query = new GetAuditLogsByActionQuery(actionName, new PageRequest { Page = pageNumber, PageSize = pageSize });
         var result = await _mediator.Send(query);
         return Ok(result);
     }
+
 
     /// <summary>
     /// Search audit logs (paginated)

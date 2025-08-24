@@ -49,23 +49,22 @@ namespace Application.Commands.Products.AddQuantity
                 var item = await _repository.GetByExpression(a => a.WarehouseId == dto.WarehouseId &&
                 a.ProductId == dto.ProductId);
 
+                var product = await _productRepository.GetByIdAsync(dto.ProductId);
+                if (product == null)
+                {
+                    _logger.LogWarning("Product with ID {ProductId} does not exist.", dto.ProductId);
+                    return Result<string>.Failure("Product does not exist.");
+                }
+
                 await _unitOfWork.BeginTransactionAsync();
                 if (item is null)
                 {
                     var warehouse = await _warehouseRepository.Exists(dto.WarehouseId);
-                    if(warehouse)
+                    if(!warehouse)
                     {
                         _logger.LogWarning("Warehouse with ID {WarehouseId} does not exist.", dto.WarehouseId);
                         await _unitOfWork.RollbackTransactionAsync();
                         return Result<string>.Failure("Warehouse does not exist.");
-                    }
-
-                    var product = await _productRepository.Exists(dto.ProductId);
-                    if(!product)
-                    {
-                        _logger.LogWarning("Product with ID {ProductId} does not exist.", dto.ProductId);
-                        await _unitOfWork.RollbackTransactionAsync();
-                        return Result<string>.Failure("Product does not exist.");
                     }
 
                     item = new WarehouseItem(dto.WarehouseId, dto.ProductId, dto.ReorderLevel, dto.Quantity);
@@ -91,8 +90,7 @@ namespace Application.Commands.Products.AddQuantity
                     ip: request.Metadata.IpAddress,
                     userAgent: request.Metadata.UserAgent
                 ));
-
-                await _mediator.Publish(new ProductQuantityAddedEvent(dto.ProductId,item.Product.Name,dto.Quantity,
+                await _mediator.Publish(new ProductQuantityAddedEvent(dto.ProductId,product.Name,dto.Quantity,
                    _authService.CurrentUser()!.Id));
 
                 return Result<string>.Success("Product quantity added/updated successfully.");

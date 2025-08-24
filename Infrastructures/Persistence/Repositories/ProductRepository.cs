@@ -24,8 +24,7 @@ namespace Infrastructures.Persistence.Repositories
 
         public async Task<Product?> GetByIdAsync(Guid id)
         {
-            return await _context.Products.Include(a => a.StockByWarehouse).FirstAsync(a => a.Id == id)
-                ?? throw new KeyNotFoundException("Product not found.");
+            return await _context.Products.Include(a => a.StockByWarehouse).FirstAsync(a => a.Id == id);
         }
 
         public async Task<PaginatedList<Product>> GetAllAsync(PageRequest pageRequest)

@@ -114,10 +114,9 @@ namespace Infrastructures.Persistence.Repositories
             return new PaginatedList<WarehouseDto>(items, total, pageRequest.Page, pageRequest.PageSize);
         }
 
-        public async Task<Warehouse> GetByExpression(Expression<Func<Warehouse, bool>> predicate)
+        public async Task<Warehouse?> GetByExpression(Expression<Func<Warehouse, bool>> predicate)
         {
-            return await _context.Warehouses.AsNoTracking().FirstOrDefaultAsync(predicate) ??
-                throw new EntityNotFoundException("Warehouse","Predicate");
+            return await _context.Warehouses.AsNoTracking().FirstOrDefaultAsync(predicate);
         }
 
         public async Task<bool> HasItemAsync(Guid warehouseId)

@@ -121,11 +121,11 @@ namespace Infrastructures.Persistence.Repositories
             return new PaginatedList<WarehouseItem>(items, total, pageRequest.Page, pageRequest.PageSize);
         }
 
-        public async Task<WarehouseItem> GetByExpression(Expression<Func<WarehouseItem, bool>> predicate)
+        public async Task<WarehouseItem?> GetByExpression(Expression<Func<WarehouseItem, bool>> predicate)
         {
             return await _context.WarehouseItems.Include(a => a.Warehouse).Include(a => a.Product)
                 .FirstOrDefaultAsync(predicate) ??
-               throw new EntityNotFoundException("Warehouse Item","Predicate");
+               null;
         }
     }
 
