@@ -1,6 +1,7 @@
 ﻿using Application.Interfaces.Service;
 using Host.Filters;
 using Host.Service;
+using Infrastructures.Service.Ai;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Mvc.Versioning;
 using Microsoft.AspNetCore.ResponseCompression;
@@ -17,6 +18,7 @@ namespace Host.Extensions
         {
             services.AddScoped<INotifier, Notifier>();
             services.AddScoped<SanitizeInputFilter>();
+            services.AddHttpClient<IAiService, AiService>();
 
 
             services.AddResponseCompression(options =>

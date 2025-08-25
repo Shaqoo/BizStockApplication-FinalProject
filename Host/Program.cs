@@ -4,68 +4,85 @@ using Host.Filters;
 using Host.Hubs;
 using Infrastructures.Extensions;
 using Prometheus;
+using Serilog;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
-var builder = WebApplication.CreateBuilder(args);
- 
-builder.Configuration
-    .SetBasePath(Directory.GetCurrentDirectory())
-    .AddJsonFile("appsettings.json", optional: false)
-    .AddUserSecrets<Program>() 
-    .AddEnvironmentVariables();
-
-builder.WebHost.UseWebRoot("wwwroot");
-builder.Services.AddApplication(builder.Configuration);
-builder.Services.AddInfrastructureServices(builder.Configuration);
-builder.Services.AddHostServices(builder.Configuration);
-
-builder.Services.AddControllers(options =>
+internal class Program
 {
-    options.Filters.AddService<SanitizeInputFilter>();
-})
-    .AddJsonOptions(options =>
+    private static void Main(string[] args)
     {
-        options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
+        Log.Logger = new LoggerConfiguration()
+             .MinimumLevel.Information()
+             .Enrich.WithProperty("App Name", "BizStock") 
+             .Enrich.FromLogContext()
+             .WriteTo.Console()
+             .WriteTo.File("logs/logger.txt", rollingInterval: RollingInterval.Day)
+             .CreateLogger();
 
-        options.JsonSerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
+        Log.Information("Application started.");
 
-        options.JsonSerializerOptions.AllowTrailingCommas = true;
-    });
+        var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddHttpContextAccessor();
-builder.Services.AddEndpointsApiExplorer();
+        builder.Configuration
+            .SetBasePath(Directory.GetCurrentDirectory())
+            .AddJsonFile("appsettings.json", optional: false)
+            .AddUserSecrets<Program>()
+            .AddEnvironmentVariables();
+
+        builder.WebHost.UseWebRoot("wwwroot");
+        builder.Services.AddApplication(builder.Configuration);
+        builder.Services.AddInfrastructureServices(builder.Configuration);
+        builder.Services.AddHostServices(builder.Configuration);
+
+        builder.Services.AddControllers(options =>
+        {
+            options.Filters.AddService<SanitizeInputFilter>();
+        })
+            .AddJsonOptions(options =>
+            {
+                options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
+
+                options.JsonSerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
+
+                options.JsonSerializerOptions.AllowTrailingCommas = true;
+            });
+
+        builder.Services.AddHttpContextAccessor();
+        builder.Services.AddEndpointsApiExplorer();
 
 
-var app = builder.Build();
+        var app = builder.Build();
 
-app.UseCustomMiddlewares();
- 
-if (app.Environment.IsDevelopment())
-{
-    app.UseSwagger();
-    app.UseSwaggerUI();
+        app.UseCustomMiddlewares();
+
+        if (app.Environment.IsDevelopment())
+        {
+            app.UseSwagger();
+            app.UseSwaggerUI();
+        }
+        app.UseResponseCompression();
+
+        app.UseCors("BizStockPolicy");
+
+        app.UseHttpsRedirection();
+
+        app.UseHttpMetrics();
+
+        app.UseCookiePolicy();
+
+        app.UseAuthentication();
+
+        app.UseAuthorization();
+
+        app.MapControllers();
+        app.UseStaticFiles();
+
+        app.MapMetrics();
+
+        app.MapHub<NotificationHub>("/hubs/notificationhub");
+        app.MapHub<ChatMessageHub>("/hubs/chatmessagehub");
+
+        app.Run();
+    }
 }
-app.UseResponseCompression();
-
-app.UseCors("BizStockPolicy");
-
-app.UseHttpsRedirection();
-
-app.UseHttpMetrics();
-
-app.UseCookiePolicy();
-
-app.UseAuthentication();
-
-app.UseAuthorization();
-
-app.MapControllers();
-app.UseStaticFiles();
-
-app.MapMetrics();
-
-app.MapHub<NotificationHub>("/hubs/notificationhub");
-app.MapHub<ChatMessageHub>("/hubs/chatmessagehub");
-
-app.Run();

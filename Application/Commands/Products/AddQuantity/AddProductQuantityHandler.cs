@@ -4,6 +4,7 @@ using Application.Interfaces.Service;
 using Application.Interfaces.UnitOfWork;
 using Domain.DomainEvents;
 using Domain.Entities;
+using Domain.Enums;
 using MediatR;
 using Microsoft.Extensions.Logging;
 
@@ -19,8 +20,10 @@ namespace Application.Commands.Products.AddQuantity
         private readonly IWarehouseRepository _warehouseRepository;
         private readonly IAuthService _authService;
         private readonly IMediator _mediator;
+        private readonly IStockMovementRepository _stockMovementRepository;
 
         public AddProductQuantityCommandHandler(
+            IStockMovementRepository stockMovementRepository,
             IWarehouseItemRepository repository,
             IUnitOfWork unitOfWork,
             IAuditLogRepository auditLogRepository,
@@ -30,6 +33,7 @@ namespace Application.Commands.Products.AddQuantity
             IMediator mediator,
             IAuthService authService)
         {
+            _stockMovementRepository = stockMovementRepository;
             _repository = repository;
             _unitOfWork = unitOfWork;
             _auditLogRepository = auditLogRepository;
@@ -78,6 +82,9 @@ namespace Application.Commands.Products.AddQuantity
                     await _repository.UpdateWarehouseItemAsync(item);
                     _logger.LogInformation("Updated existing WarehouseItem for Product {ProductId} in Warehouse {WarehouseId}", dto.ProductId, dto.WarehouseId);
                 }
+
+                await _stockMovementRepository.AddAsync(new StockMovement(item.Id,StockMovementType.Inbound,
+                    dto.Quantity,"New Product Was Added",_authService.CurrentUser()!.Id));
 
                 await _unitOfWork.CommitTransactionAsync();
 

@@ -29,8 +29,7 @@ namespace Infrastructures.Persistence.Repositories
 
         public async Task<WarehouseItem?> GetByIdAsync(Guid id)
         {
-            return await _context.WarehouseItems.FindAsync(id)
-                ?? throw new EntityNotFoundException("Warehouse Item", "Id");
+            return await _context.WarehouseItems.FindAsync(id);
         }
 
         public async Task<PaginatedList<WarehouseItem>> GetAllAsync(PageRequest pageRequest)

@@ -57,6 +57,9 @@ namespace Infrastructures.Extensions
 
             services.Configure<JwtSettings>(configuration.GetSection("Jwt"));
             services.Configure<CloudinarySettings>(configuration.GetSection("Cloudinary"));
+            services.Configure<AiSettings>(configuration.GetSection("AiKeys"));
+            services.Configure<AIResourcesSettings>(configuration.GetSection("AIResources"));
+
 
 
             services.Scan(scan => scan

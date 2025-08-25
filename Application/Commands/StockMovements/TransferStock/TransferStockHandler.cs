@@ -47,6 +47,7 @@ namespace Application.Commands.StockMovements.TransferStock
             {
                 toWarehouseItem = new WarehouseItem(request.Request.ToWarehouseId, request.Request.ProductId, fromWarehouseItem.ReorderLevel, 0);
                 await warehouseItemRepository.AddAsync(toWarehouseItem);
+                await unitOfWork.SaveChangesAsync(cancellationToken);
             }
 
             fromWarehouseItem.DecreaseStock(request.Request.Quantity);

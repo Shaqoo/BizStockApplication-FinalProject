@@ -12,6 +12,7 @@ using Microsoft.Extensions.Logging;
 namespace Application.Commands.StockMovements.AdjustInventory
 {
     public class AdjustStockHandler(IWarehouseItemRepository warehouseItemRepository,
+        IStockMovementRepository stockMovementRepository,
         IUnitOfWork unitOfWork,
         IAuditLogRepository auditLogRepository,
         ILogger<AdjustStockHandler> logger,
@@ -60,6 +61,7 @@ namespace Application.Commands.StockMovements.AdjustInventory
                     request.Request.Reason,
                     user.Id
                 );
+                await stockMovementRepository.AddAsync(stockMovement);
 
                 await unitOfWork.CommitTransactionAsync();
 
