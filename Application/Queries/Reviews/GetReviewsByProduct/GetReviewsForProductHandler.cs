@@ -28,7 +28,7 @@ namespace Application.Queries.Reviews.GetReviewsByProduct
                 new PaginatedList<ProductReviewDto>(cachedReviews.Items.Select(review => new ProductReviewDto(
                     review.Id,
                     review.ProductId ?? Guid.Empty,
-                    review.ReviewerId,
+                    new ReviewUserDto(review.ReviewerId,review.Reviewer.FullName,review.Reviewer.ProfilePictureUrl),
                     review.Comment,
                     review.Rating,
                     review.ReviewedAt

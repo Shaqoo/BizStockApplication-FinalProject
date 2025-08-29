@@ -87,10 +87,10 @@ namespace Application.Extensions
 
                  
                 CategoryId = product.CategoryId,
-                CategoryName = product.Category?.Name ?? string.Empty,
+                //CategoryName = product.Category.Name ?? string.Empty,
 
-                BrandId = product.Brand.Id,
-                BrandName = product.Brand?.Name ?? string.Empty,
+                BrandId = product.BrandId,
+               // BrandName = product.Brand.Name ?? string.Empty,
 
                  
                 Quantity = product.StockByWarehouse?.Sum(s => s.Quantity) ?? 0,

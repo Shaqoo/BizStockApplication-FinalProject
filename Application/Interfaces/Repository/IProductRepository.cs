@@ -1,4 +1,5 @@
-﻿using Application.Interfaces.Repository.BaseRepository;
+﻿using Application.Dto;
+using Application.Interfaces.Repository.BaseRepository;
 using Application.Pagination;
 using Domain.Entities;
 using Domain.Enums;
@@ -19,6 +20,9 @@ namespace Application.Interfaces.Repository
         Task<PaginatedList<Product>> GetRecentlyAddedProductsAsync(PageRequest pageRequest);
         Task<PaginatedList<Product>> GetTopRatedProductsAsync(PageRequest pageRequest);
         Task<PaginatedList<Product>> GetProductsByStatus(PageRequest pageRequest,ProductStatus productStatus);
+        Task<IEnumerable<string>> GetSearchSuggestions(string keyword);
+        Task<IEnumerable<ProductDto>> GetRelatedProducts(Product product);
+        Task<IEnumerable<ProductDto>> GetRelatedProductsByBrand(Product product);
     }
 
 }

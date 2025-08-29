@@ -10,10 +10,14 @@ using Application.Queries.Products.GetProductsOrderdByPrice;
 using Application.Queries.Products.GetProductsOrderedByPriceandCateory;
 using Application.Queries.Products.GetProductWithLowStock;
 using Application.Queries.Products.GetRecentlyAddedProducts;
+using Application.Queries.Products.GetRelatedProducts;
+using Application.Queries.Products.GetRelatedProductsByBrand;
+using Application.Queries.Products.GetSuggestions;
 using Application.Queries.Products.GetTopRatedProducts;
 using Application.Queries.Products.SearchProducts;
 using Domain.Enums;
 using MediatR;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Host.Controllers.V1
@@ -249,6 +253,55 @@ namespace Host.Controllers.V1
             var result = await _mediator.Send(query);
             return Ok(result);
         }
+
+        /// <summary>
+        /// Gets product's suggestions by a specific keyword.
+        /// </summary>
+        /// <param name="keyword">The word to search.</param>
+        /// <remarks>
+        /// This endpoint retrieves products name using a given <c>keyword</c>.
+        /// </remarks>
+        /// <returns>A list of products name from the given keyword.</returns>
+        [ProducesResponseType(typeof(Result<IEnumerable<string>>), 200)]
+        [ProducesResponseType(404)]
+        [HttpGet("search-suggestions")]
+        public async Task<IActionResult> GetSearchSuggestions([FromQuery]string keyword)
+        {
+            var query = new GetProductSearchSuggestionsQuery(keyword);
+            var result = await _mediator.Send(query);
+            return Ok(result);
+        }
+
+        /// <summary>
+        /// Gets related products in the same category (excluding the current one).
+        /// </summary>
+        /// <param name="id">The current product id.</param>
+        /// <returns>A list of related products.</returns>
+        [ProducesResponseType(typeof(Result<IEnumerable<ProductDto>>), 200)]
+        [ProducesResponseType(404)]
+        [HttpGet("{id}/related")]
+        public async Task<IActionResult> GetRelatedProducts(Guid id)
+        {
+            var query = new GetRelatedProductQuery(id);
+            var result = await _mediator.Send(query);
+            return result.IsSuccess ? Ok(result) : NotFound(result);
+        }
+
+        /// <summary>
+        /// Gets related products in the same brand (excluding the current one).
+        /// </summary>
+        /// <param name="id">The current product id.</param>
+        /// <returns>A list of related products.</returns>
+        [ProducesResponseType(typeof(Result<IEnumerable<ProductDto>>), 200)]
+        [ProducesResponseType(404)]
+        [HttpGet("{id}/related-brands")]
+        public async Task<IActionResult> GetRelatedProductsByBrand(Guid id)
+        {
+            var query = new GetRelatedProductsByBrandQuery(id);
+            var result = await _mediator.Send(query);
+            return result.IsSuccess ? Ok(result) : NotFound(result);
+        }
+
     }
 
 }

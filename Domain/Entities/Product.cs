@@ -36,6 +36,7 @@ namespace Domain.Entities
         public ICollection<CartItem> CartItems { get; private set; } = new HashSet<CartItem>();
         public ICollection<WishlistItem> WishlistItems { get; private set; } = new HashSet<WishlistItem>();
         public ICollection<RecentlyViewedProduct> RecentlyViewedProducts { get; private set; } = new HashSet<RecentlyViewedProduct>();
+        public ICollection<ProductSpecification> ProductSpecifications { get; private set; } = new HashSet<ProductSpecification>();
         private Product() { }
 
         public Product(

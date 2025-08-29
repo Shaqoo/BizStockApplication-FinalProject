@@ -24,7 +24,7 @@ namespace Infrastructures.Persistence.Repositories
             await _context.Categories.AddAsync(category);
         }
 
-        public async Task<CategoryDto> GetCategoryByIdAsync(Guid id)
+        public async Task<CategoryDto?> GetCategoryByIdAsync(Guid id)
         {
             return await _context.Categories
                 .Include(x => x.SubCategories)
@@ -38,8 +38,7 @@ namespace Infrastructures.Persistence.Repositories
                     c.ParentCategoryId,
                     c.Products.Count()
                 ))
-                .FirstOrDefaultAsync()
-                ?? throw new KeyNotFoundException("Category not found.");
+                .FirstOrDefaultAsync();
         }
 
 

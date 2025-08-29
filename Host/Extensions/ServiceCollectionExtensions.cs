@@ -108,17 +108,7 @@ namespace Host.Extensions
                 options.HttpOnly = Microsoft.AspNetCore.CookiePolicy.HttpOnlyPolicy.Always;
             });
 
-            services.AddCors(options =>
-            {
-                options.AddPolicy("BizStockPolicy", builder =>
-                {
-                    builder
-                        .WithOrigins("https://yourfrontend.com", "http://localhost:4200")
-                        .AllowAnyHeader()
-                        .AllowAnyMethod()
-                        .AllowCredentials();
-                });
-            });
+           
 
             services.AddSignalR();
 

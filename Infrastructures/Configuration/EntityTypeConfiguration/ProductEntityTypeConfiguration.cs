@@ -80,6 +80,11 @@ namespace Infrastructures.Configuration.EntityTypeConfiguration
                    .HasForeignKey(pt => pt.ProductId)
                    .OnDelete(DeleteBehavior.Cascade);
 
+            builder.HasMany(p => p.ProductSpecifications)
+                   .WithOne(p => p.Product)
+                   .HasForeignKey(p => p.ProductId)
+                   .OnDelete(DeleteBehavior.Restrict);
+
             builder.HasIndex(p => p.SKU).IsUnique();
             builder.HasIndex(p => p.Barcode).IsUnique();
         }

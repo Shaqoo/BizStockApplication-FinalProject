@@ -62,8 +62,8 @@ namespace Application.Validations.Product
             When(x => x.Description != null, () =>
             {
                 RuleFor(x => x.Description).NotEmpty()
-                    .Must(desc => desc.Split(' ', StringSplitOptions.RemoveEmptyEntries).Length <= 1000)
-                    .WithMessage("Description must not exceed 1000 words");
+                    .Must(desc => desc.Split(' ', StringSplitOptions.RemoveEmptyEntries).Length <= 2000)
+                    .WithMessage("Description must not exceed 2000 words");
             });
 
 

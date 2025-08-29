@@ -7,6 +7,8 @@ namespace Infrastructures.Persistence.Context
 {
     public class BizStockContext(DbContextOptions<BizStockContext> options) : DbContext(options)
     {
+        public DbSet<ProductSpecification> ProductSpecifications { get; set; } = default!;
+        public DbSet<Specification> Specifications { get; set; } = default!;
         public DbSet<Cart> Carts { get; set; } = default!;
         public DbSet<CartItem> CartItems { get; set; } = default!;
         public DbSet<Wishlist> Wishlists { get; set; } = default!;

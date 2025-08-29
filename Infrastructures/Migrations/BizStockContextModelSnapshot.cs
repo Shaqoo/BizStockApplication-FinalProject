@@ -313,40 +313,40 @@ namespace Infrastructures.Migrations
                     b.HasData(
                         new
                         {
-                            Id = new Guid("2055356a-2fe5-41ef-b8c1-84331312768a"),
-                            CreatedAt = new DateTime(2025, 8, 23, 7, 38, 23, 978, DateTimeKind.Utc).AddTicks(5060),
+                            Id = new Guid("8831d812-d998-4315-a829-1eb72e6330a9"),
+                            CreatedAt = new DateTime(2025, 8, 26, 20, 56, 56, 102, DateTimeKind.Utc).AddTicks(6994),
                             Description = "Retail customers",
                             DiscountPercentage = 0m,
                             TypeName = "Retail"
                         },
                         new
                         {
-                            Id = new Guid("b2132bbd-155a-4245-98e8-2dd6c9a31188"),
-                            CreatedAt = new DateTime(2025, 8, 23, 7, 38, 23, 978, DateTimeKind.Utc).AddTicks(5072),
+                            Id = new Guid("06a917b4-332a-4949-a9da-b1ea1f9cf6c8"),
+                            CreatedAt = new DateTime(2025, 8, 26, 20, 56, 56, 102, DateTimeKind.Utc).AddTicks(7007),
                             Description = "Wholesale buyers with bulk discounts",
                             DiscountPercentage = 5m,
                             TypeName = "Wholesale"
                         },
                         new
                         {
-                            Id = new Guid("37323767-feb4-40de-8115-ad444a9b8d7b"),
-                            CreatedAt = new DateTime(2025, 8, 23, 7, 38, 23, 978, DateTimeKind.Utc).AddTicks(5074),
+                            Id = new Guid("b914774a-e41f-467b-ab0e-684ed42b3f6e"),
+                            CreatedAt = new DateTime(2025, 8, 26, 20, 56, 56, 102, DateTimeKind.Utc).AddTicks(7010),
                             Description = "Corporate clients with special contracts",
                             DiscountPercentage = 10m,
                             TypeName = "Corporate"
                         },
                         new
                         {
-                            Id = new Guid("105a19f5-5805-4c1e-8feb-3058e245ba03"),
-                            CreatedAt = new DateTime(2025, 8, 23, 7, 38, 23, 978, DateTimeKind.Utc).AddTicks(5081),
+                            Id = new Guid("25b410ab-d140-45ee-86a4-d8829cdd1862"),
+                            CreatedAt = new DateTime(2025, 8, 26, 20, 56, 56, 102, DateTimeKind.Utc).AddTicks(7014),
                             Description = "Resellers who purchase for resale",
                             DiscountPercentage = 7.5m,
                             TypeName = "Reseller"
                         },
                         new
                         {
-                            Id = new Guid("ae0fbdbb-dcc8-46a7-84b2-8474c004061b"),
-                            CreatedAt = new DateTime(2025, 8, 23, 7, 38, 23, 978, DateTimeKind.Utc).AddTicks(5082),
+                            Id = new Guid("ce07a33a-fa3b-47f3-b1b1-690927f53543"),
+                            CreatedAt = new DateTime(2025, 8, 26, 20, 56, 56, 102, DateTimeKind.Utc).AddTicks(7027),
                             Description = "VIP customers with premium benefits",
                             DiscountPercentage = 15m,
                             TypeName = "VIP"
@@ -924,6 +924,32 @@ namespace Infrastructures.Migrations
                     b.ToTable("Products", (string)null);
                 });
 
+            modelBuilder.Entity("Domain.Entities.ProductSpecification", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("ProductId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("SpecificationId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Value")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ProductId");
+
+                    b.HasIndex("SpecificationId");
+
+                    b.ToTable("ProductSpecifications", (string)null);
+                });
+
             modelBuilder.Entity("Domain.Entities.ProductTag", b =>
                 {
                     b.Property<Guid>("ProductId")
@@ -1112,6 +1138,9 @@ namespace Infrastructures.Migrations
                     b.Property<bool>("IsVisible")
                         .HasColumnType("boolean");
 
+                    b.Property<Guid?>("OrderId")
+                        .HasColumnType("uuid");
+
                     b.Property<Guid?>("ProductId")
                         .HasColumnType("uuid");
 
@@ -1132,6 +1161,8 @@ namespace Infrastructures.Migrations
                     b.HasIndex("DeliveryAgentId");
 
                     b.HasIndex("IsVisible");
+
+                    b.HasIndex("OrderId");
 
                     b.HasIndex("ProductId");
 
@@ -1248,6 +1279,26 @@ namespace Infrastructures.Migrations
                     b.HasIndex("SalesOrderId", "ProductId");
 
                     b.ToTable("SalesOrderItems", (string)null);
+                });
+
+            modelBuilder.Entity("Domain.Entities.Specification", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(3000)
+                        .HasColumnType("character varying(3000)");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Specifications", (string)null);
                 });
 
             modelBuilder.Entity("Domain.Entities.StockMovement", b =>
@@ -1489,9 +1540,9 @@ namespace Infrastructures.Migrations
                     b.HasData(
                         new
                         {
-                            Id = new Guid("7f2d1792-929b-42c5-9495-db04646bd139"),
+                            Id = new Guid("686fa6eb-3569-4c85-afa1-bc573a9743c3"),
                             CreatedBy = "",
-                            DateCreated = new DateTimeOffset(new DateTime(2025, 8, 23, 7, 38, 24, 7, DateTimeKind.Unspecified).AddTicks(2823), new TimeSpan(0, 0, 0, 0, 0)),
+                            DateCreated = new DateTimeOffset(new DateTime(2025, 8, 26, 20, 56, 56, 139, DateTimeKind.Unspecified).AddTicks(6646), new TimeSpan(0, 0, 0, 0, 0)),
                             DateOfBirth = "2000-04-22",
                             Email = "ShakirullahOhio@gmail.com",
                             FailedLoginAttempts = 0,
@@ -1502,8 +1553,8 @@ namespace Infrastructures.Migrations
                             IsEmailVerified = false,
                             IsPhoneNumberVerified = false,
                             IsTwoFactorEnabled = true,
-                            LastLoggedIn = new DateTime(2025, 8, 23, 7, 38, 24, 7, DateTimeKind.Utc).AddTicks(2762),
-                            LastModified = new DateTimeOffset(new DateTime(2025, 8, 23, 7, 38, 24, 7, DateTimeKind.Unspecified).AddTicks(2823), new TimeSpan(0, 0, 0, 0, 0)),
+                            LastLoggedIn = new DateTime(2025, 8, 26, 20, 56, 56, 139, DateTimeKind.Utc).AddTicks(6608),
+                            LastModified = new DateTimeOffset(new DateTime(2025, 8, 26, 20, 56, 56, 139, DateTimeKind.Unspecified).AddTicks(6646), new TimeSpan(0, 0, 0, 0, 0)),
                             Password = "vd61YRFFSIHsbn15gK10i2oe7KTqb7rjYMWlxy6d0jFZF6vdjZ/4oMjHY/MQ+nPIT6U23fGaqeyXVa92W9QQupn5RSN2e6W8LTxzS1TNyeb7yfjrz0PXFOxnSs9NxV5c4Im/CFDi89WeGOOMxCxiKNdSKQoGDCVcIZacGhbqSYc=",
                             PhoneNumber = "+2348109094694",
                             RefreshToken = "",
@@ -2024,6 +2075,25 @@ namespace Infrastructures.Migrations
                     b.Navigation("Category");
                 });
 
+            modelBuilder.Entity("Domain.Entities.ProductSpecification", b =>
+                {
+                    b.HasOne("Domain.Entities.Product", "Product")
+                        .WithMany("ProductSpecifications")
+                        .HasForeignKey("ProductId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Domain.Entities.Specification", "Specification")
+                        .WithMany("ProductSpecifications")
+                        .HasForeignKey("SpecificationId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Product");
+
+                    b.Navigation("Specification");
+                });
+
             modelBuilder.Entity("Domain.Entities.ProductTag", b =>
                 {
                     b.HasOne("Domain.Entities.Product", "Product")
@@ -2099,6 +2169,10 @@ namespace Infrastructures.Migrations
                         .HasForeignKey("DeliveryAgentId")
                         .OnDelete(DeleteBehavior.SetNull);
 
+                    b.HasOne("Domain.Entities.SalesOrder", "Order")
+                        .WithMany()
+                        .HasForeignKey("OrderId");
+
                     b.HasOne("Domain.Entities.Product", "Product")
                         .WithMany("Reviews")
                         .HasForeignKey("ProductId")
@@ -2116,6 +2190,8 @@ namespace Infrastructures.Migrations
                         .OnDelete(DeleteBehavior.SetNull);
 
                     b.Navigation("DeliveryAgent");
+
+                    b.Navigation("Order");
 
                     b.Navigation("Product");
 
@@ -2327,6 +2403,8 @@ namespace Infrastructures.Migrations
                 {
                     b.Navigation("CartItems");
 
+                    b.Navigation("ProductSpecifications");
+
                     b.Navigation("ProductTags");
 
                     b.Navigation("RecentlyViewedProducts");
@@ -2357,6 +2435,11 @@ namespace Infrastructures.Migrations
                         .IsRequired();
 
                     b.Navigation("Items");
+                });
+
+            modelBuilder.Entity("Domain.Entities.Specification", b =>
+                {
+                    b.Navigation("ProductSpecifications");
                 });
 
             modelBuilder.Entity("Domain.Entities.Supplier", b =>

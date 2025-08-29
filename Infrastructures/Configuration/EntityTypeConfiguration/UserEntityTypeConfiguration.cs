@@ -101,21 +101,6 @@ namespace Infrastructures.Configuration.EntityTypeConfiguration
             .SetPropertyAccessMode(PropertyAccessMode.Field);
 
 
-            //builder.OwnsMany(u => u.RecoveryCodes, rc =>
-            //{
-            //    rc.WithOwner().HasForeignKey("UserId");
-            //    rc.HasKey("Id");
-
-            //    rc.Property(r => r.Code)
-            //        .IsRequired()
-            //        .HasMaxLength(400);
-
-            //    rc.Property(r => r.IsUsed)
-            //        .IsRequired();
-
-            //    rc.Property(r => r.UsedAt);
-            //});
-
             builder.Navigation(u => u.RecoveryCodes).Metadata.SetField("_recoveryCodes");
             builder.Navigation(u => u.RecoveryCodes).UsePropertyAccessMode(PropertyAccessMode.Field);
 

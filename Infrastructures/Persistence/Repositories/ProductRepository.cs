@@ -1,4 +1,6 @@
-﻿using Application.Interfaces.Repository;
+﻿using Application.Dto;
+using Application.Extensions;
+using Application.Interfaces.Repository;
 using Application.Pagination;
 using Domain.Entities;
 using Domain.Enums;
@@ -24,7 +26,7 @@ namespace Infrastructures.Persistence.Repositories
 
         public async Task<Product?> GetByIdAsync(Guid id)
         {
-            return await _context.Products.Include(a => a.StockByWarehouse).FirstAsync(a => a.Id == id);
+            return await _context.Products.Include(a => a.StockByWarehouse).FirstOrDefaultAsync(a => a.Id == id);
         }
 
         public async Task<PaginatedList<Product>> GetAllAsync(PageRequest pageRequest)
@@ -101,22 +103,29 @@ namespace Infrastructures.Persistence.Repositories
             return new PaginatedList<Product>(items, total, pageRequest.Page, pageRequest.PageSize);
         }
 
-        
+
+        public async Task<IEnumerable<string>> GetSearchSuggestions(string keyword)
+        {
+            return await _context.Products
+                    .Where(p => p.Status == ProductStatus.Approved &&
+                     EF.Functions.ILike(p.Name, $"%{keyword}%"))
+                    .OrderBy(p => p.Name)
+                    .Select(p => p.Name)
+                    .Take(10) 
+                    .ToListAsync();
+        }
+
 
         public async Task<PaginatedList<Product>> SearchProductsAsync(string keyword, PageRequest pageRequest)
         {
-            var query = await GetFullTextSearchQueryAsync(keyword);
-            if (query != null)
-            {
-                return await GetPaginatedResultsAsync(query, pageRequest);
-            }
+            var fullTextQuery = await GetFullTextSearchQueryAsync(keyword) ?? Enumerable.Empty<Product>().AsQueryable();
+            var iLikeQuery = await GetILikeSearchQueryAsync(keyword) ?? Enumerable.Empty<Product>().AsQueryable();
 
-            query = await GetILikeSearchQueryAsync(keyword);
-             
-            return await GetPaginatedResultsAsync(query, pageRequest);
-            //query = await GetTrigramSearchQueryAsync(keyword);
-           // return await GetPaginatedResultsAsync(query, pageRequest);
+            var combinedQuery = fullTextQuery.Union(iLikeQuery);
+
+            return await GetPaginatedResultsAsync(combinedQuery, pageRequest);
         }
+
 
         private IQueryable<Product> IncludeProductRelations(IQueryable<Product> query)
         {
@@ -297,6 +306,8 @@ namespace Infrastructures.Persistence.Repositories
             var query = _context.Products.Include(a => a.StockByWarehouse)
                 .AsNoTracking()
                 .Include(p => p.Reviews)
+                .Include(a => a.Brand)
+                .Include(c => c.Category)
                 .Select(p => new
                 {
                     Product = p,
@@ -329,6 +340,26 @@ namespace Infrastructures.Persistence.Repositories
                 .ToListAsync();
 
             return new PaginatedList<Product>(items, total, pageRequest.Page, pageRequest.PageSize);
+        }
+
+        public async Task<IEnumerable<ProductDto>> GetRelatedProducts(Product product)
+        {
+            var query = _context.Products.Include(a => a.StockByWarehouse)
+                .Where(a => a.CategoryId == product.CategoryId &&
+                    a.Id != product.Id && a.Status == Domain.Enums.ProductStatus.Approved);
+
+            return await query.Select(a => a.ToDto())
+                .Take(3).ToListAsync();
+        }
+
+        public async Task<IEnumerable<ProductDto>> GetRelatedProductsByBrand(Product product)
+        {
+            var query = _context.Products.Include(a => a.StockByWarehouse)
+                .Where(a => a.BrandId == product.BrandId &&
+                    a.Id != product.Id && a.Status == Domain.Enums.ProductStatus.Approved);
+
+            return await query.Select(a => a.ToDto())
+                .Take(3).ToListAsync();
         }
     }
 

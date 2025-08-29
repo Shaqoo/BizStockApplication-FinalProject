@@ -1,14 +1,10 @@
-﻿using Application.Interfaces.Repository;
+﻿using Application.Dto;
+using Application.Interfaces.Repository;
 using Application.Pagination;
 using Domain.Entities;
 using Infrastructures.Persistence.Context;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Linq.Expressions;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Infrastructures.Persistence.Repositories
 {
@@ -61,6 +57,7 @@ namespace Infrastructures.Persistence.Repositories
         public async Task<PaginatedList<Review>> GetByProductIdAsync(Guid productId,PageRequest pageRequest)
         {
             var query = _context.Reviews
+                .Include(a => a.Reviewer)
                 .Where(r => r.ProductId == productId && r.IsVisible);
 
             var total = await query.CountAsync();
@@ -86,6 +83,11 @@ namespace Infrastructures.Persistence.Repositories
             return await _context.Reviews
                 .Where(r => r.DeliveryAgentId == deliveryAgentId && r.IsVisible)
                 .ToListAsync();
+        }
+
+        public async Task<int> TotalRatingForAProductAsync(Guid productId)
+        {
+            return await _context.Reviews.CountAsync(a => a.ProductId == productId);
         }
 
         public async Task<double> GetAverageRatingForProductAsync(Guid productId)
@@ -142,6 +144,47 @@ namespace Infrastructures.Persistence.Repositories
             _context.Reviews.Update(review);
             await Task.CompletedTask;
         }
+
+        public async Task<RatingSummaryDto> GetProductRatingSummaryAsync(Guid productId)
+        {
+            var total = await _context.Reviews
+                .Where(r => r.ProductId == productId)
+                .CountAsync();
+
+            if (total == 0)
+            {
+                return new RatingSummaryDto
+                {
+                    Average = 0.0,
+                    Total = 0,
+                    Breakdown = new Dictionary<int, int>
+                    {
+                        { 5, 0 }, { 4, 0 }, { 3, 0 }, { 2, 0 }, { 1, 0 }
+                    }
+                };
+            }
+
+            var average = await _context.Reviews
+                .Where(r => r.ProductId == productId)
+                .AverageAsync(r => r.Rating);
+
+            var breakdownList = await _context.Reviews
+                .Where(r => r.ProductId == productId)
+                .GroupBy(r => r.Rating)
+                .Select(g => new { Rating = g.Key, Count = g.Count() })
+                .ToListAsync();
+
+            var breakdown = Enumerable.Range(1, 5)
+                .ToDictionary(i => i, i => breakdownList.FirstOrDefault(b => b.Rating == i)?.Count ?? 0);
+
+            return new RatingSummaryDto
+            {
+                Average = Math.Round(average, 1),
+                Total = total,
+                Breakdown = breakdown
+            };
+        }
+
     }
 
 }

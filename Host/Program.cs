@@ -51,6 +51,17 @@ internal class Program
         builder.Services.AddHttpContextAccessor();
         builder.Services.AddEndpointsApiExplorer();
 
+        builder.Services.AddCors(options =>
+        {
+            options.AddPolicy("BizStockPolicy", policyBuilder =>
+            {
+                policyBuilder
+                    .WithOrigins("http://localhost:5500")  
+                    .AllowAnyHeader()
+                    .AllowAnyMethod();
+                // Only add AllowCredentials() if you need cookies or auth headers
+            });
+        });
 
         var app = builder.Build();
 
@@ -63,9 +74,9 @@ internal class Program
         }
         app.UseResponseCompression();
 
-        app.UseCors("BizStockPolicy");
-
         app.UseHttpsRedirection();
+
+        app.UseCors("BizStockPolicy");
 
         app.UseHttpMetrics();
 
