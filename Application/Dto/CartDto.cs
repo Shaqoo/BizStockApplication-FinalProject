@@ -9,7 +9,6 @@ namespace Application.Dto
         public Guid? UserId { get; set; }
         public string SessionId { get; set; } = string.Empty;
         public bool IsLinked { get; set; }
-
         public List<CartItemDto> Items { get; set; } = new();
         public decimal TotalPrice => Items.Sum(i => i.SubTotal);
     }

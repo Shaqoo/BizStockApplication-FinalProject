@@ -36,7 +36,7 @@ namespace Application.Commands.Carts.DecreaseQuantity
                 return Result<CartDto>.Failure("Cart not found.");
             }
 
-            var decreased = cart.RemoveItem(dto.ProductId);
+            var decreased = cart.DecreaseOne(dto.ProductId);
             if (!decreased)
             {
                 _logger.LogWarning("Product {ProductId} not found in Cart {CartId}", dto.ProductId, dto.CartId);
