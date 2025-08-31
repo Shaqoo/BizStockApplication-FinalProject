@@ -5,6 +5,6 @@ using MediatR;
 
 namespace Application.Commands.Carts.AddItem
 {
-    public record AddCartItemCommand(AddCartItemRequest CartItemRequest) : IRequest<Result<CartItemDto>>;
-
+    public record AddCartItemCommand(AddCartItemRequest AddCartItemRequest)
+    : IRequest<Result<CartDto>>;
 }

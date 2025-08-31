@@ -4,6 +4,7 @@ using MediatR;
 
 namespace Application.Queries.Carts.GetByUserId
 {
-    public record GetCartItemsByUserIdQuery(Guid UserId, PageRequest PageRequest)
-    : IRequest<Result<PaginatedList<CartItemDto>>>;
+    public record GetCartByUserIdQuery(Guid UserId, PageRequest PageRequest)
+     : IRequest<Result<PaginatedCartDto>>;
+
 }

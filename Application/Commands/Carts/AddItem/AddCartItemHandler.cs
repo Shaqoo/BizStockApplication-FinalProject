@@ -1,104 +1,109 @@
 ﻿using Application.Dto;
+using Application.Extensions;
 using Application.Interfaces.Repository;
+using Application.Interfaces.Service;
 using Application.Interfaces.UnitOfWork;
 using Domain.Entities;
 using MediatR;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
 
 namespace Application.Commands.Carts.AddItem
 {
     public class AddCartItemCommandHandler
-        : IRequestHandler<AddCartItemCommand, Result<CartItemDto>>
+        : IRequestHandler<AddCartItemCommand, Result<CartDto>>
     {
         private readonly ICartRepository _cartRepository;
         private readonly IUnitOfWork _unitOfWork;
         private readonly ILogger<AddCartItemCommandHandler> _logger;
         private readonly IProductRepository _productRepository;
+        private readonly IAuthService _authService;
+        private readonly IHttpContextAccessor _contextAccessor;
 
         public AddCartItemCommandHandler(
             ICartRepository cartRepository,
             IUnitOfWork unitOfWork,
             ILogger<AddCartItemCommandHandler> logger,
+            IHttpContextAccessor httpContextAccessor,
+            IAuthService authService,
             IProductRepository productRepository)
         {
+            _contextAccessor = httpContextAccessor;
             _cartRepository = cartRepository;
             _unitOfWork = unitOfWork;
             _logger = logger;
             _productRepository = productRepository;
+            _authService = authService;
         }
 
-        public async Task<Result<CartItemDto>> Handle(AddCartItemCommand request, CancellationToken cancellationToken)
+        public async Task<Result<CartDto>> Handle(AddCartItemCommand request, CancellationToken cancellationToken)
         {
-            var itemRequest = request.CartItemRequest;
+            var itemRequest = request.AddCartItemRequest;
 
-            if (!itemRequest.UserId.HasValue && string.IsNullOrEmpty(itemRequest.CartSessionId))
-            {
-                _logger.LogWarning("Invalid request: both UserId and CartSessionId are missing.");
-                return Result<CartItemDto>.Failure("Invalid cart request.");
-            }
-
-            
             var product = await _productRepository.GetByIdAsync(itemRequest.ProductId);
 
             if (product == null)
             {
                 _logger.LogWarning("Product not found with Id: {ProductId}", itemRequest.ProductId);
-                return Result<CartItemDto>.Failure("Product not found.");
+                return Result<CartDto>.Failure("Product not found.");
             }
 
+            var currentUser = _authService.CurrentUser();
+            var sessionId = CartSessionExtension.GetOrCreateCartSessionId(_contextAccessor.HttpContext!);
             Cart? cart;
 
-            if (itemRequest.UserId.HasValue && itemRequest.UserId != Guid.Empty)
+            if (itemRequest.CartId.HasValue)
             {
-                cart = await _cartRepository.GetByUserIdAsync(itemRequest.UserId.Value);
+                cart = await _cartRepository.GetByIdAsync(itemRequest.CartId.Value);
+            }
+            else if (currentUser is not null)
+            {
+                cart = await _cartRepository.GetByUserIdAsync(currentUser.Id);
 
                 if (cart == null)
                 {
-                    cart = new Cart(itemRequest.UserId.Value);
+                    cart = new Cart(currentUser.Id);
                     await _cartRepository.AddAsync(cart);
                     await _unitOfWork.SaveChangesAsync();
                 }
             }
-            else if (!string.IsNullOrEmpty(itemRequest.CartSessionId))
+            else if(sessionId is not null)
             {
-                cart = await _cartRepository.GetBySessionIdAsync(itemRequest.CartSessionId);
+                cart = await _cartRepository.GetBySessionIdAsync(sessionId);
 
                 if (cart == null)
                 {
-                    cart = new Cart(itemRequest.CartSessionId);
+                    cart = new Cart(sessionId);
                     await _cartRepository.AddAsync(cart);
                     await _unitOfWork.SaveChangesAsync();
                 }
             }
             else
             {
-                return Result<CartItemDto>.Failure("No valid user or session to attach cart.");
+                return Result<CartDto>.Failure("No valid user or session to attach cart.");
             }
 
             try
             {
                 await _unitOfWork.BeginTransactionAsync();
 
-                var cartItem = cart.AddItem(itemRequest.ProductId, itemRequest.Quantity);
-
+                var cartItem = cart!.AddOne(itemRequest.ProductId);
+                if (itemRequest.Quantity != 1)
+                    cartItem.SetQuantity(itemRequest.Quantity);
+                
                 await _cartRepository.UpdateAsync(cart);
                 await _unitOfWork.CommitTransactionAsync();
 
                 _logger.LogInformation("Item added successfully. CartId: {CartId}, ItemId: {ItemId}", cart.Id, cartItem.Id);
 
-                return Result<CartItemDto>.Success(new CartItemDto
-                {
-                    Id = cartItem.Id,
-                    ProductId = cartItem.ProductId,
-                    Quantity = cartItem.Quantity,
-                    CartId = cart.Id,
-                });
+                return Result<CartDto>.Success(cart.ToDto());
             }
             catch (Exception ex)
             {
                 await _unitOfWork.RollbackTransactionAsync();
-                _logger.LogError(ex, "Error while adding item to CartId: {CartId}", cart.Id);
-                return Result<CartItemDto>.Failure("An error occurred while adding item to the cart.");
+                _logger.LogError(ex, "Error while adding item to CartId: {CartId}", cart!.Id);
+                return Result<CartDto>.Failure("An error occurred while adding item to the cart.");
             }
         }
 

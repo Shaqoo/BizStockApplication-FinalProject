@@ -60,5 +60,11 @@
         {
             _items.Clear();
         }
+
+        public void RemoveLastItem()
+        {
+            if (_items.Count > MaxItems)
+                _items.RemoveAt(0);
+        }
     }
 }

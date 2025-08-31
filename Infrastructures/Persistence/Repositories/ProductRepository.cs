@@ -361,6 +361,29 @@ namespace Infrastructures.Persistence.Repositories
             return await query.Select(a => a.ToDto())
                 .Take(3).ToListAsync();
         }
+
+        public async Task<PaginatedList<Product>> GetProductsByBrandId(Guid brandId, PageRequest pageRequest)
+        {
+            var query = _context.Products.Include(a => a.StockByWarehouse)
+                .Where(p => p.BrandId == brandId && p.Status == ProductStatus.Approved);
+
+            var total = await query.CountAsync();
+
+            var items = await query
+                .Skip((pageRequest.Page - 1) * pageRequest.PageSize)
+                .Take(pageRequest.PageSize)
+                .ToListAsync();
+
+            return new PaginatedList<Product>(items, total, pageRequest.Page, pageRequest.PageSize);
+        }
+
+        public async Task<List<ProductDto>> GetByIdsAsync(List<Guid> ids)
+        {
+            return await _context.Products
+                        .Where(p => ids.Contains(p.Id))
+                        .Select(p => p.ToDto())
+                        .ToListAsync();
+        }
     }
 
     /*

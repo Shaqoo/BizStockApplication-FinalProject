@@ -1,5 +1,6 @@
 ﻿using Application.Commands.Carts.Create;
 using Application.Dto;
+using Application.Extensions;
 using Application.Interfaces.Repository;
 using Application.Interfaces.UnitOfWork;
 using Domain.Entities;
@@ -10,75 +11,65 @@ public class CreateCartCommandHandler
     : IRequestHandler<CreateCartCommand, Result<CartDto>>
 {
     private readonly ICartRepository _cartRepository;
+    private readonly IUserRepository _userRepository;
     private readonly IUnitOfWork _unitOfWork;
     private readonly ILogger<CreateCartCommandHandler> _logger;
-    private readonly IUserRepository _userRepository;
 
     public CreateCartCommandHandler(
         ICartRepository cartRepository,
-        IUnitOfWork unitOfWork,
         IUserRepository userRepository,
+        IUnitOfWork unitOfWork,
         ILogger<CreateCartCommandHandler> logger)
     {
         _cartRepository = cartRepository;
+        _userRepository = userRepository;
         _unitOfWork = unitOfWork;
         _logger = logger;
-        _userRepository = userRepository;
     }
 
     public async Task<Result<CartDto>> Handle(CreateCartCommand request, CancellationToken cancellationToken)
     {
-        var cartRequest = request.CreateCartRequest;
+        var dto = request.CreateCartRequest;
 
-        _logger.LogInformation("Creating a new cart for SessionId: {SessionId}, UserId: {UserId}",
-            cartRequest.SessionId, cartRequest.UserId);
-
-        try
+        if (dto.UserId == null && string.IsNullOrWhiteSpace(dto.SessionId))
         {
-            Cart cart;
-            if (!cartRequest.UserId.HasValue || cartRequest.UserId.Value == Guid.Empty)
-            {
-                _logger.LogWarning("No valid UserId. Creating anonymous cart for SessionId: {SessionId}", cartRequest.SessionId);
-                cart = new Cart(cartRequest.SessionId);
-            }
-            else
-            {
-                var user = await _userRepository.GetByIdAsync(cartRequest.UserId.Value);
-                if (user == null)
-                { 
-                   _logger.LogError("User not found for UserId: {UserId}", cartRequest.UserId);
-                   return Result<CartDto>.Failure("User not found.");
-                }
-            _logger.LogInformation("Creating linked cart for UserId: {UserId}, SessionId: {SessionId}",
-                    cartRequest.UserId, cartRequest.SessionId);
-                cart = new Cart(cartRequest.UserId.Value, cartRequest.SessionId);
-            }
-
-            await _cartRepository.AddAsync(cart);
-            await _unitOfWork.SaveChangesAsync(cancellationToken);
-
-            var dto = new CartDto
-            {
-                Id = cart.Id,
-                UserId = cart.UserId,
-                SessionId = cart.SessionId,
-                IsLinked = cart.IsLinked,
-                Items = cart.Items.Select(i => new CartItemDto
-                {
-                    Id = i.Id,
-                    ProductId = i.ProductId,
-                    Quantity = i.Quantity
-                }).ToList()
-            };
-
-            _logger.LogInformation("Cart created successfully with Id: {CartId}", cart.Id);
-
-            return Result<CartDto>.Success(dto);
+            _logger.LogWarning("Cart creation failed. Both UserId and SessionId are missing.");
+            return Result<CartDto>.Failure("Either UserId or SessionId must be provided.");
         }
-        catch (Exception ex)
+
+        // Validate UserId if provided
+        if (dto.UserId.HasValue)
         {
-            _logger.LogError(ex, "Error occurred while creating cart for SessionId: {SessionId}", cartRequest.SessionId);
-            return Result<CartDto>.Failure("An error occurred while creating the cart.");
+            var userExists = await _userRepository.GetByIdAsync(dto.UserId.Value);
+            if (userExists is null)
+            {
+                _logger.LogWarning("Cart creation failed. UserId {UserId} does not exist.", dto.UserId.Value);
+                return Result<CartDto>.Failure("Invalid UserId.");
+            }
         }
+
+        Cart? existingCart = dto.UserId.HasValue
+            ? await _cartRepository.GetByUserIdAsync(dto.UserId.Value)
+            : await _cartRepository.GetBySessionIdAsync(dto.SessionId!);
+
+        if (existingCart != null)
+        {
+            _logger.LogInformation("Cart already exists for {KeyType}: {Key}",
+                dto.UserId.HasValue ? "UserId" : "SessionId",
+                dto.UserId.ToString() ?? dto.SessionId);
+
+            return Result<CartDto>.Success(existingCart.ToDto());
+        }
+
+
+        var cart = dto.UserId.HasValue ? new Cart(dto.UserId.Value) : new Cart(dto.SessionId!);
+
+        await _cartRepository.AddAsync(cart);
+        await _unitOfWork.SaveChangesAsync(cancellationToken);
+
+        _logger.LogInformation("New cart created with Id {CartId}", cart.Id);
+
+        return Result<CartDto>.Success(cart.ToDto());
     }
 }
+

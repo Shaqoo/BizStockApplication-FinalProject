@@ -33,6 +33,28 @@ namespace Host.Controllers.V1
         [ProducesResponseType(typeof(Result<Unit>), StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> AddRecentlyViewedProducts([FromBody] AddRecentlyViewedProductRequest productRequest)
         {
+            if (HttpContext.User.Identity!.IsAuthenticated)
+            {
+                var userIdClaim = HttpContext.User?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                if (Guid.TryParse(userIdClaim, out Guid userId))
+                {
+                   productRequest.UserId = userId;
+                    productRequest.SessionId = null;
+                }
+                else
+                {
+                    return BadRequest("Invalid user identifier.");
+                }
+            }
+            else
+            {
+                var sessionId = HttpContext.GetOrAddRecentlyViewedProductSession();
+                if (string.IsNullOrEmpty(sessionId))
+                    return BadRequest("No valid user or session found.");
+
+                productRequest.SessionId =  sessionId;
+                productRequest.UserId = null;
+            }
             var command = new AddRecentlyViewedProductCommand(productRequest);
             var result = await _mediator.Send(command);
             if (!result.IsSuccess)

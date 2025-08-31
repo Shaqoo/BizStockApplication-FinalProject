@@ -1,7 +1,9 @@
 ﻿using Application.Dto;
 using Application.Pagination;
 using Application.Queries.Products.GetById;
+using Application.Queries.Products.GetByIds;
 using Application.Queries.Products.GetProducts;
+using Application.Queries.Products.GetProductsByBrand;
 using Application.Queries.Products.GetProductsByCategory;
 using Application.Queries.Products.GetProductsByPriceRange;
 using Application.Queries.Products.GetProductsByStatus;
@@ -17,7 +19,6 @@ using Application.Queries.Products.GetTopRatedProducts;
 using Application.Queries.Products.SearchProducts;
 using Domain.Enums;
 using MediatR;
-using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Host.Controllers.V1
@@ -124,6 +125,28 @@ namespace Host.Controllers.V1
         }
 
         /// <summary>
+        /// Retrieves a list of products based on the provided list of product IDs.
+        /// </summary>
+        /// <param name="ids">A list of product IDs to fetch.</param>
+        /// <returns>
+        /// Returns a 200 OK response with a list of ProductDto objects if successful.
+        /// Returns appropriate error codes if the request is invalid or fails.
+        /// </returns>
+        [HttpPost("get-by-ids")]
+        [ProducesResponseType(typeof(List<ProductDto>), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public async Task<IActionResult> GetProductByIds([FromBody] List<Guid> ids)
+        {
+            if (ids == null || !ids.Any())
+                return BadRequest("No product IDs provided.");
+
+            var result = await _mediator.Send(new GetProductByIdsQuery(ids));
+
+            return Ok(result);
+        }
+
+
+        /// <summary>
         /// Retrieves products by category ID.
         /// </summary>
         /// <param name="categoryId">The unique <c>Guid</c> of the category.</param>
@@ -137,6 +160,23 @@ namespace Host.Controllers.V1
         public async Task<IActionResult> GetProductsByCategoryId(Guid categoryId, [FromQuery] PageRequest pageRequest)
         {
             var result = await _mediator.Send(new GetProductsByCategoryIdQuery(categoryId, pageRequest));
+            return Ok(result);
+        }
+
+        /// <summary>
+        /// Retrieves products by brand ID.
+        /// </summary>
+        /// <param name="brandId">The unique <c>Guid</c> of the brand.</param>
+        /// <param name="pageRequest">The <c>PageRequest</c> containing pagination parameters.</param>
+        /// <remarks>
+        /// This endpoint returns all products belonging to the specified brand.
+        /// </remarks>
+        /// <returns>A paginated list of <c>ProductDto</c> objects.</returns>
+        [HttpGet("brand/{brandId}")]
+        [ProducesResponseType(typeof(Result<PaginatedList<ProductDto>>), StatusCodes.Status200OK)]
+        public async Task<IActionResult> GetProductsByBrandId(Guid brandId, [FromQuery] PageRequest pageRequest)
+        {
+            var result = await _mediator.Send(new GetProductsByBrandQuery(brandId, pageRequest));
             return Ok(result);
         }
 

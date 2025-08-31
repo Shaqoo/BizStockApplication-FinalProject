@@ -11,6 +11,7 @@ namespace Application.Interfaces.Repository
         Task<bool> Exists(Guid Id);
         Task UpdateAsync(Product product);
         Task<PaginatedList<Product>> GetProductsByCategoryId(Guid categoryId, PageRequest pageRequest);
+        Task<PaginatedList<Product>> GetProductsByBrandId(Guid brandId, PageRequest pageRequest);
         Task<PaginatedList<Product>> GetProductsOrderedByPrice(PageRequest pageRequest, bool ascending = true);
         Task<PaginatedList<Product>> GetProductsByCategoryOrderedByPrice(Guid categoryId, PageRequest pageRequest, bool ascending = true);
         Task<PaginatedList<Product>> SearchProductsAsync(string keyword, PageRequest pageRequest);
@@ -23,6 +24,7 @@ namespace Application.Interfaces.Repository
         Task<IEnumerable<string>> GetSearchSuggestions(string keyword);
         Task<IEnumerable<ProductDto>> GetRelatedProducts(Product product);
         Task<IEnumerable<ProductDto>> GetRelatedProductsByBrand(Product product);
+        Task<List<ProductDto>> GetByIdsAsync(List<Guid> ids);
     }
 
 }

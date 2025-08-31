@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Http;
+using System.Diagnostics;
 
 namespace Application.Extensions
 {
@@ -19,15 +20,20 @@ namespace Application.Extensions
 
             sessionId = Guid.NewGuid().ToString();
 
+            var isHttps = httpContext.Request.IsHttps;
+            Console.WriteLine(isHttps);
+            Debug.WriteLine(isHttps);
+
             var cookieOptions = new CookieOptions
             {
                 HttpOnly = true,
                 Expires = DateTimeOffset.UtcNow.AddMonths(1),
-                Secure = httpContext.Request.IsHttps,
-                SameSite = SameSiteMode.Strict,
-                Path = "/",
-                IsEssential = true,
+                Secure = true,                     
+                SameSite = SameSiteMode.None,    
+                IsEssential = true
             };
+
+
 
             httpContext.Response.Cookies.Append(RecentlyViewedProductSessionKey,sessionId, cookieOptions);
 

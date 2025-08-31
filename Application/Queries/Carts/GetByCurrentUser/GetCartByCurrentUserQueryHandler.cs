@@ -1,35 +1,38 @@
 ﻿using Application.Dto;
 using Application.Extensions;
 using Application.Interfaces.Repository;
+using Application.Interfaces.Service;
 using Application.Pagination;
 using MediatR;
 using Microsoft.Extensions.Logging;
 
-namespace Application.Queries.Carts.GetBySessionId
+namespace Application.Queries.Carts.GetByCurrentUser
 {
-    public class GetCartBySessionIdQueryHandler
-        : IRequestHandler<GetCartBySessionIdQuery, Result<PaginatedCartDto>>
+    public class GetCartByCurrentUserQueryHandler
+        : IRequestHandler<GetCartByCurrentUserQuery, Result<PaginatedCartDto>>
     {
         private readonly ICartRepository _cartRepository;
-        private readonly ILogger<GetCartBySessionIdQueryHandler> _logger;
+        private readonly IAuthService _authService;
+        private readonly ILogger<GetCartByCurrentUserQueryHandler> _logger;
 
-        public GetCartBySessionIdQueryHandler(
+        public GetCartByCurrentUserQueryHandler(
             ICartRepository cartRepository,
-            ILogger<GetCartBySessionIdQueryHandler> logger)
+            IAuthService authService,
+            ILogger<GetCartByCurrentUserQueryHandler> logger)
         {
             _cartRepository = cartRepository;
+            _authService = authService;
             _logger = logger;
         }
 
-        public async Task<Result<PaginatedCartDto>> Handle(
-            GetCartBySessionIdQuery request,
-            CancellationToken cancellationToken)
+        public async Task<Result<PaginatedCartDto>> Handle(GetCartByCurrentUserQuery request, CancellationToken cancellationToken)
         {
-            var cart = await _cartRepository.GetBySessionIdAsync(request.SessionId);
+            var userId = _authService.CurrentUser()!.Id;
 
+            var cart = await _cartRepository.GetByUserIdAsync(userId);
             if (cart == null)
             {
-                _logger.LogWarning("Cart with SessionId {SessionId} not found", request.SessionId);
+                _logger.LogWarning("Cart for User {UserId} not found", userId);
                 return Result<PaginatedCartDto>.Failure("Cart not found.");
             }
 

@@ -121,5 +121,35 @@ namespace Application.Extensions
                 IpAddress = log.IpAddress,
                 UserAgent = log.UserAgent
             };
+
+        public static CartDto ToDto(this Cart cart) =>
+        new CartDto
+        {
+            Id = cart.Id,
+            UserId = cart.UserId,
+            SessionId = cart.SessionId,
+            IsLinked = cart.IsLinked,
+        };
+
+        public static CartItemDto ToDto(this CartItem item)
+        {
+            if (item == null) throw new ArgumentNullException(nameof(item));
+
+            return new CartItemDto
+            {
+                Id = item.Id,
+                ProductId = item.ProductId,
+                CartId = item.CartId,
+                Quantity = item.Quantity,
+                ProductName = item.Product?.Name ?? string.Empty,
+                UnitPrice = item.Product?.SellingPrice ?? 0m,
+                ProductImg = item.Product?.ImageUrl ?? string.Empty
+            };
+        }
+
+        public static IEnumerable<CartItemDto> ToDtoList(this IEnumerable<CartItem> items)
+        {
+            return items.Select(i => i.ToDto()).ToList();
+        }
     }
 }

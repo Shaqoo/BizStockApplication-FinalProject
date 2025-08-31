@@ -9,7 +9,7 @@
         public Product Product { get; private set; } = default!;
         public DateTimeOffset DateReviewed { get; private set; } = DateTimeOffset.UtcNow;
 
-        internal RecentlyViewedProduct(Guid recentlyViewedProductsId, Guid productId)
+        public RecentlyViewedProduct(Guid recentlyViewedProductsId, Guid productId)
         {
             Id = Guid.NewGuid();
             RecentlyViewedProductsId = recentlyViewedProductsId;

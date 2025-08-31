@@ -47,7 +47,7 @@ namespace Application.Queries.RecentlyCheckedProducts.GetRecentlyViewedProducts
 
                 RecentlyViewedProducts? entity = null;
 
-                if (query.UserId.HasValue)
+                if (query.UserId.HasValue && query.UserId != Guid.Empty)
                     entity = await _repository.GetByUserIdAsync(query.UserId.Value);
                 else if (!string.IsNullOrEmpty(query.SessionId))
                     entity = await _repository.GetBySessionIdAsync(query.SessionId);

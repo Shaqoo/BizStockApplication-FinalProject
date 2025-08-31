@@ -9,13 +9,13 @@ namespace Application.Interfaces.Repository
         Task<Cart?> GetByIdAsync(Guid cartId);
         Task<Cart?> GetByUserIdAsync(Guid userId);
         Task<Cart?> GetBySessionIdAsync(string sessionId);
-        Task<PaginatedList<CartItemDto>> GetCartItemsAsync(Guid cartId, PageRequest pageRequest);
-        Task<PaginatedList<CartItemDto>> GetCartItemsByUserIdAsync(Guid userId, PageRequest pageRequest);
-        Task<PaginatedList<CartItemDto>> GetCartItemsBySessionIdAsync(string sessionId, PageRequest pageRequest);
         Task AddAsync(Cart cart);
-        Task AddRangeAsync(IEnumerable<CartItem> cartItemss);
         Task UpdateAsync(Cart cart);
         Task DeleteAsync(Cart cart);
+
+        Task<decimal> GetTotalPriceAsync(Guid cartId);
+        Task<PaginatedList<CartItem>> GetCartItemsAsync(Guid cartId, PageRequest pageRequest);
     }
+
 
 }

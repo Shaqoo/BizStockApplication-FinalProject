@@ -56,10 +56,10 @@ internal class Program
             options.AddPolicy("BizStockPolicy", policyBuilder =>
             {
                 policyBuilder
-                    .WithOrigins("http://localhost:5500")  
+                    .WithOrigins("http://localhost:5500", "https://c0b8627a5d2c.ngrok-free.app")  
                     .AllowAnyHeader()
-                    .AllowAnyMethod();
-                // Only add AllowCredentials() if you need cookies or auth headers
+                    .AllowAnyMethod()
+                    .AllowCredentials();
             });
         });
 

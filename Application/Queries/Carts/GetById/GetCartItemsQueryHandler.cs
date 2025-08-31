@@ -1,47 +1,56 @@
 ﻿using Application.Dto;
+using Application.Extensions;
 using Application.Interfaces.Repository;
-using Application.Interfaces.Service;
 using Application.Pagination;
 using MediatR;
 using Microsoft.Extensions.Logging;
 
 namespace Application.Queries.Carts.GetById
 {
-    public class GetCartItemsQueryHandler
-    : IRequestHandler<GetCartItemsQuery, Result<PaginatedList<CartItemDto>>>
+    public class GetCartByIdQueryHandler
+        : IRequestHandler<GetCartItemsQuery, Result<PaginatedCartDto>>
     {
         private readonly ICartRepository _cartRepository;
-        private readonly IMemoryCacheService _cache;
-        private readonly ILogger<GetCartItemsQueryHandler> _logger;
+        private readonly ILogger<GetCartByIdQueryHandler> _logger;
 
-        public GetCartItemsQueryHandler(
+        public GetCartByIdQueryHandler(
             ICartRepository cartRepository,
-            IMemoryCacheService cache,
-            ILogger<GetCartItemsQueryHandler> logger)
+            ILogger<GetCartByIdQueryHandler> logger)
         {
             _cartRepository = cartRepository;
-            _cache = cache;
             _logger = logger;
         }
 
-        public async Task<Result<PaginatedList<CartItemDto>>> Handle(GetCartItemsQuery request, CancellationToken cancellationToken)
+        public async Task<Result<PaginatedCartDto>> Handle(
+            GetCartItemsQuery request,
+            CancellationToken cancellationToken)
         {
-            var cacheKey = $"CartItems_CartId_{request.CartId}_{request.PageRequest.Page}_{request.PageRequest.PageSize}";
+            var cart = await _cartRepository.GetByIdAsync(request.CartId);
 
-            var items = await _cache.GetOrAddAsync(cacheKey, async () =>
+            if (cart is null)
             {
-                _logger.LogInformation("Fetching cart items for CartId {CartId} from DB", request.CartId);
+                _logger.LogWarning("Cart with ID {CartId} not found", request.CartId);
+                return Result<PaginatedCartDto>.Failure("Cart not found.");
+            }
 
-                var cart = await _cartRepository.GetCartItemsAsync(request.CartId,request.PageRequest);
-                if (cart is null)
-                    return null;
-                return cart;
-            },TimeSpan.FromMinutes(5));
+            var items = await _cartRepository.GetCartItemsAsync(cart.Id, request.PageRequest);
 
-            return items is null
-                ? Result<PaginatedList<CartItemDto>>.Failure("Cart not found")
-                : Result<PaginatedList<CartItemDto>>.Success(items);
+            var cartDto = new PaginatedCartDto
+            {
+                Id = cart.Id,
+                IsLinked = cart.IsLinked,
+                SessionId = cart.SessionId,
+                UserId = cart.UserId,
+                Items = new PaginatedList<CartItemDto>
+                {
+                    Items = items.Items.Select(i => i.ToDto()).ToList(),
+                    PageNumber = items.PageNumber,
+                    PageSize = items.PageSize,
+                    TotalCount = items.TotalCount
+                }
+            };
+
+            return Result<PaginatedCartDto>.Success(cartDto);
         }
     }
-
 }

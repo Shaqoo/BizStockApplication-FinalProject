@@ -5,15 +5,16 @@ namespace Domain.Entities
     public class Cart
     {
         public Guid Id { get; private set; }
-        public Guid? UserId { get; private set; }  
-        public string SessionId { get; private set; }  = default!;
-        public bool IsLinked { get; private set; }  
+        public Guid? UserId { get; private set; }
+        public string SessionId { get; private set; } = default!;
+        public bool IsLinked { get; private set; }
 
         private readonly List<CartItem> _items = new();
         public IReadOnlyCollection<CartItem> Items => _items.AsReadOnly();
         public DateTimeOffset CreatedAt { get; private set; } = DateTimeOffset.UtcNow;
 
-        private Cart() { } 
+        private Cart() { }
+
         public Cart(string sessionId)
         {
             Id = Guid.NewGuid();
@@ -21,7 +22,6 @@ namespace Domain.Entities
             IsLinked = false;
         }
 
-         
         public Cart(Guid userId, string sessionId)
         {
             Id = Guid.NewGuid();
@@ -37,19 +37,45 @@ namespace Domain.Entities
             IsLinked = true;
         }
 
-        public void AddOrUpdateItem(Guid productId, int quantity)
+        public CartItem AddOne(Guid productId)
         {
             var existing = _items.FirstOrDefault(i => i.ProductId == productId);
             if (existing != null)
-                existing.IncreaseQuantity(quantity);
-            else
-                _items.Add(new CartItem(this.Id,productId, quantity));
+            {
+                existing.IncreaseQuantity(1);
+                return existing;
+            }
+
+            var newItem = new CartItem(Id, productId, 1);
+            _items.Add(newItem);
+            return newItem;
         }
 
-        public void MarkAsLinked()
+        public bool DecreaseOne(Guid productId)
         {
-            IsLinked = true;
+            var existing = _items.FirstOrDefault(i => i.ProductId == productId);
+            if (existing == null) return false;
+
+            if (existing.Quantity > 1)
+            {
+                existing.SetQuantity(existing.Quantity - 1);
+                return true;
+            }
+            _items.Remove(existing);
+            return true;
         }
+
+        public bool RemoveItem(Guid productId)
+        {
+            var existing = _items.FirstOrDefault(i => i.ProductId == productId);
+            if (existing != null)
+            {
+                _items.Remove(existing);
+                return true;
+            }
+            return false;
+        }
+
         public void LinkToUser(Guid userId)
         {
             if (IsLinked)
@@ -59,47 +85,28 @@ namespace Domain.Entities
             IsLinked = true;
         }
 
-         
-        public CartItem AddItem(Guid productId, int quantity)
+        public void AddOrUpdateItem(Guid productId, int quantity)
         {
-            var existing = _items.FirstOrDefault(i => i.ProductId == productId);
-            if (existing != null)
+            if (quantity <= 0)
+                throw new ArgumentException("Quantity must be greater than zero.", nameof(quantity));
+
+            var existingItem = _items.FirstOrDefault(i => i.ProductId == productId);
+
+            if (existingItem != null)
             {
-                existing.IncreaseQuantity(quantity);
-                return existing;
+                existingItem.IncreaseQuantity(quantity);
             }
             else
             {
-                _items.Add(new CartItem(Id, productId, quantity));
-                return _items.Last();
+                var newItem = new CartItem(Id, productId, quantity);
+                _items.Add(newItem);
             }
         }
-
-         
-        public bool RemoveItem(Guid productId)
+        public void ClearItems()
         {
-            var item = _items.FirstOrDefault(i => i.ProductId == productId);
-            if (item != null)
-            {
-                _items.Remove(item);
-                return true;
-            }
-            else
-                return false;
+            _items.Clear();
         }
 
-         
-        public bool UpdateItemQuantity(Guid productId, int quantity)
-        {
-            var item = _items.FirstOrDefault(i => i.ProductId == productId);
-            if (item != null)
-            {
-                item.SetQuantity(quantity);
-                return true;
-            }
-            else
-                return false;
-        }
-
+        public void MarkAsLinked() => IsLinked = true;
     }
 }

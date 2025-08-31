@@ -67,6 +67,13 @@ namespace Application.Commands.Carts.LinkToUser
                     return Result<string>.Success("Session Cart Linked To User Successfully");
                 }
 
+                if (sessionCart.UserId == request.UserId)
+                {
+                    _logger.LogInformation("Session cart already linked to this user.");
+                    return Result<string>.Success("Cart already linked.");
+                }
+
+
                 _logger.LogInformation("Merging session cart into user cart. UserId: {UserId}", request.UserId);
 
                 if (sessionCart.Items != null && sessionCart.Items.Any())
@@ -83,21 +90,25 @@ namespace Application.Commands.Carts.LinkToUser
 
                 userCart.MarkAsLinked();
 
+                await _unitOfWork.BeginTransactionAsync();
+
                 await _cartRepository.UpdateAsync(userCart);
                 await _cartRepository.DeleteAsync(sessionCart);
 
-                await _unitOfWork.SaveChangesAsync(cancellationToken);
+                await _unitOfWork.CommitTransactionAsync();
 
                 _logger.LogInformation("Cart successfully linked and merged for UserId: {UserId}", request.UserId);
                 return Result<string>.Success("Cart successfully linked to user.");
             }
             catch (DomainException ex)
             {
+                await _unitOfWork.RollbackTransactionAsync();
                 _logger.LogWarning(ex, "Domain exception while linking cart. UserId: {UserId}, SessionId: {SessionId}", request.UserId, request.SessionId);
                 return Result<string>.Failure(ex.Message);
             }
             catch (Exception ex)
             {
+                await _unitOfWork.RollbackTransactionAsync();
                 _logger.LogError(ex, "Unexpected error while linking cart. UserId: {UserId}, SessionId: {SessionId}", request.UserId, request.SessionId);
                 return Result<string>.Failure("An error occurred while linking the cart to user.");
             }

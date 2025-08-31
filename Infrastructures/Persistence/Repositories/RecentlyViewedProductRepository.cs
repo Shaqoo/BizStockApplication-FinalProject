@@ -1,9 +1,7 @@
 ﻿using Application.Interfaces.Repository;
 using Domain.Entities;
-using Domain.Entities.Domain.Entities;
 using Infrastructures.Persistence.Context;
 using Microsoft.EntityFrameworkCore;
-using System;
 
 namespace Infrastructures.Persistence.Repositories
 {
@@ -56,6 +54,17 @@ namespace Infrastructures.Persistence.Repositories
         public async Task DeleteAsync(RecentlyViewedProducts item)
         {
             _context.RecentlyViewedProducts.Remove(item);
+            await Task.CompletedTask;
+        }
+
+        public async Task AddProductAsync(RecentlyViewedProduct item)
+        {
+            await _context.RecentlyViewedProductsItems.AddAsync(item);
+        }
+
+        public async Task DeleteItemAsync(RecentlyViewedProduct recentlyViewedProduct)
+        {
+            _context.RecentlyViewedProductsItems.Remove(recentlyViewedProduct);
             await Task.CompletedTask;
         }
     }

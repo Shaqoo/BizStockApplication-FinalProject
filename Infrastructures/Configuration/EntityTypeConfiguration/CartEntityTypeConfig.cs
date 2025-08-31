@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace Infrastructures.Configuration.EntityTypeConfiguration
 {
-   
+
     public class CartConfiguration : IEntityTypeConfiguration<Cart>
     {
         public void Configure(EntityTypeBuilder<Cart> builder)
@@ -13,8 +13,14 @@ namespace Infrastructures.Configuration.EntityTypeConfiguration
             builder.HasKey(c => c.Id);
 
             builder.Property(c => c.UserId).IsRequired(false);
+
+            builder.HasMany(c => c.Items)
+                   .WithOne(ci => ci.Cart)
+                   .HasForeignKey(ci => ci.CartId)
+                   .OnDelete(DeleteBehavior.Cascade);
         }
     }
+
 
     public class CartItemConfiguration : IEntityTypeConfiguration<CartItem>
     {
@@ -25,9 +31,13 @@ namespace Infrastructures.Configuration.EntityTypeConfiguration
             builder.Property(ci => ci.ProductId).IsRequired();
             builder.Property(ci => ci.Quantity).IsRequired();
 
-            builder.Property<Guid>("CartId");
+            builder.HasOne(ci => ci.Cart)
+                   .WithMany(c => c.Items)
+                   .HasForeignKey(ci => ci.CartId)
+                   .OnDelete(DeleteBehavior.Cascade);
         }
     }
+
 
     public class WishlistConfiguration : IEntityTypeConfiguration<Wishlist>
     {
@@ -71,7 +81,6 @@ namespace Infrastructures.Configuration.EntityTypeConfiguration
 
             builder.Property(rvp => rvp.ProductId).IsRequired();
            
-            builder.Property<Guid>("RecentlyViewedProductsId");  
         }
     }
 }
