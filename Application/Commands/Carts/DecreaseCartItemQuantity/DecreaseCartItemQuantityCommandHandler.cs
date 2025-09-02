@@ -50,8 +50,12 @@ namespace Application.Commands.Carts.DecreaseQuantity
                 await _cartRepository.UpdateAsync(cart);
                 await _unitOfWork.CommitTransactionAsync();
 
+                var total = await _cartRepository.GetTotalCountAsync(cart.Id);
+                var cartDto = cart.ToDto();
+                cartDto.TotalQuantity = total;
+
                 _logger.LogInformation("Decreased quantity by 1. CartId: {CartId}, ProductId: {ProductId}", dto.CartId, dto.ProductId);
-                return Result<CartDto>.Success(cart.ToDto());
+                return Result<CartDto>.Success(cartDto);
             }
             catch (Exception ex)
             {

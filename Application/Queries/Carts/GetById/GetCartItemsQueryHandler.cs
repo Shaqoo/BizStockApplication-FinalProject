@@ -34,6 +34,8 @@ namespace Application.Queries.Carts.GetById
             }
 
             var items = await _cartRepository.GetCartItemsAsync(cart.Id, request.PageRequest);
+            var totalQuantities = await _cartRepository.GetTotalCountAsync(cart.Id);
+            var totalPrice = await _cartRepository.GetTotalPriceAsync(cart.Id);
 
             var cartDto = new PaginatedCartDto
             {
@@ -47,7 +49,9 @@ namespace Application.Queries.Carts.GetById
                     PageNumber = items.PageNumber,
                     PageSize = items.PageSize,
                     TotalCount = items.TotalCount
-                }
+                },
+                TotalQuantity = totalQuantities,
+                TotalPrice = totalPrice
             };
 
             return Result<PaginatedCartDto>.Success(cartDto);

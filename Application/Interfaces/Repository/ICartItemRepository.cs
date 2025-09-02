@@ -1,5 +1,6 @@
 ﻿using Application.Pagination;
 using Domain.Entities;
+using System.Linq.Expressions;
 
 namespace Application.Interfaces.Repository
 {
@@ -7,6 +8,7 @@ namespace Application.Interfaces.Repository
     {
         Task<CartItem?> GetByIdAsync(Guid itemId);
         Task<List<CartItem>> GetByCartIdAsync(Guid cartId);
+        Task<CartItem?> GetByExpression(Expression<Func<CartItem, bool>> expression);
         Task AddAsync(CartItem item);
         Task UpdateAsync(CartItem item);
         Task DeleteAsync(CartItem item);

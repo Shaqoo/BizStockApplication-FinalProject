@@ -3,6 +3,7 @@ using Application.Pagination;
 using Domain.Entities;
 using Infrastructures.Persistence.Context;
 using Microsoft.EntityFrameworkCore;
+using System.Linq.Expressions;
 
 namespace Infrastructures.Persistence.Repositories
 {
@@ -74,6 +75,11 @@ namespace Infrastructures.Persistence.Repositories
                 .FirstOrDefaultAsync();
 
             return item;
+        }
+
+        public async Task<CartItem?> GetByExpression(Expression<Func<CartItem, bool>> expression)
+        {
+            return await _context.CartItems.FirstOrDefaultAsync(expression);
         }
     }
 

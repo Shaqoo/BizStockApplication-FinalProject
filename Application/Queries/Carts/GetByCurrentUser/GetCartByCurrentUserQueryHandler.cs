@@ -37,6 +37,8 @@ namespace Application.Queries.Carts.GetByCurrentUser
             }
 
             var items = await _cartRepository.GetCartItemsAsync(cart.Id, request.PageRequest);
+            var totalQuantities = await _cartRepository.GetTotalCountAsync(cart.Id);
+            var totalPrice = await _cartRepository.GetTotalPriceAsync(cart.Id);
 
             var cartDto = new PaginatedCartDto
             {
@@ -50,7 +52,9 @@ namespace Application.Queries.Carts.GetByCurrentUser
                     TotalCount = items.TotalCount
                 },
                 SessionId = cart.SessionId,
-                UserId = cart.UserId
+                UserId = cart.UserId,
+                TotalQuantity = totalQuantities,
+                TotalPrice = totalPrice
             };
 
             return Result<PaginatedCartDto>.Success(cartDto);

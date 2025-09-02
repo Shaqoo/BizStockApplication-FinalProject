@@ -70,7 +70,7 @@ namespace Application.Queries.RecentlyCheckedProducts.GetRecentlyViewedProducts
                 };
 
                
-                await _memoryCacheService.SetAsync(cacheKey, dto, TimeSpan.FromMinutes(5));
+                await _memoryCacheService.SetAsync(cacheKey, dto, TimeSpan.FromMinutes(1));
 
                 _logger.LogInformation("Fetched {Count} recently viewed products for {Id}",
                     dto.Items.Count, entity.UserId ?? (object)entity.SessionId!);

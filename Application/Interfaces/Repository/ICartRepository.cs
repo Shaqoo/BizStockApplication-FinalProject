@@ -12,7 +12,7 @@ namespace Application.Interfaces.Repository
         Task AddAsync(Cart cart);
         Task UpdateAsync(Cart cart);
         Task DeleteAsync(Cart cart);
-
+        Task<decimal> GetTotalCountAsync(Guid cartId);
         Task<decimal> GetTotalPriceAsync(Guid cartId);
         Task<PaginatedList<CartItem>> GetCartItemsAsync(Guid cartId, PageRequest pageRequest);
     }

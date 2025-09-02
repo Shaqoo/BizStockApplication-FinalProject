@@ -64,6 +64,13 @@ namespace Infrastructures.Persistence.Repositories
                 .SumAsync(ci => ci.Product.SellingPrice * ci.Quantity);
         }
 
+        public async Task<decimal> GetTotalCountAsync(Guid cartId)
+        {
+            return await _context.CartItems
+                .Where(ci => ci.CartId == cartId)
+                .SumAsync(ci => ci.Quantity);
+        }
+
         public async Task<PaginatedList<CartItem>> GetCartItemsAsync(Guid cartId, PageRequest pageRequest)
         {
             var query = _context.CartItems

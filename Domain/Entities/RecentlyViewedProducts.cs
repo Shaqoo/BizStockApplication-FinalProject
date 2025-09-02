@@ -11,7 +11,7 @@
         public IReadOnlyCollection<RecentlyViewedProduct> Items => _items.AsReadOnly();
         public DateTimeOffset DateAdded { get; private set; } = DateTimeOffset.UtcNow;
 
-        private const int MaxItems = 10;
+        private const int MaxItems = 15;
 
         public RecentlyViewedProducts(string sessionId)
         {

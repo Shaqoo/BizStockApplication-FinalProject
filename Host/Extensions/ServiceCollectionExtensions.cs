@@ -103,7 +103,7 @@ namespace Host.Extensions
 
             services.Configure<CookiePolicyOptions>(options =>
             {
-                options.MinimumSameSitePolicy = SameSiteMode.Strict;
+                options.MinimumSameSitePolicy = SameSiteMode.None;
                 options.Secure = CookieSecurePolicy.Always;
                 options.HttpOnly = Microsoft.AspNetCore.CookiePolicy.HttpOnlyPolicy.Always;
             });

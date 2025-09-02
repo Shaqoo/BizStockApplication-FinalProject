@@ -8,7 +8,7 @@
         public int Quantity { get; set; }
         public string ProductName { get; set; } = string.Empty;
         public decimal UnitPrice { get; set; }
-        public string ProductImg { get; set; } = string.Empty;
+        public string ProductImg { get; set; } = default!;
         public decimal SubTotal => UnitPrice * Quantity;
     }
 }

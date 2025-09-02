@@ -8,7 +8,7 @@ using MediatR;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using Newtonsoft.Json;
+using System.Collections.Concurrent;
 
 namespace Application.Commands.Carts.AddItem
 {
@@ -22,6 +22,14 @@ namespace Application.Commands.Carts.AddItem
         private readonly IAuthService _authService;
         private readonly IHttpContextAccessor _contextAccessor;
         private readonly ICartItemRepository _cartItemRepository;
+        private static readonly ConcurrentDictionary<Guid, SemaphoreSlim> _cartSemaphores = new();
+
+        private SemaphoreSlim GetCartSemaphore(Guid cartId)
+        {
+            return _cartSemaphores.GetOrAdd(cartId, _ => new SemaphoreSlim(1, 1));
+        }
+
+
 
         public AddCartItemCommandHandler(
             ICartItemRepository cartItemRepository,
@@ -72,7 +80,7 @@ namespace Application.Commands.Carts.AddItem
                     await _unitOfWork.SaveChangesAsync();
                 }
             }
-            else if(sessionId is not null)
+            else if (sessionId is not null)
             {
                 cart = await _cartRepository.GetBySessionIdAsync(sessionId);
 
@@ -87,31 +95,38 @@ namespace Application.Commands.Carts.AddItem
             {
                 return Result<CartDto>.Failure("No valid user or session to attach cart.");
             }
+            var semaphore = GetCartSemaphore(cart!.Id);
 
+            await semaphore.WaitAsync();
             try
             {
                 await _unitOfWork.BeginTransactionAsync();
 
-                var cartItem = cart!.Items.FirstOrDefault(a => a.ProductId == itemRequest.ProductId);
-                if (cartItem != null)
+                var cartItem = await _cartItemRepository
+                    .GetByExpression(a => a.CartId == cart!.Id && a.ProductId == itemRequest.ProductId);
+                if (cartItem == null)
                 {
-                    if (itemRequest.Quantity != 1)
-                        cartItem.SetQuantity(itemRequest.Quantity);
-                    else
-                        cartItem.IncreaseQuantity(1);
+                    cartItem = new CartItem(cart!.Id, itemRequest.ProductId, itemRequest.Quantity > 0 ? itemRequest.Quantity : 1);
+                    await _cartItemRepository.AddAsync(cartItem);
                 }
                 else
                 {
-                    
-                    cartItem = new CartItem(cart.Id, itemRequest.ProductId, itemRequest.Quantity > 0 ? itemRequest.Quantity : 1);
-                    await _cartItemRepository.AddAsync(cartItem);
+                    if (itemRequest.Quantity != 1)
+                        cartItem!.SetQuantity(itemRequest.Quantity);
+                    else
+                        cartItem!.IncreaseQuantity(1);
+
                 }
 
                 await _unitOfWork.CommitTransactionAsync();
 
+                var total = await _cartRepository.GetTotalCountAsync(cart!.Id);
+                var dto = cart.ToDto();
+                dto.TotalQuantity = total;
+
                 _logger.LogInformation("Item added successfully. CartId: {CartId}, ItemId: {ItemId}", cart.Id, cartItem.Id);
 
-                return Result<CartDto>.Success(cart.ToDto());
+                return Result<CartDto>.Success(dto);
             }
             catch (DbUpdateConcurrencyException ex)
             {
@@ -125,8 +140,10 @@ namespace Application.Commands.Carts.AddItem
                 _logger.LogError(ex, "Error while adding item to CartId: {CartId}", cart!.Id);
                 return Result<CartDto>.Failure("An error occurred while adding item to the cart.");
             }
-
+            finally
+            {
+                semaphore.Release();
+            }
         }
-
     }
 }
