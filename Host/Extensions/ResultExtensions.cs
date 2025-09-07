@@ -7,7 +7,7 @@ namespace Host.Extensions
     {
         public static IActionResult ToActionResult<T>(this Result<T> result, ControllerBase controller) where T : class
         {
-            return result.IsSuccess ? controller.Ok(result.Data) : controller.BadRequest(result.Message);
+            return result.IsSuccess ? controller.Ok(result) : controller.BadRequest(result);
         }
     }
 }

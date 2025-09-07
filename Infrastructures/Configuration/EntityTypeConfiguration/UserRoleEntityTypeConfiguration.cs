@@ -26,8 +26,6 @@ namespace Infrastructures.Configuration.EntityTypeConfiguration
                    .WithMany(u => u.UserRoles)
                    .HasForeignKey(ur => ur.UserId)
                    .OnDelete(DeleteBehavior.Cascade);
-
-            builder.HasData(new UserRole(Guid.Parse("88e8d13a-4a6e-4a18-9cc3-87f62f564ada"),Role.Admin));
         }
     }
 }

@@ -5,7 +5,6 @@ using Host.Extensions;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using System.Net;
-using System.Threading.Tasks;
 
 namespace Host.Controllers.V1
 {
@@ -41,9 +40,6 @@ namespace Host.Controllers.V1
         [ProducesResponseType(typeof(ValidationProblemDetails), (int)HttpStatusCode.BadRequest)]
         public async Task<IActionResult> CreateInventoryManager([FromBody] CreateInventoryManagerRequestModel request)
         {
-            if (!ModelState.IsValid)
-                return BadRequest(ModelState);
-
             var command = new CreateInventoryManagerCommand(request, Request.GetRequestMetadata());
             var result = await _mediator.Send(command);
 

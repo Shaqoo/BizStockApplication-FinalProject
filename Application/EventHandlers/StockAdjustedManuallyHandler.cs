@@ -52,9 +52,10 @@ Stock Adjustment Notice:
                         Timestamp = DateTime.UtcNow,
                         Title = "Manual Stock Adjustment",
                     };
-
+                    var userNotification = new Notification(user.Id, notificationDto.Title, notificationDto.Message);
+                    notificationDto.Id = userNotification.Id;
                     await notifier.SendNotificationAsync(user.Id, notificationDto);
-                    await notificationRepository.AddAsync(new Notification(user.Id, notificationDto.Title, notificationDto.Message));
+                    await notificationRepository.AddAsync(userNotification);
                 }
 
                 await unitOfWork.CommitTransactionAsync();

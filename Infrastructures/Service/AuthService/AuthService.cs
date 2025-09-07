@@ -91,7 +91,7 @@ namespace Infrastructures.Service.AuthService
                 issuer: _jwtSettings.Issuer,
                 audience: _jwtSettings.Audience,
                 claims: claims,
-                expires: DateTime.UtcNow.AddMinutes(5),  
+                expires: DateTime.UtcNow.AddMinutes(10),  
                 signingCredentials: creds
             );
 

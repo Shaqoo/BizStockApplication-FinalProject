@@ -6,7 +6,7 @@ namespace Domain.Entities
     {
         public Guid Id { get; private set; }
         public Guid? UserId { get; private set; }
-        public string SessionId { get; private set; } = default!;
+        public string? SessionId { get; private set; } = default!;
         public bool IsLinked { get; private set; }
 
         private readonly List<CartItem> _items = new();

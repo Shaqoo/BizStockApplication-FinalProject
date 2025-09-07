@@ -12,7 +12,8 @@ namespace Application.Extensions
                 throw new Exception("User is Null");
             Console.WriteLine(user.FullName);
             return new UserDto(user.Id,(string)user.Email,user.FullName, user.DateOfBirth.Age, user.PhoneNumber.ToString()
-                , user.DateOfBirth.Value, user.LastLoggedIn, user.UserRoles.FirstOrDefault()!.Role.ToString(),user.IsEmailVerified,
+                , user.DateOfBirth.Value, user.LastLoggedIn, user.UserRoles.FirstOrDefault()!.Role.ToString(),
+                user.Gender.ToString(),user.IsEmailVerified,
                 user.IsTwoFactorEnabled,user.ProfilePictureUrl);
         }
 
@@ -30,7 +31,7 @@ namespace Application.Extensions
 
         public static CustomerDto CustomerAsDto(this Customer customer)
         {
-            return new CustomerDto(customer.Id, customer.FullName,customer.CustomerTypeId,customer.TaxId,
+            return new CustomerDto(customer.Id, customer.FullName,customer.CustomerType.TypeName.ToString(),customer.TaxId,
                 customer.State,customer.Address,customer.BusinessName);
         }
 

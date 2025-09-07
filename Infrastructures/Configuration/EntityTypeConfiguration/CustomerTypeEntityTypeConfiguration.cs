@@ -37,13 +37,7 @@ namespace Infrastructures.Configuration.EntityTypeConfiguration
                    .HasForeignKey(c => c.CustomerTypeId)
                    .OnDelete(DeleteBehavior.Restrict);
 
-           builder.HasData(
-           new CustomerType(CustomerTypeName.Retail, "Retail customers", 0m),
-           new CustomerType(CustomerTypeName.Wholesale, "Wholesale buyers with bulk discounts", 5m),
-           new CustomerType(CustomerTypeName.Corporate, "Corporate clients with special contracts", 10m),
-           new CustomerType(CustomerTypeName.Reseller, "Resellers who purchase for resale", 7.5m) ,
-           new CustomerType(CustomerTypeName.VIP, "VIP customers with premium benefits", 15m) 
-       );
+          
         }
     }
 }

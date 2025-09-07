@@ -1,6 +1,7 @@
 ﻿using Application.Commands.Customers.Create;
 using Application.Dto;
 using Application.Dto.RequestModels;
+using Application.Queries.Customers;
 using Host.Extensions;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
@@ -33,8 +34,6 @@ namespace Host.Controllers.V1
         [ProducesResponseType(typeof(Result<TwoFactorSetupDto>), StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> CreateCustomer([FromBody] CreateCustomerRequestModel request)
         {
-            if (!ModelState.IsValid)
-                return BadRequest(ModelState);
 
             var command = new CreateCustomerCommand(request, Request.GetRequestMetadata());
             var result = await mediator.Send(command);
@@ -44,6 +43,27 @@ namespace Host.Controllers.V1
 
             return CreatedAtAction(nameof(CreateCustomer), new { id = result.Data }, result);
         }
+
+        /// <summary>
+        /// Retrieves the details of the currently authenticated customer.
+        /// </summary>
+        /// <remarks>
+        /// This endpoint fetches customer information associated with the current logged-in user.
+        /// </remarks>
+        /// <response code="200">Returns the customer details as a <see cref="CustomerDto"/>.</response>
+        /// <response code="400">If the request is invalid or the customer details could not be retrieved.</response>
+        [HttpGet("current")]
+        [ProducesResponseType(typeof(Result<CustomerDto>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(Result<CustomerDto>), StatusCodes.Status400BadRequest)]
+        public async Task<IActionResult> GetCurrentCustomer()
+        {
+            var query = new ViewCustomerDetailsQuery();
+            var result = await mediator.Send(query);
+            if (!result.IsSuccess)
+                return BadRequest(result);
+            return Ok(result);
+        }
+
 
     }
 }

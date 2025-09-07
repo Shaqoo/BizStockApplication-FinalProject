@@ -17,8 +17,8 @@ namespace Application.Validations.User
             RuleFor(x => x.File)
                 .NotNull().WithMessage("Profile picture is required.")
                 .Must(BeAnImage).WithMessage("Only image files are allowed (jpeg, jpg, png, gif, bmp, webp, svg).")
-                .Must(f => f.Length <= 2 * 1024 * 1024)
-                .WithMessage("Image size must be less than or equal to 2MB.");
+                .Must(f => f.Length <= 5 * 1024 * 1024)
+                .WithMessage("Image size must be less than or equal to 5MB.");
         }
 
         private bool BeAnImage(IFormFile file)

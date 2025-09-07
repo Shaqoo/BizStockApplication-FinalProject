@@ -56,8 +56,6 @@ namespace Infrastructures.Configuration.EntityTypeConfiguration
             builder.HasKey(wi => wi.Id);
 
             builder.Property(wi => wi.ProductId).IsRequired();
-           
-            builder.Property<Guid>("WishlistId");  
         }
     }
 

@@ -40,10 +40,12 @@ namespace Application.Queries.Notifications.GetById
 
                 return Result<NotificationDto>.Success(new NotificationDto 
                 {
+                    Id = notification.Id,
                     Message = notification.Message,
                     Timestamp = notification.DateCreated.DateTime,
                     Title = notification.Title,
-                    Type = notification.Type
+                    Type = notification.Type,
+                    IsRead = notification.IsRead,
                 });
             }
             catch (Exception ex)

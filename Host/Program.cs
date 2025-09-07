@@ -1,4 +1,4 @@
-using Application.Extensions;
+﻿using Application.Extensions;
 using Host.Extensions;
 using Host.Filters;
 using Host.Hubs;
@@ -30,7 +30,18 @@ internal class Program
             .AddUserSecrets<Program>()
             .AddEnvironmentVariables();
 
+        builder.Host.UseSerilog();
+        builder.Logging.AddConsole();
+        var filePath = Path.Combine(AppContext.BaseDirectory, "Resources/AI/Guest/security-access.txt");
+        Console.WriteLine(File.Exists(filePath)
+            ? "✅ Security access file loaded!"
+            : "❌ File not found!");
+
+        builder.Logging.ClearProviders();
+        builder.Services.AddProblemDetails();
+
         builder.WebHost.UseWebRoot("wwwroot");
+
         builder.Services.AddApplication(builder.Configuration);
         builder.Services.AddInfrastructureServices(builder.Configuration);
         builder.Services.AddHostServices(builder.Configuration);
@@ -56,7 +67,7 @@ internal class Program
             options.AddPolicy("BizStockPolicy", policyBuilder =>
             {
                 policyBuilder
-                    .WithOrigins("http://localhost:5500", "https://c0b8627a5d2c.ngrok-free.app")  
+                    .WithOrigins("http://localhost:5500")  
                     .AllowAnyHeader()
                     .AllowAnyMethod()
                     .AllowCredentials();

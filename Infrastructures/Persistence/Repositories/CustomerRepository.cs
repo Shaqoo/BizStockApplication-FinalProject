@@ -1,6 +1,7 @@
 ﻿using Application.Interfaces.Repository;
 using Application.Pagination;
 using Domain.Entities;
+using Domain.ValueObjects;
 using Infrastructures.Persistence.Context;
 using Microsoft.EntityFrameworkCore;
 using System.Linq.Expressions;
@@ -52,17 +53,15 @@ namespace Infrastructures.Persistence.Repositories
             await Task.CompletedTask; 
         }
 
-        public async Task<Customer> GetByEmailAsync(string email)
+        public async Task<Customer?> GetByEmailAsync(string email)
         {
-            return await _context.Customers
-                .FirstOrDefaultAsync(c => c.Email.Value.ToLower() == email.ToLower())
-                ?? throw new KeyNotFoundException("Customer not found by email.");
+            return await _context.Customers.Include(a => a.CustomerType)
+                .FirstOrDefaultAsync(c => c.Email == new Email(email));
         }
 
-        public async Task<Customer> GetByExpression(Expression<Func<Customer, bool>> predicate)
+        public async Task<Customer?> GetByExpression(Expression<Func<Customer, bool>> predicate)
         {
-            return await _context.Customers.FirstOrDefaultAsync(predicate) ??
-                throw new ArgumentNullException("Customer Not Found");
+            return await _context.Customers.FirstOrDefaultAsync(predicate);
         }
     }
 

@@ -25,7 +25,7 @@ namespace Application.Extensions
             {
                 HttpOnly = true,
                 Secure = true,
-                SameSite = SameSiteMode.Strict,
+                SameSite = SameSiteMode.None,
                 Expires = DateTimeOffset.UtcNow.AddDays(30),
                 IsEssential = true,
                 MaxAge = TimeSpan.FromDays(30)

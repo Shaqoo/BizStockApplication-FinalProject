@@ -75,7 +75,6 @@ namespace Infrastructures.Migrations
                         .HasColumnType("boolean");
 
                     b.Property<string>("SessionId")
-                        .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<Guid?>("UserId")
@@ -260,6 +259,12 @@ namespace Infrastructures.Migrations
                     b.Property<DateTimeOffset>("DateCreated")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<string>("Email")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("Email");
+
                     b.Property<string>("FullName")
                         .IsRequired()
                         .HasColumnType("text");
@@ -309,48 +314,6 @@ namespace Infrastructures.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("CustomerTypes", (string)null);
-
-                    b.HasData(
-                        new
-                        {
-                            Id = new Guid("d83e4de8-bc16-4956-97f2-16215835e6da"),
-                            CreatedAt = new DateTime(2025, 8, 31, 2, 56, 58, 863, DateTimeKind.Utc).AddTicks(7458),
-                            Description = "Retail customers",
-                            DiscountPercentage = 0m,
-                            TypeName = "Retail"
-                        },
-                        new
-                        {
-                            Id = new Guid("fa325971-52c1-4d10-9dd0-dca0a7a1c910"),
-                            CreatedAt = new DateTime(2025, 8, 31, 2, 56, 58, 863, DateTimeKind.Utc).AddTicks(7471),
-                            Description = "Wholesale buyers with bulk discounts",
-                            DiscountPercentage = 5m,
-                            TypeName = "Wholesale"
-                        },
-                        new
-                        {
-                            Id = new Guid("a123dad2-14ef-48f5-8ec1-26cb32f7ce47"),
-                            CreatedAt = new DateTime(2025, 8, 31, 2, 56, 58, 863, DateTimeKind.Utc).AddTicks(7478),
-                            Description = "Corporate clients with special contracts",
-                            DiscountPercentage = 10m,
-                            TypeName = "Corporate"
-                        },
-                        new
-                        {
-                            Id = new Guid("638e1a75-e650-4726-83fb-96f110670304"),
-                            CreatedAt = new DateTime(2025, 8, 31, 2, 56, 58, 863, DateTimeKind.Utc).AddTicks(7486),
-                            Description = "Resellers who purchase for resale",
-                            DiscountPercentage = 7.5m,
-                            TypeName = "Reseller"
-                        },
-                        new
-                        {
-                            Id = new Guid("ff6ae7e6-1f04-46fc-86ea-9485fad482f7"),
-                            CreatedAt = new DateTime(2025, 8, 31, 2, 56, 58, 863, DateTimeKind.Utc).AddTicks(7493),
-                            Description = "VIP customers with premium benefits",
-                            DiscountPercentage = 15m,
-                            TypeName = "VIP"
-                        });
                 });
 
             modelBuilder.Entity("Domain.Entities.DeliveryAgent", b =>
@@ -1536,30 +1499,6 @@ namespace Infrastructures.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Users", (string)null);
-
-                    b.HasData(
-                        new
-                        {
-                            Id = new Guid("e40ed7a0-0371-4534-948d-a00bcf13cc43"),
-                            CreatedBy = "",
-                            DateCreated = new DateTimeOffset(new DateTime(2025, 8, 31, 2, 56, 58, 918, DateTimeKind.Unspecified).AddTicks(256), new TimeSpan(0, 0, 0, 0, 0)),
-                            DateOfBirth = "2000-04-22",
-                            Email = "ShakirullahOhio@gmail.com",
-                            FailedLoginAttempts = 0,
-                            FullName = "Shakirullah Ohio",
-                            Gender = "Male",
-                            HashSalt = "d08b4fb4-cdae-4841-89a7-a37d3fc19d51eb012524-180e-4127-9797-1bed34e94650",
-                            IsDeleted = false,
-                            IsEmailVerified = false,
-                            IsPhoneNumberVerified = false,
-                            IsTwoFactorEnabled = true,
-                            LastLoggedIn = new DateTime(2025, 8, 31, 2, 56, 58, 918, DateTimeKind.Utc).AddTicks(220),
-                            LastModified = new DateTimeOffset(new DateTime(2025, 8, 31, 2, 56, 58, 918, DateTimeKind.Unspecified).AddTicks(256), new TimeSpan(0, 0, 0, 0, 0)),
-                            Password = "vd61YRFFSIHsbn15gK10i2oe7KTqb7rjYMWlxy6d0jFZF6vdjZ/4oMjHY/MQ+nPIT6U23fGaqeyXVa92W9QQupn5RSN2e6W8LTxzS1TNyeb7yfjrz0PXFOxnSs9NxV5c4Im/CFDi89WeGOOMxCxiKNdSKQoGDCVcIZacGhbqSYc=",
-                            PhoneNumber = "+2348109094694",
-                            RefreshToken = "",
-                            RefreshTokenExpiryTime = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified)
-                        });
                 });
 
             modelBuilder.Entity("Domain.Entities.UserRecoveryCode", b =>
@@ -1602,13 +1541,6 @@ namespace Infrastructures.Migrations
                     b.HasKey("UserId", "Role");
 
                     b.ToTable("UserRoles", (string)null);
-
-                    b.HasData(
-                        new
-                        {
-                            UserId = new Guid("88e8d13a-4a6e-4a18-9cc3-87f62f564ada"),
-                            Role = "Admin"
-                        });
                 });
 
             modelBuilder.Entity("Domain.Entities.Wallet", b =>
@@ -1880,32 +1812,7 @@ namespace Infrastructures.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.OwnsOne("Domain.ValueObjects.Email", "Email", b1 =>
-                        {
-                            b1.Property<Guid>("CustomerId")
-                                .HasColumnType("uuid");
-
-                            b1.Property<string>("Value")
-                                .IsRequired()
-                                .HasMaxLength(150)
-                                .HasColumnType("character varying(150)")
-                                .HasColumnName("Email");
-
-                            b1.HasKey("CustomerId");
-
-                            b1.HasIndex("Value")
-                                .IsUnique();
-
-                            b1.ToTable("Customers");
-
-                            b1.WithOwner()
-                                .HasForeignKey("CustomerId");
-                        });
-
                     b.Navigation("CustomerType");
-
-                    b.Navigation("Email")
-                        .IsRequired();
                 });
 
             modelBuilder.Entity("Domain.Entities.DeliveryAgent", b =>

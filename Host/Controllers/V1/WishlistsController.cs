@@ -5,12 +5,11 @@ using Application.Commands.Wishlists.CreateWishlist;
 using Application.Commands.Wishlists.RemoveItemFromList;
 using Application.Dto;
 using Application.Pagination;
-using Application.Queries.Wishlists;
 using Application.Queries.Wishlists.GetItemsByUser;
 using Application.Queries.Wishlists.GetWishlistById;
 using Application.Queries.Wishlists.GetWishlistByUser;
 using MediatR;
-using Microsoft.AspNetCore.Http;
+using Application.Queries.Wishlists.CheckIfIsInWishlist;
 
 namespace Host.Controllers.V1
 {
@@ -111,6 +110,15 @@ namespace Host.Controllers.V1
                 var result = await _mediator.Send(new GetWishlistItemsByUserQuery(pageRequest));
                 return result.IsSuccess ? Ok(result) : NotFound(result);
             }
+
+            [HttpGet("check/{productId:guid}")]
+            [ProducesResponseType(typeof(Result<bool>), StatusCodes.Status200OK)]
+            public async Task<IActionResult> CheckIfIsInWishlist(Guid productId)
+            {
+                var result = await _mediator.Send(new CheckIfIsInWishlistQuery(productId));
+                return Ok(result);
+            }
+
         }
     }
 

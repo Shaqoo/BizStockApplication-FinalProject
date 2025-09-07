@@ -1,4 +1,5 @@
 ﻿using Application.Dto;
+using Application.Extensions;
 using Application.Interfaces.Repository;
 using Application.Interfaces.Service;
 using Application.Interfaces.UnitOfWork;
@@ -6,6 +7,7 @@ using Domain.DomainEvents;
 using Domain.Entities;
 using Google.Apis.Auth;
 using MediatR;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 
 namespace Application.Commands.ExternalLogin.Google
@@ -15,6 +17,7 @@ namespace Application.Commands.ExternalLogin.Google
     IUnitOfWork unitOfWork,
     IAuthService authService,
     IAuditLogRepository auditLogRepository,
+    IHttpContextAccessor httpContextAccessor,
     IMediator mediator,
     ILogger<GoogleLoginHandler> logger
 ) : IRequestHandler<GoogleLoginCommand, Result<AuthDto>>
@@ -78,6 +81,7 @@ namespace Application.Commands.ExternalLogin.Google
                 user.DateOfBirth.Value,
                 DateTime.UtcNow,
                 user.UserRoles.FirstOrDefault()?.Role.ToString() ?? string.Empty,
+                user.Gender.ToString(),
                 user.IsEmailVerified,
                 user.IsTwoFactorEnabled,
                 user.ProfilePictureUrl
@@ -98,7 +102,7 @@ namespace Application.Commands.ExternalLogin.Google
 
                 await mediator.Publish(new LoginEvent(
                     user.Id,
-                    request.RequestMetadata.IpAddress,
+                    request.RequestMetadata.IpAddress!,
                     request.RequestMetadata.UserAgent
                 ), cancellationToken);
 
@@ -114,6 +118,8 @@ namespace Application.Commands.ExternalLogin.Google
                 request.RequestMetadata.UserAgent
             ));
 
+                httpContextAccessor?.HttpContext?.Response.ClearRefreshToken();
+                httpContextAccessor?.HttpContext?.Response.SetRefreshToken(refreshToken);
 
                 return Result<AuthDto>.Success(new AuthDto(token, refreshToken), "Login Successful");
             }

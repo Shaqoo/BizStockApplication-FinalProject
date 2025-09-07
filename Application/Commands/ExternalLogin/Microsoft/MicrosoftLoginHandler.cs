@@ -77,6 +77,7 @@ namespace Application.Commands.ExternalLogin.Microsoft
                 user.DateOfBirth.Value,
                 DateTime.UtcNow,
                 user.UserRoles.FirstOrDefault()?.Role.ToString() ?? string.Empty,
+                user.Gender.ToString(),
                 user.IsEmailVerified,
                 user.IsTwoFactorEnabled, 
                 user.ProfilePictureUrl

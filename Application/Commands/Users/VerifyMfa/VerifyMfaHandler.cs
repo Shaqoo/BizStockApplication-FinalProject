@@ -1,17 +1,13 @@
 ﻿using Application.Dto;
-using Application.EventHandlers;
+using Application.Extensions;
 using Application.Interfaces.Repository;
 using Application.Interfaces.Service;
 using Application.Interfaces.UnitOfWork;
 using Domain.DomainEvents;
 using MediatR;
+using Microsoft.AspNetCore.Http;
 using Microsoft.IdentityModel.Tokens;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Security.Claims;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Application.Commands.Users.VerifyMfa
 {
@@ -19,6 +15,7 @@ namespace Application.Commands.Users.VerifyMfa
         IUnitOfWork unitOfWork,
         IMediator mediator,
         IMfaService mfaService,
+        IHttpContextAccessor httpContextAccessor,
         IAuthService authService) : IRequestHandler<VerifyMfaCommand, Result<AuthDto>>
     {
         public async Task<Result<AuthDto>> Handle(VerifyMfaCommand request, CancellationToken cancellationToken)
@@ -54,6 +51,7 @@ namespace Application.Commands.Users.VerifyMfa
                     user.DateOfBirth.Value,
                     DateTime.UtcNow,
                     user.UserRoles.FirstOrDefault()?.Role.ToString() ?? string.Empty,
+                    user.Gender.ToString(),
                     user.IsEmailVerified,
                     user.IsTwoFactorEnabled, 
                     user.ProfilePictureUrl
@@ -67,7 +65,10 @@ namespace Application.Commands.Users.VerifyMfa
                 await userRepository.UpdateUserAsync(user);
                 await unitOfWork.CommitTransactionAsync();
 
-                await mediator.Publish(new LoginEvent(user.Id,request.RequestMetadata.IpAddress,request.RequestMetadata.UserAgent),cancellationToken);
+                await mediator.Publish(new LoginEvent(user.Id,request.RequestMetadata.IpAddress!,request.RequestMetadata.UserAgent),cancellationToken);
+
+                httpContextAccessor?.HttpContext?.Response.ClearRefreshToken();
+                httpContextAccessor?.HttpContext?.Response.SetRefreshToken(refreshToken);
 
                 return Result<AuthDto>.Success(new AuthDto(token,refreshToken),"Login Successful");
             }

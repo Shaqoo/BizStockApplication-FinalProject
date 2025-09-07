@@ -54,6 +54,7 @@ namespace Application.EventHandlers
 
                 await _notifier.SendNotificationAsync(admin.Id, new NotificationDto
                 {
+                    Id = notificationEntity.Id,
                     Title = notificationEntity.Title,
                     Message = notificationEntity.Message,
                     Type = notificationEntity.Type,

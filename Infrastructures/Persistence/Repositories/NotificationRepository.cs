@@ -105,7 +105,7 @@ namespace Infrastructures.Persistence.Repositories
         {
             var query = _context.Notifications
                 .Where(n => n.RecipientId == recipientId)
-                .OrderByDescending(n => n.Id);
+                .OrderByDescending(n => n.DateCreated);
 
             var total = await query.CountAsync();
 

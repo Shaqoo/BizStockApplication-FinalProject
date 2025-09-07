@@ -47,14 +47,12 @@ namespace Application.EventHandlers
             {
                 var dbNotification = new Notification(user.Id, title, message, type);
                 await notificationRepository.AddAsync(dbNotification);
+
+                notificationDto.Id = dbNotification.Id;
+                await notifier.SendNotificationAsync(user.Id, notificationDto);
             }
 
             await unitOfWork.CommitTransactionAsync();
-
-            foreach (var user in users)
-            {
-                await notifier.SendNotificationAsync(user.Id, notificationDto);
-            }
         }
 
     }

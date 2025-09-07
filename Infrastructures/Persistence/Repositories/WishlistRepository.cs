@@ -55,20 +55,21 @@ namespace Infrastructures.Persistence.Repositories
         public async Task<PaginatedList<WishlistItemDto>> GetAllByUserAsync(PageRequest pageRequest, Guid userId)
         {
             var query = _context.WishlistItems
-                .Include(wi => wi.Product)
-                .Include(a => a.Wishlist)
-                .AsNoTracking()
-                .Where(wi => wi.Wishlist.UserId == userId)
-                .Select(wi => new WishlistItemDto
-                {
-                    Id = wi.Id,
-                    WishlistId = wi.WishlistId,
-                    ProductId = wi.ProductId,
-                    ProductName = wi.Product.Name,
-                    ProductPrice = wi.Product.SellingPrice,
-                    ProductImageUrl = wi.Product.ImageUrl,
-                    CreatedAt = wi.CreatedAt
-                });
+                    .AsNoTracking()
+                    .Where(wi => wi.Wishlist.UserId == userId)
+                    .Select(wi => new WishlistItemDto
+                    {
+                        Id = wi.Id,
+                        WishlistId = wi.WishlistId,
+                        ProductId = wi.ProductId,
+                        ProductName = wi.Product.Name,
+                        BrandName = wi.Product.Brand.Name,
+                        ProductPrice = wi.Product.SellingPrice,
+                        ProductImageUrl = wi.Product.ImageUrl,
+                        CreatedAt = wi.CreatedAt
+                    })
+                    .OrderByDescending(wi => wi.CreatedAt);
+
 
             var pagedQuery = await query
                 .OrderByDescending(wi => wi.CreatedAt)
@@ -86,6 +87,13 @@ namespace Infrastructures.Persistence.Repositories
         public async Task AddItemsAsync(WishlistItem wishlist)
         {
             await _context.WishlistItems.AddAsync(wishlist);
+        }
+
+        public async Task<bool> CheckIfItemExists(Guid userId, Guid productId)
+        {
+             return await _context.WishlistItems
+                .AsNoTracking()
+                .AnyAsync(wi => wi.Wishlist.UserId == userId && wi.ProductId == productId);
         }
     }
 

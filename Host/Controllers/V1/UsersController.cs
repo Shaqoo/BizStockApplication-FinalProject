@@ -19,6 +19,7 @@ using Application.Commands.Users.VerifyMfa;
 using Application.Commands.Users.VerifyPassword;
 using Application.Dto;
 using Application.Dto.RequestModels;
+using Application.Extensions;
 using Application.Interfaces.Service;
 using Application.Pagination;
 using Application.Queries.Users.GetAllUsers;
@@ -183,9 +184,9 @@ namespace Host.Controllers.V1
             {
                 return result.Message switch
                 {
-                    "Invalid Credentials" => Unauthorized(result.Message),
-                    "User is not active." => Unauthorized(result.Message),
-                    var msg when msg.StartsWith("Account locked.") => Forbid(result.Message),
+                    "Invalid Credentials" => Unauthorized(result),
+                    "User is not active." => Unauthorized(result),
+                    var msg when msg.StartsWith("Account locked.") => BadRequest(result),
                     _ => BadRequest(result.Message)
                 };
             }
@@ -242,7 +243,7 @@ namespace Host.Controllers.V1
         public async Task<IActionResult> GenerateRegistrationOptions()
         {
             var userIdentifier = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            var options = await _fidoService.GenerateRegistrationOptionsAsync(Guid.Parse(userIdentifier));
+            var options = await _fidoService.GenerateRegistrationOptionsAsync(Guid.Parse(userIdentifier!));
             return Ok(options);
         }
 
@@ -360,7 +361,7 @@ namespace Host.Controllers.V1
         {
             var result = await _mediator.Send(new RequestChangePasswordCommand(dto, Request.GetRequestMetadata()));
             if (!result.IsSuccess)
-                return BadRequest(result.Message);
+                return BadRequest(result);
 
             return Ok(result);
         }
@@ -386,7 +387,7 @@ namespace Host.Controllers.V1
         {
             var result = await _mediator.Send(new ChangeUserPasswordCommand(dto, Request.GetRequestMetadata()));
             if (!result.IsSuccess)
-                return BadRequest(result.Message);
+                return BadRequest(result);
 
             return Ok(result);
         }
@@ -464,7 +465,7 @@ namespace Host.Controllers.V1
         /// <summary>
         /// Generates a new access token and refresh token pair using a valid refresh token.
         /// </summary>
-        /// <param name="dto">
+        /// <param >
         /// The DTO containing:
         /// - <c>RefreshToken</c>: The refresh token previously issued to the user.
         /// </param>
@@ -474,9 +475,12 @@ namespace Host.Controllers.V1
         [HttpPost("refresh-token")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(string), StatusCodes.Status400BadRequest)]
-        public async Task<IActionResult> RefreshToken([FromBody] RefreshTokenDto dto)
+        public async Task<IActionResult> RefreshToken()
         {
-            var result = await _mediator.Send(new RefreshTokenCommand(dto));
+            var dto = Request.GetRefreshToken();
+            if (dto == null)
+                return BadRequest("Refresh token is missing.");
+            var result = await _mediator.Send(new RefreshTokenCommand(new RefreshTokenDto { RefreshToken = dto}));
             if (!result.IsSuccess)
                 return BadRequest(result.Message);
 

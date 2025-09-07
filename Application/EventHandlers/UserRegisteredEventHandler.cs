@@ -28,9 +28,10 @@ namespace Application.EventHandlers
             logger.LogInformation("Handling UserRegisteredEvent for user ID {UserId}", @event.UserId);
 
             string notificationText = "Your BizStock account was successfully created. Welcome aboard!";
-            var notification = new Notification(@event.UserId, "Welcome to BizStock", notificationText, "");
+            var notification = new Notification(@event.UserId, "Welcome to BizStock", notificationText, "info");
             var dto = new NotificationDto
             {
+                Id = notification.Id,
                 Title = "Welcome to BizStock",
                 Message = notificationText,
                 Type = "info",

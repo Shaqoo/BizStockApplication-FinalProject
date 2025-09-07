@@ -36,24 +36,21 @@ namespace Application.EventHandlers
 
             foreach (var user in users)
             {
-                await notificationRepository.AddAsync(new Notification(user.Id, title, message, "warning"));
+                var userNotification = new Notification(user.Id, title, message, "warning");
+                await notificationRepository.AddAsync(userNotification);
 
-                logger.LogInformation("Deactivation notification sent to {Email} for warehouse {WarehouseName}", user.Email.Value, notification.Name);
-            }
-
-            await unitOfWork.CommitTransactionAsync();
-
-            foreach (var user in users)
-            {
                 await notifier.SendNotificationAsync(user.Id, new NotificationDto
                 {
+                    Id = userNotification.Id,
                     Title = title,
                     Message = message,
                     Type = "warning",
                     Timestamp = DateTime.UtcNow
                 });
+                logger.LogInformation("Deactivation notification sent to {Email} for warehouse {WarehouseName}", user.Email.Value, notification.Name);
             }
 
+            await unitOfWork.CommitTransactionAsync();
         }
 
     }

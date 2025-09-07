@@ -29,11 +29,15 @@ namespace Application.EventHandlers
                 ThreadId = notification.ThreadId
             };
 
-            
+            var not = new Notification(notification.AgentId, dto.Title, dto.Message);
+            dto.Id = not.Id;
+
+
+
             await notifier.SendNotificationAsync(notification.AgentId, dto);
 
             await unitOfWork.BeginTransactionAsync();
-            await notificationRepository.AddAsync(new Notification(notification.AgentId, dto.Title, dto.Message));
+            await notificationRepository.AddAsync(not);
             await unitOfWork.CommitTransactionAsync();
         }
     }

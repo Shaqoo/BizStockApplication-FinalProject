@@ -8,11 +8,11 @@ namespace Application.Dto.RequestModels
 {
     public class RecoveryLoginRequest
     {
-        public string Email { get; }
+        public string Email { get; set; }
 
-        public string RecoveryCode { get; }
+        public string RecoveryCode { get; set; }
 
-        public string TempToken { get; }
+        public string TempToken { get; set; }
         public RecoveryLoginRequest(string email, string recoveryCode,string tempToken)
         {
             if (string.IsNullOrWhiteSpace(email)) throw new ArgumentException("Email is required", nameof(email));

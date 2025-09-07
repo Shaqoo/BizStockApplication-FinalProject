@@ -1,11 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Application.Dto
+﻿namespace Application.Dto
 {
-    public record CustomerDto(Guid Id,string Fullname,Guid CustomerTypeId,string? TaxId,string? State,string? Address,
-        string BusinessName);
+    public record CustomerDto(Guid Id,string Fullname,string CustomerType,string? TaxId,string? State,string? Address,
+        string? BusinessName);
 }

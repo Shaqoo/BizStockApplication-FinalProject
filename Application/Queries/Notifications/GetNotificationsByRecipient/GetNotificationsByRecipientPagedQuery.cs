@@ -4,6 +4,6 @@ using MediatR;
 
 namespace Application.Queries.Notifications.GetNotificationsByRecipient
 {
-    public record GetNotificationsByRecipientPagedQuery(Guid RecipientId, PageRequest PageRequest)
+    public record GetNotificationsByRecipientPagedQuery(PageRequest PageRequest)
     : IRequest<Result<PaginatedList<NotificationDto>>>;
 }

@@ -7,6 +7,7 @@ using Application.Interfaces.UnitOfWork;
 using Domain.DomainEvents;
 using Domain.Entities;
 using MediatR;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace Application.Commands.Users.Login
 {
@@ -42,21 +43,33 @@ namespace Application.Commands.Users.Login
 
                 var remaining = user.LockoutEnd!.Value - DateTime.UtcNow;
                 await auditLogRepository.AddAsync(new AuditLog(
-           user.Id,
-           "LOGIN_ATTEMPT_LOCKED_OUT",
-           "User",
-           user.Id,
-           "Attempted login while account is locked.",
-           request.RequestMetadata.IpAddress,
-           request.RequestMetadata.UserAgent
-       ));
-                return Result<object>.Failure($"Account locked. Try again in {remaining.Minutes}m {remaining.Seconds}s.");
+               user.Id,
+               "LOGIN_ATTEMPT_LOCKED_OUT",
+               "User",
+               user.Id,
+               "Attempted login while account is locked.",
+               request.RequestMetadata.IpAddress,
+               request.RequestMetadata.UserAgent
+           ));
+                return new Result<object>
+                {
+                    Data = new
+                    {
+                        remaining = new
+                        {
+                            minutes = remaining.Minutes,
+                            seconds = remaining.Seconds
+                        }
+                    },
+                    IsSuccess = false,
+                    Message = $"Account locked. Try again in {remaining.Minutes}m {remaining.Seconds}s."
+                };
             }
-
             if (user.RequiresCaptcha)
             {
-                if (string.IsNullOrWhiteSpace(request.Model.CaptchaToken) || !await captchaService.ValidateTokenAsync(request.Model.CaptchaToken))
+                if (string.IsNullOrWhiteSpace(request.Model.CaptchaToken))
                 {
+                  
                     await auditLogRepository.AddAsync(new AuditLog(
                         user.Id,
                         "LOGIN_ATTEMPT_INVALID_CAPTCHA",
@@ -66,6 +79,17 @@ namespace Application.Commands.Users.Login
                         request.RequestMetadata.IpAddress,
                         request.RequestMetadata.UserAgent
                     ));
+
+                    Console.WriteLine(request.Model.CaptchaToken);
+
+                    bool validToken = false;
+                    if (!string.IsNullOrEmpty(request.Model.CaptchaToken))
+                    {
+                        validToken = await captchaService.ValidateTokenAsync(request.Model.CaptchaToken);
+                    }
+
+                    Console.WriteLine(validToken);
+
 
                     return Result<object>.Failure("CAPTCHA validation failed.");
                 }

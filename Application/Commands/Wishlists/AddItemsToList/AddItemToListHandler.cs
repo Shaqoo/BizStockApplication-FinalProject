@@ -2,6 +2,7 @@
 using Application.Interfaces.Repository;
 using Application.Interfaces.Service;
 using Application.Interfaces.UnitOfWork;
+using Domain.Entities;
 using MediatR;
 using Microsoft.Extensions.Logging;
 
@@ -52,8 +53,8 @@ namespace Application.Commands.Wishlists.AddItemsToList
             {
                 await unitOfWork.BeginTransactionAsync();
 
-                wishlist.AddItem(product.Id);
-                await wishlistRepository.UpdateAsync(wishlist);
+                 
+                await wishlistRepository.AddItemsAsync(new WishlistItem(wishlist.Id,product.Id));
 
                 await unitOfWork.CommitTransactionAsync();
 

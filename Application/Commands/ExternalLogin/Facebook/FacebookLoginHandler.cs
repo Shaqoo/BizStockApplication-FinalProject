@@ -82,6 +82,7 @@ namespace Application.Commands.ExternalLogin.Facebook
                 user.DateOfBirth.Value,
                 DateTime.UtcNow,
                 user.UserRoles.FirstOrDefault()?.Role.ToString() ?? string.Empty,
+                user.Gender.ToString(),
                 user.IsEmailVerified,
                 user.IsTwoFactorEnabled,
                 user.ProfilePictureUrl

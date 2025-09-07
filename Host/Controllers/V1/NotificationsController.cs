@@ -22,11 +22,11 @@ namespace Host.Controllers.V1
     [Route("api/v{version:apiVersion}/[controller]")]
     [Authorize]
     [Produces(MediaTypeNames.Application.Json)]
-    public class NotificationController : ControllerBase
+    public class NotificationsController : ControllerBase
     {
         private readonly IMediator _mediator;
 
-        public NotificationController(IMediator mediator)
+        public NotificationsController(IMediator mediator)
         {
             _mediator = mediator;
         }
@@ -69,11 +69,11 @@ namespace Host.Controllers.V1
         /// <summary>
         /// Mark all notifications as read for a recipient.
         /// </summary>
-        [HttpPut("mark-all-as-read/{recipientId:guid}")]
+        [HttpPut("mark-all-as-read")]
         [ProducesResponseType(typeof(Result<string>), StatusCodes.Status200OK)]
-        public async Task<IActionResult> MarkAllAsRead(Guid recipientId)
+        public async Task<IActionResult> MarkAllAsRead()
         {
-            var result = await _mediator.Send(new MarkAllNotificationsAsReadCommand(recipientId));
+            var result = await _mediator.Send(new MarkAllNotificationsAsReadCommand());
             return Ok(result);
         }
 
@@ -91,33 +91,33 @@ namespace Host.Controllers.V1
         /// <summary>
         /// Get all unread notifications for a recipient.
         /// </summary>
-        [HttpGet("recipient/{recipientId:guid}/unread")]
+        [HttpGet("recipient/unread")]
         [ProducesResponseType(typeof(IEnumerable<Notification>), StatusCodes.Status200OK)]
-        public async Task<IActionResult> GetUnreadByRecipient(Guid recipientId)
+        public async Task<IActionResult> GetUnreadByRecipient()
         {
-            var result = await _mediator.Send(new GetUnreadNotificationsByRecipientQuery(recipientId));
+            var result = await _mediator.Send(new GetUnreadNotificationsByRecipientQuery());
             return Ok(result);
         }
 
         /// <summary>
         /// Count unread notifications for a recipient.
         /// </summary>
-        [HttpGet("recipient/{recipientId:guid}/count-unread")]
+        [HttpGet("recipient/count-unread")]
         [ProducesResponseType(typeof(int), StatusCodes.Status200OK)]
-        public async Task<IActionResult> CountUnreadByRecipient(Guid recipientId)
+        public async Task<IActionResult> CountUnreadByRecipient()
         {
-            var result = await _mediator.Send(new CountUnreadByRecipientQuery(recipientId));
+            var result = await _mediator.Send(new CountUnreadByRecipientQuery());
             return Ok(result);
         }
 
         /// <summary>
         /// Get paginated notifications for a recipient.
         /// </summary>
-        [HttpGet("recipient/{recipientId:guid}/paged")]
+        [HttpGet("recipient/paged")]
         [ProducesResponseType(typeof(PaginatedList<Notification>), StatusCodes.Status200OK)]
-        public async Task<IActionResult> GetByRecipientPaged(Guid recipientId, [FromQuery] PageRequest pageRequest)
+        public async Task<IActionResult> GetByRecipientPaged([FromQuery] PageRequest pageRequest)
         {
-            var result = await _mediator.Send(new GetNotificationsByRecipientPagedQuery(recipientId, pageRequest));
+            var result = await _mediator.Send(new GetNotificationsByRecipientPagedQuery(pageRequest));
             return Ok(result);
         }
     }

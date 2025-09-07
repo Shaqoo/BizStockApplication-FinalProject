@@ -37,7 +37,6 @@ public class CreateCartCommandHandler
             return Result<CartDto>.Failure("Either UserId or SessionId must be provided.");
         }
 
-        // Validate UserId if provided
         if (dto.UserId.HasValue)
         {
             var userExists = await _userRepository.GetByIdAsync(dto.UserId.Value);

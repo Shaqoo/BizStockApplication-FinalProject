@@ -9,6 +9,7 @@ namespace Application.Interfaces.Repository
     {
         Task<Wishlist?> GetByIdAsync(Guid wishlistId);
         Task<Wishlist?> GetByUserIdAsync(Guid userId);
+        Task<bool> CheckIfItemExists(Guid userId, Guid productId);
         Task AddItemsAsync(WishlistItem wishlist);
         Task AddAsync(Wishlist wishlist);
         Task AddRangeAsync(IEnumerable<WishlistItem> wishlistItems);

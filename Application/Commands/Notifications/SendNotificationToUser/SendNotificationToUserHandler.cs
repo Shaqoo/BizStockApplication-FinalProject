@@ -48,6 +48,7 @@ namespace Application.Commands.Notifications.SendNotificationToUser
 
                 await _notifier.SendNotificationAsync(user.Id,new NotificationDto 
                 {
+                    Id = notification.Id,
                     Message = notification.Message,
                     Timestamp = notification.DateCreated.DateTime,
                     Title = notification.Title,

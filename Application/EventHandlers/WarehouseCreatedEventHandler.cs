@@ -31,22 +31,21 @@ namespace Application.EventHandlers
             await unitOfWork.BeginTransactionAsync();
             foreach (var user in users)
             {
-                await notificationRepository.AddAsync(new Notification(user.Id,title,message,"info"));
-                
-                logger.LogInformation("Notification sent to {Email} for new warehouse creation", user.Email.Value);
-            }
-            await unitOfWork.CommitTransactionAsync();
+                var userNotification = new Notification(user.Id, title, message, "info");
+                await notificationRepository.AddAsync(userNotification);
 
-            foreach (var user in users)
-            {
                 await notifier.SendNotificationAsync(user.Id, new NotificationDto
                 {
+                    Id = userNotification.Id,
                     Title = title,
                     Message = message,
                     Type = "info",
                     Timestamp = DateTime.UtcNow
                 });
+
+                logger.LogInformation("Notification sent to {Email} for new warehouse creation", user.Email.Value);
             }
+            await unitOfWork.CommitTransactionAsync();
         }
     }
 }

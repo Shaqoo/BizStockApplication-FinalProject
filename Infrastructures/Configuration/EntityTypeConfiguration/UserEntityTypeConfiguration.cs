@@ -103,16 +103,6 @@ namespace Infrastructures.Configuration.EntityTypeConfiguration
 
             builder.Navigation(u => u.RecoveryCodes).Metadata.SetField("_recoveryCodes");
             builder.Navigation(u => u.RecoveryCodes).UsePropertyAccessMode(PropertyAccessMode.Field);
-
-            builder.HasData(new User(
-                new Email("ShakirullahOhio@gmail.com"),
-                "vd61YRFFSIHsbn15gK10i2oe7KTqb7rjYMWlxy6d0jFZF6vdjZ/4oMjHY/MQ+nPIT6U23fGaqeyXVa92W9QQupn5RSN2e6W8LTxzS1TNyeb7yfjrz0PXFOxnSs9NxV5c4Im/CFDi89WeGOOMxCxiKNdSKQoGDCVcIZacGhbqSYc=",
-                "d08b4fb4-cdae-4841-89a7-a37d3fc19d51eb012524-180e-4127-9797-1bed34e94650",
-                new PhoneNumber("+2348109094694"),
-                Gender.Male,
-                new DateOfBirth(new DateTime(2000, 04, 22, 0, 0, 0, DateTimeKind.Unspecified)),
-                "Shakirullah Ohio"));
-
         }
     }
 }

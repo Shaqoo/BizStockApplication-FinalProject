@@ -1,0 +1,18 @@
+﻿BizStock Security & Account Recovery 🔐
+
+If you have lost access to your account, authenticator app, or recovery codes:
+
+1. Try logging in with your recovery code (if you saved it).
+2. If you don’t have your recovery code or authenticator app:
+   - Visit the Lost Access Request page:
+     http://localhost:5500/general/lostAccess.html
+   - Fill out the form with your registered email and ID details.
+   - Our admin team will review your request and contact you via email.
+
+⚠️ Important:
+- For your security, we will never ask for your password by email.
+- Always keep your recovery codes in a safe place.
+- If you regain access, update your recovery codes immediately.
+
+Need more help? Visit the full Help Center:
+http://localhost:5500/general/helpcenter.html

@@ -49,6 +49,7 @@ namespace Application.Commands.Notifications.SendNotificationViaRoles
                     await _repository.AddAsync(notification);
                     await _notifier.SendToRoleAsync(request.Request.Role,new NotificationDto 
                     {
+                        Id = notification.Id,
                         Message = notification.Message,
                         Timestamp = notification.DateCreated.DateTime,
                         Title = notification.Title,

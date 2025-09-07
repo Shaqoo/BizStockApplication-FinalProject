@@ -97,7 +97,15 @@ namespace Infrastructures.Service.Ai
             {
                 foreach (var file in files)
                 {
+                    if (!File.Exists(file))
+                    {
+                        Console.WriteLine($"[Missing file: {file}]");
+                        continue;
+                    }
+
+                    
                     var content = await File.ReadAllTextAsync(file);
+                    Console.WriteLine($"[Loaded file: {file}, length: {content.Length}]");
                     foreach (var chunk in ChunkText(content))
                     {
                         sb.AppendLine($"[FILE CHUNK FROM {Path.GetFileName(file)}]"); 

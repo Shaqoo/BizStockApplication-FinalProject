@@ -48,6 +48,7 @@ namespace Application.EventHandlers
                 await _notificationRepository.AddAsync(entity);
                 await _notifier.SendNotificationAsync(user.Id, new NotificationDto
                 {
+                    Id = entity.Id,
                     Title = entity.Title,
                     Message = entity.Message,
                     Type = entity.Type

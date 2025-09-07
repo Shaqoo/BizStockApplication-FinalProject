@@ -28,19 +28,24 @@ namespace Application.EventHandlers
                 Type = "info",
                 ThreadId = notification.ThreadId
             };
-            
+
+            var customerNot = new Notification(notification.CustomerId, dto.Title, dto.Message);
+            var agencyNotification = new Notification(notification.AgentId, dto.Title, dto.Message);
+
             await unitOfWork.BeginTransactionAsync();
             if (notification.AgentId != Guid.Empty)
             {
+                dto.Id = agencyNotification.Id;
                 await notifier.SendNotificationAsync(notification.AgentId, dto);
-                await notificationRepository.AddAsync(new Notification(notification.AgentId, dto.Title, dto.Message));
+                await notificationRepository.AddAsync(agencyNotification);
             }
 
             if (notification.CustomerId != Guid.Empty)
             {
-                await notificationRepository.AddAsync(new Notification(notification.CustomerId, dto.Title, dto.Message));
+                await notificationRepository.AddAsync(customerNot);
             }
 
+            dto.Id = customerNot.Id;
             await unitOfWork.CommitTransactionAsync();
 
             await notifier.SendNotificationAsync(notification.CustomerId, dto);

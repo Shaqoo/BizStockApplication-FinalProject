@@ -41,8 +41,10 @@ namespace Application.EventHandlers
                         Title = "Stock Transfer Notification",
                     };
 
+                    var userNotification = new Notification(user.Id, notificationDto.Title, notificationDto.Message);
+                    notificationDto.Id = userNotification.Id;
                     await notifier.SendNotificationAsync(user.Id, notificationDto);
-                    await notificationRepository.AddAsync(new Notification(user.Id, notificationDto.Title, notificationDto.Message));
+                    await notificationRepository.AddAsync(userNotification);
                 }
                 await unitOfWork.CommitTransactionAsync();
                 logger.LogInformation("StockTransferredEvent handled successfully for ProductId: {ProductId}, FromWarehouseId: {FromWarehouseId}, ToWarehouseId: {ToWarehouseId}",
