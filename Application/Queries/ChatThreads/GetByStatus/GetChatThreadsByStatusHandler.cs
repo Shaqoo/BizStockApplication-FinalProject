@@ -34,7 +34,7 @@ namespace Application.Queries.ChatThreads.GetByStatus
                     PageNumber = paged.PageNumber,
                     PageSize = paged.PageSize
                 };
-            });
+            }, TimeSpan.FromMinutes(1));
 
             return Result<PaginatedList<ChatThreadDto>>.Success(result);
         }

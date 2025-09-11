@@ -50,26 +50,29 @@ namespace Application.EventHandlers
             await emailService.SendEmailAsync((string)user.Email,subject, emailBody);
 
             logger.LogInformation("Login Mail Messages Sent");
-          
 
-            var sessionId = httpContextAccessor.HttpContext?.GetOrCreateCartSessionId();
-            if (sessionId != null)
+            if (user.UserRoles.Any(a => a.Role == Role.Customer))
             {
-                logger.LogInformation("Cart session ID: {SessionId}", sessionId);
-                var command = new LinkCartToUserCommand(notification.UserId, sessionId);
-                var linked = await mediator.Send(command, cancellationToken);
-                if(linked.IsSuccess)
+
+                var sessionId = httpContextAccessor.HttpContext?.GetOrCreateCartSessionId();
+                if (sessionId != null)
                 {
-                    logger.LogInformation("Cart linked to user successfully.");
+                    logger.LogInformation("Cart session ID: {SessionId}", sessionId);
+                    var command = new LinkCartToUserCommand(notification.UserId, sessionId);
+                    var linked = await mediator.Send(command, cancellationToken);
+                    if (linked.IsSuccess)
+                    {
+                        logger.LogInformation("Cart linked to user successfully.");
+                    }
+                    else
+                    {
+                        logger.LogWarning("Failed to link cart to user: {ErrorMessage}", linked.Message);
+                    }
                 }
                 else
                 {
-                    logger.LogWarning("Failed to link cart to user: {ErrorMessage}", linked.Message);
+                    logger.LogWarning("Failed to retrieve cart session ID.");
                 }
-            }
-            else
-            {
-                logger.LogWarning("Failed to retrieve cart session ID.");
             }
         }
     }

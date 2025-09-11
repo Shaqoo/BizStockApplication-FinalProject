@@ -4,6 +4,7 @@ using Application.Interfaces.Repository;
 using Application.Interfaces.Service;
 using Application.Interfaces.UnitOfWork;
 using Domain.Entities;
+using Domain.Enums;
 using MediatR;
 
 namespace Application.Commands.ChatMessages.SendMessage
@@ -15,7 +16,8 @@ namespace Application.Commands.ChatMessages.SendMessage
     IUploadService uploadService,
     IUnitOfWork unitOfWork,
     INotifier notifier,
-    IAuditLogRepository logRepository
+    IAuditLogRepository logRepository,
+    IAuthService authService
 ) : IRequestHandler<SendMessageCommand, Result<MessageDto>>
     {
         public async Task<Result<MessageDto>> Handle(SendMessageCommand request, CancellationToken cancellationToken)
@@ -26,7 +28,14 @@ namespace Application.Commands.ChatMessages.SendMessage
             if (thread == null)
                 return Result<MessageDto>.Failure("Chat thread not found.");
 
-            var sender = await userRepository.GetByIdAsync(sendRequest.SenderId);
+            if(thread.Status == ChatStatus.Closed)
+                return Result<MessageDto>.Failure("Cannot send message to a closed thread.");
+
+            var currentUser = authService.CurrentUser();
+            if (currentUser == null)
+                return Result<MessageDto>.Failure("Unauthorized to send message on behalf of another user.");
+
+            var sender = await userRepository.GetByIdAsync(currentUser.Id);
             if (sender == null)
                 return Result<MessageDto>.Failure("Sender not found.");
 
@@ -50,7 +59,7 @@ namespace Application.Commands.ChatMessages.SendMessage
 
             var message = new ChatMessage(
                 chatThreadId: sendRequest.ChatThreadId,
-                senderId: sendRequest.SenderId,
+                senderId: currentUser.Id,
                 message: sendRequest.Message,
                 audioUrl: audioUrl,
                 pictureUrl: pictureUrl,

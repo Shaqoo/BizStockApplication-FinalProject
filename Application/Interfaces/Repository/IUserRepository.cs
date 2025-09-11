@@ -17,7 +17,7 @@ namespace Application.Interfaces.Repository
         Task<bool> CheckIfExists(Expression<Func<User, bool>> expression);
         Task UpdateUserAsync(User user);
         Task DeleteUserAsync(Guid userId);
-        Task<PaginatedList<User>> SearchUsers(string keyword, PageRequest pageRequest);
+        Task<PaginatedList<User>> SearchUsers(string keyword, PageRequest pageRequest,Role? role);
         Task<int> CountAsync(Expression<Func<User, bool>>? predicate = null);
 
     }

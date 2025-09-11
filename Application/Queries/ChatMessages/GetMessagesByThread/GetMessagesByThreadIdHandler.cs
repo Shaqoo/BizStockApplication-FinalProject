@@ -40,7 +40,7 @@ namespace Application.Queries.ChatMessages.GetMessagesByThread
                         paginated.PageSize
                     );
                 },
-                TimeSpan.FromMinutes(20) 
+                TimeSpan.FromMinutes(1) 
             );
 
             return Result<PaginatedList<MessageDto>>.Success(pagedMessages);

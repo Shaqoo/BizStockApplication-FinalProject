@@ -2,11 +2,6 @@
 using Application.Pagination;
 using Domain.Entities;
 using Domain.Enums;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Application.Interfaces.Repository
 {
@@ -17,6 +12,8 @@ namespace Application.Interfaces.Repository
         Task<ChatThread?> GetThreadWithMessagesAsync(Guid threadId);
         Task<PaginatedList<ChatThread>> GetByStatusAsync(ChatStatus status, PageRequest pageRequest);
         Task<int> CountOpenThreadsAsync();
+        Task<int> CountClosedThreadsAsync();
+        Task<int> CountInprogressThreadsAsync();
         Task<int> CountThreadsByAgentAsync(Guid agentId);
         Task<IEnumerable<ChatThread>> GetOpenThreadsWithoutAgentAsync();
         Task UpdateThread(ChatThread chatThread);

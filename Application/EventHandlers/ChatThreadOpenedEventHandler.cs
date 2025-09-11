@@ -33,7 +33,7 @@ namespace Application.EventHandlers
 
             await unitOfWork.BeginTransactionAsync();
 
-            var customerServiceAgents = await userRepository.FindAsync(a => a.HasRole(Role.CustomerService));
+            var customerServiceAgents = await userRepository.FindAsync(a => a.UserRoles.Any(a => a.Role == Role.CustomerService));
             foreach (var agent in customerServiceAgents)
             {
                 await notificationRepository.AddAsync(new Notification(agent.Id, dto.Title, dto.Message));

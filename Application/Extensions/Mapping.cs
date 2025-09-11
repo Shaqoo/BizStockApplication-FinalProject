@@ -37,7 +37,7 @@ namespace Application.Extensions
 
         public static ChatThreadDto ChatThreadAsDto(this ChatThread chatThread)
         {
-            return new ChatThreadDto(chatThread.Id, chatThread.Status,chatThread.CustomerId, chatThread.AssignedAgentId,
+            return new ChatThreadDto(chatThread.Id, chatThread.Status,chatThread.CreatedBy, chatThread.AssignedAgentId,
                 chatThread.DateCreated,chatThread.LastModified);
         }
 

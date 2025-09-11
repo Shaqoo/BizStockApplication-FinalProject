@@ -24,8 +24,7 @@ namespace Infrastructures.Persistence.Repositories
 
         public async Task<ChatThread?> GetByIdAsync(Guid id)
         {
-            return await _context.ChatThreads.FindAsync(id)
-                ?? throw new KeyNotFoundException("Chat thread not found.");
+            return await _context.ChatThreads.FirstOrDefaultAsync(a => a.Id == id) ?? null;
         }
 
         public async Task<PaginatedList<ChatThread>> GetAllAsync(PageRequest pageRequest)
@@ -63,7 +62,7 @@ namespace Infrastructures.Persistence.Repositories
 
         public async Task<PaginatedList<ChatThread>> GetByAgentIdAsync(Guid agentId, PageRequest pageRequest)
         {
-            var query = _context.ChatThreads.Where(a => a.AssignedAgentId == agentId).AsQueryable();
+            var query = _context.ChatThreads.Where(a => a.AssignedAgentId == agentId && a.Status == ChatStatus.InProgress).AsQueryable();
             var total = await query.CountAsync();
 
             var items = await query
@@ -108,10 +107,9 @@ namespace Infrastructures.Persistence.Repositories
             await Task.CompletedTask; 
         }
 
-        public async Task<ChatThread> GetByExpression(Expression<Func<ChatThread, bool>> predicate)
+        public async Task<ChatThread?> GetByExpression(Expression<Func<ChatThread, bool>> predicate)
         {
-            return await _context.ChatThreads.FirstOrDefaultAsync(predicate) ??
-                  throw new ArgumentNullException("Chat Thread Not Found");
+            return await _context.ChatThreads.FirstOrDefaultAsync(predicate);
         }
 
         public async Task<PaginatedList<ChatThread>> GetByStatusAsync(ChatStatus status, PageRequest pageRequest)
@@ -126,6 +124,18 @@ namespace Infrastructures.Persistence.Repositories
                 .ToListAsync();
 
             return new PaginatedList<ChatThread>(items, total, pageRequest.Page, pageRequest.PageSize);
+        }
+
+        public async Task<int> CountClosedThreadsAsync()
+        {
+            return await _context.ChatThreads
+                .CountAsync(t => t.Status == ChatStatus.Closed);
+        }
+
+        public async Task<int> CountInprogressThreadsAsync()
+        {
+            return await _context.ChatThreads
+                .CountAsync(t => t.Status == ChatStatus.InProgress);
         }
     }
 

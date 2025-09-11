@@ -2,8 +2,10 @@
 using Application.Dto;
 using Application.Dto.RequestModels;
 using Application.Queries.Customers;
+using Application.Queries.Customers.GetCustomerStats;
 using Host.Extensions;
 using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Host.Controllers.V1
@@ -52,6 +54,7 @@ namespace Host.Controllers.V1
         /// </remarks>
         /// <response code="200">Returns the customer details as a <see cref="CustomerDto"/>.</response>
         /// <response code="400">If the request is invalid or the customer details could not be retrieved.</response>
+        [Authorize]
         [HttpGet("current")]
         [ProducesResponseType(typeof(Result<CustomerDto>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(Result<CustomerDto>), StatusCodes.Status400BadRequest)]
@@ -64,6 +67,23 @@ namespace Host.Controllers.V1
             return Ok(result);
         }
 
+
+        /// <summary>
+        /// Get customer statistics for customer service dashboard.
+        /// </summary>
+        /// <remarks>
+        /// Returns total customers, verified customers, total orders, and open complaints.
+        /// </remarks>
+        /// <returns>A <see cref="CustomerStatsDto"/> object containing summary counts.</returns>
+        /// <response code="200">Returns the customer statistics successfully.</response>
+        [Authorize]
+        [HttpGet("stats")]
+        [ProducesResponseType(typeof(CustomerStatsDto), StatusCodes.Status200OK)]
+        public async Task<IActionResult> GetCustomerStats()
+        {
+            var result = await mediator.Send(new GetCustomerStatsQuery());
+            return Ok(result);
+        }
 
     }
 }

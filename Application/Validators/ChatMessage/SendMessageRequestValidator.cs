@@ -13,7 +13,6 @@ namespace Application.Validations.ChatMessage
         public SendMessageRequestValidator()
         {
             RuleFor(x => x.ChatThreadId).NotEmpty();
-            RuleFor(x => x.SenderId).NotEmpty();
 
             RuleFor(x => new { x.Message, x.Audio, x.Picture })
                 .Must(x => !string.IsNullOrWhiteSpace(x.Message) || x.Audio != null || x.Picture != null)

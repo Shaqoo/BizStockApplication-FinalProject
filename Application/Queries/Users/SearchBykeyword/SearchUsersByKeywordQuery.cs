@@ -4,6 +4,7 @@ using MediatR;
 
 namespace Application.Queries.Users.SearchBykeyword
 {
-    public record SearchUsersByKeywordQuery(PageRequest PageRequest,string keyword) : IRequest<Result<PaginatedList<UserDto>>>;
+    public record SearchUsersByKeywordQuery(PageRequest PageRequest,string keyword,bool isCustomer = false)
+        : IRequest<Result<PaginatedList<UserDto>>>;
      
 }

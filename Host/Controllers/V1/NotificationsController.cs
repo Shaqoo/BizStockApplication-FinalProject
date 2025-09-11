@@ -9,7 +9,6 @@ using Application.Queries.Notifications.CountUnreadByRecipient;
 using Application.Queries.Notifications.GetById;
 using Application.Queries.Notifications.GetNotificationsByRecipient;
 using Application.Queries.Notifications.GetUnreadNotifications;
-using Domain.Entities;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -81,7 +80,7 @@ namespace Host.Controllers.V1
         /// Get a notification by Id.
         /// </summary>
         [HttpGet("{id:guid}")]
-        [ProducesResponseType(typeof(Notification), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(NotificationDto), StatusCodes.Status200OK)]
         public async Task<IActionResult> GetById(Guid id)
         {
             var result = await _mediator.Send(new GetNotificationByIdQuery(id));
@@ -92,7 +91,7 @@ namespace Host.Controllers.V1
         /// Get all unread notifications for a recipient.
         /// </summary>
         [HttpGet("recipient/unread")]
-        [ProducesResponseType(typeof(IEnumerable<Notification>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(IEnumerable<NotificationDto>), StatusCodes.Status200OK)]
         public async Task<IActionResult> GetUnreadByRecipient()
         {
             var result = await _mediator.Send(new GetUnreadNotificationsByRecipientQuery());
@@ -114,7 +113,7 @@ namespace Host.Controllers.V1
         /// Get paginated notifications for a recipient.
         /// </summary>
         [HttpGet("recipient/paged")]
-        [ProducesResponseType(typeof(PaginatedList<Notification>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(PaginatedList<NotificationDto>), StatusCodes.Status200OK)]
         public async Task<IActionResult> GetByRecipientPaged([FromQuery] PageRequest pageRequest)
         {
             var result = await _mediator.Send(new GetNotificationsByRecipientPagedQuery(pageRequest));

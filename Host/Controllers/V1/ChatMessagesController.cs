@@ -67,7 +67,7 @@ namespace Host.Controllers.V1
         [HttpPost]
         [ProducesResponseType(typeof(Result<MessageDto>), StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<IActionResult> SendMessage([FromBody] SendMessageRequest request)
+        public async Task<IActionResult> SendMessage([FromForm] SendMessageRequest request)
         {
             var command = new SendMessageCommand(request, Request.GetRequestMetadata());
             var result = await _mediator.Send(command);

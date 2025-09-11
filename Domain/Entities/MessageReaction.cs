@@ -10,7 +10,7 @@ namespace Domain.Entities
         public Guid ReactedByUserId { get; private set; }
         public User ReactedBy { get; private set; } = default!;
         public string Emoji { get; private set; } = default!; 
-        public DateTimeOffset ReactedAt { get; private init; } = DateTimeOffset.Now;
+        public DateTimeOffset ReactedAt { get; private init; } = DateTimeOffset.UtcNow;
 
         private MessageReaction() { }
 

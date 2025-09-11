@@ -6,11 +6,6 @@ using Domain.DomainEvents;
 using Domain.Entities;
 using Domain.Enums;
 using MediatR;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Application.Commands.ChatThreads.Close
 {
@@ -45,7 +40,7 @@ namespace Application.Commands.ChatThreads.Close
             try
             {
                 await unitOfWork.BeginTransactionAsync();
-                await chatThreadRepository.UpdateThread(thread);
+                //await chatThreadRepository.UpdateThread(thread);
                 await unitOfWork.CommitTransactionAsync();
                 await mediator.Publish(new ChatThreadClosedEvent(thread.Id,agentId,thread.CustomerId));
 

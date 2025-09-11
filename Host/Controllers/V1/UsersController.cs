@@ -137,6 +137,21 @@ namespace Host.Controllers.V1
             return Ok(result.Data);
         }
 
+        /// <summary>Search for users</summary>
+        /// <param name="query">Search keyword</param>
+        /// <param name="page">Page number</param>
+        /// <param name="pageSize">Page size</param>
+        /// <returns>Paged list of users</returns>
+        /// <response code="200">Users found</response>
+        [Authorize]
+        [HttpGet("search-customers")]
+        [ProducesResponseType(typeof(PaginatedList<UserDto>), StatusCodes.Status200OK)]
+        public async Task<IActionResult> SearchCustomers([FromQuery] string query, [FromQuery] int page = 1, [FromQuery] int pageSize = 10, CancellationToken cancellationToken = default)
+        {
+            var result = await _mediator.Send(new SearchUsersByKeywordQuery(new PageRequest { Page = page, PageSize = pageSize }, query,true), cancellationToken);
+            return Ok(result.Data);
+        }
+
 
         /// <summary>Get all users with pagination</summary>
         /// <param name="page">Page number</param>
@@ -262,7 +277,7 @@ namespace Host.Controllers.V1
             var result = await _mediator.Send(new RegisterFingerprintCommand(request, Request.GetRequestMetadata()));
             if (!result.IsSuccess)
             {
-                return BadRequest(result.Message);
+                return BadRequest(result);
             }
 
             return Ok(result);

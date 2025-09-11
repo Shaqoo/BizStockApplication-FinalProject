@@ -14,36 +14,37 @@ namespace Application.Commands.ChatThreads.Create
         IAuditLogRepository auditLogRepository,
         IUnitOfWork unitOfWork,
         IMediator mediator,
-        IChatThreadRepository chatThreadRepository) : IRequestHandler<CreateChatThreadCommand, Result<string>>
+        IChatThreadRepository chatThreadRepository) : IRequestHandler<CreateChatThreadCommand, Result<Guid>>
     {
-        public async Task<Result<string>> Handle(CreateChatThreadCommand request, CancellationToken cancellationToken)
+        public async Task<Result<Guid>> Handle(CreateChatThreadCommand request, CancellationToken cancellationToken)
         {
             var user = authService.CurrentUser();
             if (user == null)
             {
-                return Result<string>.Failure("User not authenticated.");
+                return Result<Guid>.Failure("User not authenticated.");
             }
 
             var customer = await customerRepository.GetByEmailAsync(user.Email);
 
             if (customer == null)
             {
-                return Result<string>.Failure("Customer not found.");
+                return Result<Guid>.Failure("Customer not found.");
             }
             if (customer.IsDeleted)
             {
-                return Result<string>.Failure("Customer account is deleted.");
+                return Result<Guid>.Failure("Customer account is deleted.");
             }
 
             var existingOpenThread = await chatThreadRepository.FindAsync(a => a.CustomerId == customer.Id &&
          (a.Status == ChatStatus.Open || a.Status == ChatStatus.InProgress));
 
-            if (existingOpenThread != null)
-                return Result<string>.Failure("An open chat thread already exists.");
+            if (existingOpenThread.Count() != 0)
+                return Result<Guid>.Failure("An open chat thread already exists.");
 
 
 
             var chatThread = new ChatThread(customer.Id);
+            chatThread.SetCreatedBy(customer.FullName);
 
             try
             {
@@ -60,7 +61,7 @@ namespace Application.Commands.ChatThreads.Create
                     $"Chat thread created for customer '{customer.FullName}'.",
                     request.RequestMetadata.IpAddress,
                     request.RequestMetadata.UserAgent));
-                return Result<string>.Success(chatThread.Id.ToString());
+                return Result<Guid>.Success(chatThread.Id);
             }
             catch (Exception ex)
             {
@@ -75,7 +76,7 @@ namespace Application.Commands.ChatThreads.Create
                     request.RequestMetadata.IpAddress,
                     request.RequestMetadata.UserAgent));
 
-                return Result<string>.Failure($"An error occurred while creating the chat thread: {ex.Message}");
+                return Result<Guid>.Failure($"An error occurred while creating the chat thread: {ex.Message}");
             }
         }
     }

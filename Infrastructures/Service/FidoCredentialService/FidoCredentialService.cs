@@ -4,6 +4,7 @@ using Domain.Entities;
 using Fido2NetLib;
 using Fido2NetLib.Objects;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
 using System.Text;
 using System.Text.Json;
 
@@ -29,9 +30,9 @@ namespace Infrastructures.Service.FidoCredentialService
             _userRepository = userRepository;
         }
 
-        
 
-        public async Task<CredentialCreateOptions> GenerateRegistrationOptionsAsync(Guid userId)
+
+        public async Task<JsonResult> GenerateRegistrationOptionsAsync(Guid userId)
         {
             var user = await _userRepository.GetByIdAsync(userId)
                        ?? throw new Exception("User not found");
@@ -40,11 +41,10 @@ namespace Infrastructures.Service.FidoCredentialService
             {
                 DisplayName = user.FullName,
                 Name = (string)user.Email,
-                Id = Encoding.UTF8.GetBytes(user.Id.ToString())
+                Id = user.Id.ToByteArray()
             };
 
-            var existingCredentials = await _credentialRepository
-                .GetByUserIdAsync(userId);
+            var existingCredentials = await _credentialRepository.GetByUserIdAsync(userId);
 
             var excludeCredentials = existingCredentials.Select(c => new PublicKeyCredentialDescriptor
             {
@@ -53,27 +53,26 @@ namespace Infrastructures.Service.FidoCredentialService
             }).ToList();
 
             var options = _fido2.RequestNewCredential(
-     user: fidoUser,
-     excludeCredentials: excludeCredentials,
-     authenticatorSelection: new AuthenticatorSelection
-     {
-         AuthenticatorAttachment = AuthenticatorAttachment.Platform,
-         RequireResidentKey = false,
-         UserVerification = UserVerificationRequirement.Required
-     },
-      AttestationConveyancePreference.None
- );
-
-
+                user: fidoUser,
+                excludeCredentials: excludeCredentials,
+                authenticatorSelection: new AuthenticatorSelection
+                {
+                    AuthenticatorAttachment = AuthenticatorAttachment.Platform,
+                    RequireResidentKey = false,
+                    UserVerification = UserVerificationRequirement.Required
+                },
+                AttestationConveyancePreference.None
+            );
 
             var session = _httpContextAccessor.HttpContext?.Session;
 
-            session?.SetString("fido_challenge", Base64Url.Encode(options.Challenge)); 
-            var optionsJson = JsonSerializer.Serialize(options);
+           
+            session?.SetString("fido_challenge", Base64Url.Encode(options.Challenge));
+
+            var optionsJson = options.ToJson();
             session?.SetString("fido_options", optionsJson);
 
-
-            return options;
+            return new JsonResult(options);
         }
 
         public async Task<FidoCredential> RegisterCredentialAsync(AuthenticatorAttestationRawResponse attestation)
@@ -87,8 +86,7 @@ namespace Infrastructures.Service.FidoCredentialService
             var optionsJson = session.GetString("fido_options")
                              ?? throw new Exception("Options missing");
 
-            var options = JsonSerializer.Deserialize<CredentialCreateOptions>(optionsJson)
-                          ?? throw new Exception("Invalid options");
+            var options = CredentialCreateOptions.FromJson(optionsJson);
 
             var result = await _fido2.MakeNewCredentialAsync(attestation, options, async (args, ct) =>
             {
@@ -97,19 +95,16 @@ namespace Infrastructures.Service.FidoCredentialService
                 return credential == null;
             });
 
-
             var userId = new Guid(result.Result.User.Id);
 
             return new FidoCredential(
-    userId,
-    Base64Url.Encode(result.Result.CredentialId),
-    Base64Url.Encode(result.Result.PublicKey),
-    result.Result.Aaguid,
-    result.Result.Counter
-);
-
+                userId,
+                Base64Url.Encode(result.Result.CredentialId),
+                Base64Url.Encode(result.Result.PublicKey),
+                result.Result.Aaguid,
+                result.Result.Counter
+            );
         }
-
 
 
         public async Task<AssertionOptions> GenerateLoginOptionsAsync(string userIdentifier)

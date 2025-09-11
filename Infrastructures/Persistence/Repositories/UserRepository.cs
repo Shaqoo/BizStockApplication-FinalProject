@@ -101,7 +101,7 @@ namespace Infrastructures.Persistence.Repositories
             }
         }
 
-        public async Task<PaginatedList<User>> SearchUsers(string keyword, PageRequest pageRequest)
+        public async Task<PaginatedList<User>> SearchUsers(string keyword, PageRequest pageRequest,Role? role)
         {
             if (string.IsNullOrWhiteSpace(keyword))
             {
@@ -110,40 +110,38 @@ namespace Infrastructures.Persistence.Repositories
 
             var formattedKeyword = keyword.Trim().Replace(" ", " & ");
 
-            var query = _context.Users.Include(u => u.UserRoles)
-                        .Where(u =>
-                            u.SearchVector.Matches(
-                                EF.Functions.PlainToTsQuery("english", formattedKeyword)
-                            ));
+            var query = _context.Users.Include(u => u.UserRoles).Where(u =>
+                    EF.Functions.ILike(u.FullName, $"%{keyword}%") ||
+                    EF.Functions.ILike((string)u.Email, $"%{keyword}%") ||
+                    EF.Functions.ILike((string)u.PhoneNumber, $"%{keyword}%"));
 
             var totalCount = await query.CountAsync();
 
             if (totalCount == 0)
             {
-                query = _context.Users.Include(u => u.UserRoles).Where(u =>
-                    EF.Functions.ILike(u.FullName, $"%{keyword}%") ||
-                    EF.Functions.ILike((string)u.Email, $"%{keyword}%") ||
-                    EF.Functions.ILike((string)u.PhoneNumber, $"%{keyword}%"));
-
+                query = _context.Users.Include(u => u.UserRoles)
+                        .Where(u =>
+                            u.SearchVector.Matches(
+                                EF.Functions.PlainToTsQuery("english", formattedKeyword)
+                            ));
                 totalCount = await query.CountAsync();
             }
-
-            //if (totalCount == 0)
-            //{
-            //    query = _context.Users.Include(u => u.UserRoles)
-            //        .OrderByDescending(u => EF.Functions.TrigramsSimilarity(u.FullName, keyword))
-            //        .Where(u => EF.Functions.TrigramsSimilarity(u.FullName, keyword) > 0.3);
-
-            //    totalCount = await query.CountAsync();
-            //}
-
+            var customerItems = new List<User>();
+            if (role is not null)
+            {
+                customerItems = await query.OrderBy(u => u.FullName)
+                .Where(u => u.UserRoles.Any(r => r.Role == role))
+                .Skip((pageRequest.Page - 1) * pageRequest.PageSize)
+                .Take(pageRequest.PageSize)
+                .ToListAsync();
+            }
             var items = await query
                 .OrderBy(u => u.FullName)
                 .Skip((pageRequest.Page - 1) * pageRequest.PageSize)
                 .Take(pageRequest.PageSize)
                 .ToListAsync();
 
-            return new PaginatedList<User>(items, totalCount, pageRequest.Page, pageRequest.PageSize);
+            return new PaginatedList<User>(role == null ? items : customerItems, totalCount, pageRequest.Page, pageRequest.PageSize);
         }
 
         public async Task AddCode(UserRecoveryCode userRecoveryCode)

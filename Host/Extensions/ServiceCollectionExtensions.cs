@@ -20,7 +20,6 @@ namespace Host.Extensions
             services.AddScoped<SanitizeInputFilter>();
             services.AddHttpClient<IAiService, AiService>();
 
-
             services.AddResponseCompression(options =>
             {
                 options.EnableForHttps = true;

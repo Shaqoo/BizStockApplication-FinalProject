@@ -57,8 +57,9 @@ namespace Infrastructures.Persistence.Repositories
         public async Task<PaginatedList<ChatMessage>> GetMessagesByThreadIdPagedAsync(Guid threadId, PageRequest pageRequest)
         {
             var query = _context.ChatMessages.Include(a => a.Reactions)
+                .Include(a => a.Sender)
                 .Where(m => m.ChatThreadId == threadId)
-                .OrderBy(m => m.SentAt);
+                .OrderByDescending(m => m.SentAt);
 
             var total = await query.CountAsync();
 
@@ -73,6 +74,8 @@ namespace Infrastructures.Persistence.Repositories
         public async Task<ChatMessage?> GetMessageWithReplyAsync(Guid messageId)
         {
             return await _context.ChatMessages
+                .Include(a => a.Reactions)
+                .Include(a => a.Sender)
                 .Include(m => m.RepliedToMessage)
                 .FirstOrDefaultAsync(m => m.Id == messageId);
         }

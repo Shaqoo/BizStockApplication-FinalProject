@@ -118,6 +118,7 @@ namespace Domain.Entities
 
         public void UpdateTwoFactorSecret(TwoFactorSecret secret)
         {
+            IsTwoFactorEnabled = true;
             TwoFactorSecret = secret ?? throw new ArgumentNullException(nameof(secret));
             Modified();
         }

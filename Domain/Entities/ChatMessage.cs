@@ -21,7 +21,7 @@ namespace Domain.Entities
         public Guid? RepliedToMessageId { get; private set; }
         public ChatMessage? RepliedToMessage { get; private set; }
         public bool IsRead { get; private set; } = false;
-        public DateTimeOffset SentAt { get; private init; } = DateTimeOffset.Now;
+        public DateTimeOffset SentAt { get; private init; } = DateTimeOffset.UtcNow;
         public ICollection<MessageReaction> Reactions { get; private set; } = new List<MessageReaction>();
 
         private ChatMessage() { }

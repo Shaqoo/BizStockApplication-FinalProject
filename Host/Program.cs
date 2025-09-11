@@ -45,6 +45,14 @@ internal class Program
         builder.Services.AddApplication(builder.Configuration);
         builder.Services.AddInfrastructureServices(builder.Configuration);
         builder.Services.AddHostServices(builder.Configuration);
+        builder.Services.AddDistributedMemoryCache();
+        builder.Services.AddSession(options =>
+        {
+            options.IdleTimeout = TimeSpan.FromMinutes(30);  
+            options.Cookie.HttpOnly = true;
+            options.Cookie.IsEssential = true;
+            options.Cookie.SameSite = SameSiteMode.None;
+        });
 
         builder.Services.AddControllers(options =>
         {
@@ -90,6 +98,8 @@ internal class Program
         app.UseCors("BizStockPolicy");
 
         app.UseHttpMetrics();
+
+        app.UseSession();
 
         app.UseCookiePolicy();
 

@@ -101,20 +101,23 @@ namespace Infrastructures.Service.Upload
 
         public async Task<string> MessageAudioAsync(Stream fileStream, string fileName)
         {
-            var uploadParams = new ImageUploadParams
+            var uploadParams = new VideoUploadParams
             {
                 File = new FileDescription(fileName, fileStream),
                 Folder = "bizstock-message-audio",
                 UseFilename = true,
                 UniqueFilename = true,
-                Overwrite = true,
+                Overwrite = true
             };
+
             var uploadResult = await _cloudinary.UploadAsync(uploadParams);
+
             if (uploadResult.Error != null)
-            {
-                throw new Exception($"Error uploading image: {uploadResult.Error.Message}");
-            }
-            return uploadResult.SecureUri.ToString() ?? throw new Exception("Cloudinary upload failed");
+                throw new Exception($"Error uploading audio: {uploadResult.Error.Message}");
+
+            return uploadResult.SecureUrl?.ToString()
+                ?? throw new Exception("Cloudinary upload failed");
         }
+
     }
 }

@@ -6,9 +6,15 @@ using Domain.Entities;
 using Fido2NetLib;
 using Fido2NetLib.Objects;
 using MediatR;
+using System.Runtime.Serialization;
 
 namespace Application.Commands.Users.AddBiometrics
 {
+    public enum FixedPublicKeyCredentialType
+    {
+        [EnumMember(Value = "public-key")]
+        PublicKey
+    }
     public class RegisterBiometricsHandler(IFidoCredentialService fidoCredentialService,
         IAuditLogRepository auditLogRepository,
         IUnitOfWork unitOfWork) : IRequestHandler<RegisterFingerprintCommand, Result<object>>
@@ -16,7 +22,7 @@ namespace Application.Commands.Users.AddBiometrics
         public async Task<Result<object>> Handle(RegisterFingerprintCommand request, CancellationToken cancellationToken)
         {
             var attestation = new AuthenticatorAttestationRawResponse
-             {
+            {
                 Id = Base64Url.Decode(request.RegistrationDto.Id),
                 RawId = Base64Url.Decode(request.RegistrationDto.RawId),
                 Response = new AuthenticatorAttestationRawResponse.ResponseData
@@ -24,7 +30,9 @@ namespace Application.Commands.Users.AddBiometrics
                     AttestationObject = Base64Url.Decode(request.RegistrationDto.Response.AttestationObject),
                     ClientDataJson = Base64Url.Decode(request.RegistrationDto.Response.ClientDataJSON)
                 },
-                Type = (PublicKeyCredentialType)Enum.Parse(typeof(PublicKeyCredentialType),request.RegistrationDto.Type)
+                Type = request.RegistrationDto.Type == "public-key"
+        ? PublicKeyCredentialType.PublicKey
+        : throw new ArgumentException($"Unsupported credential type: {request.RegistrationDto.Type}")
             };
 
             try

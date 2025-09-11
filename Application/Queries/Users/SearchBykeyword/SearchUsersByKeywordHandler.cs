@@ -3,12 +3,8 @@ using Application.Extensions;
 using Application.Interfaces.Repository;
 using Application.Interfaces.Service;
 using Application.Pagination;
+using Domain.Entities;
 using MediatR;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Application.Queries.Users.SearchBykeyword
 {
@@ -19,11 +15,15 @@ namespace Application.Queries.Users.SearchBykeyword
     {
         public async Task<Result<PaginatedList<UserDto>>> Handle(SearchUsersByKeywordQuery request, CancellationToken cancellationToken)
         {
-            var key = $"SearchUser:{request.keyword}:Page={request.PageRequest.Page}:Size={request.PageRequest.PageSize}";
+            var key = $"SearchUser:{request.keyword}:Page={request.PageRequest.Page}:Size={request.PageRequest.PageSize}:IsCustomer:{request.isCustomer}";
 
             var users = await distributedCache.GetOrAddAsync(key, async () =>
             {
-                var result = await userRepository.SearchUsers(request.keyword, request.PageRequest);
+                var result = null as PaginatedList<User>;
+                if(request.isCustomer)
+                    result = await userRepository.SearchUsers(request.keyword, request.PageRequest, Domain.Enums.Role.Customer);
+                else
+                    result = await userRepository.SearchUsers(request.keyword, request.PageRequest,null);
                 
                 return new PaginatedList<UserDto>(
                     result.Items.Select(u => u.UserAsDto()).ToList(),

@@ -139,7 +139,7 @@ namespace Application.Commands.Users.Login
 
                 return Result<object>.Success(new
                 {
-                    Token = loginToken,
+                    AccessToken = loginToken,
                     Status = "LOGIN_SUCCESS"
                 });
             }

@@ -49,8 +49,9 @@ namespace Infrastructures.Extensions
                 {
                     ServerDomain = "localhost",
                     ServerName = "BizStock App",
-                    Origins = ["https://yourdomain.com"]
+                    Origins = new HashSet<string> { "http://localhost:5500" } 
                 };
+
                 return new Fido2(config);
             });
             
