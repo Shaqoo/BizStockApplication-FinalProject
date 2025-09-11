@@ -1,5 +1,5 @@
 # BizStockApplication
-BizStock is a modern inventory and stock management system built with ASP.NET Core, Entity Framework Core, and PostgreSQL. It is designed to help businesses manage products, brands, categories, users, and transactions efficiently.
+BizStock is a modern inventory and sales management system built with ASP.NET Core, Entity Framework Core, and PostgreSQL. It is designed to help businesses manage products, brands, categories, users, and transactions efficiently.
 
 🚀 Features
 
