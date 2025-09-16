@@ -121,12 +121,12 @@ namespace Infrastructures.Persistence.Repositories
 
         public async Task<bool> HasItemAsync(Guid warehouseId)
         {
-            return await _context.WarehouseItems.AsNoTracking().AnyAsync(i => i.Id == warehouseId);
+            return await _context.WarehouseItems.AsNoTracking().AnyAsync(i => i.WarehouseId == warehouseId);
         }
 
         public async Task<int> GetCount(Guid warehouseId)
         {
-            return await _context.WarehouseItems.AsNoTracking().CountAsync(i => i.Id == warehouseId);
+            return await _context.WarehouseItems.AsNoTracking().CountAsync(i => i.WarehouseId == warehouseId);
         }
 
 
@@ -138,6 +138,18 @@ namespace Infrastructures.Persistence.Repositories
         public async Task<bool> Exists(Guid Id)
         {
             return await _context.Warehouses.AsNoTracking().AnyAsync(w => w.Id == Id);
+        }
+
+        public async Task<List<WarehouseStockDto>> GetStockByProductIdAsync(Guid productId)
+        {
+             return await _context.WarehouseItems
+                .Where(wi => wi.ProductId == productId)
+                .GroupBy(wi => new { wi.WarehouseId, wi.Warehouse.Name })
+                .Select(g => new WarehouseStockDto(
+                    g.Key.WarehouseId,
+                    g.Key.Name,
+                    g.Sum(wi => wi.Quantity)
+                )).ToListAsync();
         }
     }
 

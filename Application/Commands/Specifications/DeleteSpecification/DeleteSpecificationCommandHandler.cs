@@ -39,6 +39,12 @@ namespace Application.Commands.Specifications.DeleteSpecification
                     return Result<string>.Failure("Specification not found.");
                 }
 
+                if(spec.ProductSpecifications.Any())
+                {
+                    _logger.LogWarning("Cannot Delete Specification Related To Products");
+                    return Result<string>.Failure("Cannot Delete Specification Related To Products");
+                }
+
                 await _specificationRepository.Remove(spec);
                 await _unitOfWork.SaveChangesAsync(cancellationToken);
 

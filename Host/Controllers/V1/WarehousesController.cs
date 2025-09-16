@@ -8,6 +8,7 @@ using Application.Pagination;
 using Application.Queries.Warehouses.GetAll;
 using Application.Queries.Warehouses.GetById;
 using Application.Queries.Warehouses.Search;
+using Application.Queries.Warehouses.SearchProductStock;
 using Host.Extensions;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
@@ -108,7 +109,7 @@ namespace Host.Controllers.V1
             if (!result.IsSuccess)
                 return BadRequest(result);
 
-            return NoContent();
+            return Ok(result);
         }
 
         /// <summary>
@@ -164,5 +165,26 @@ namespace Host.Controllers.V1
 
             return Ok(result);
         }
+
+        /// <summary>
+        /// Searches product stock across all warehouses by a keyword (e.g., product name, SKU).
+        /// </summary>
+        /// <param name="keyword"></param>
+        /// <param name="pageRequest"></param>
+        /// <returns>Paginated List Of ProductStockDto</returns>
+        [HttpGet("search-productstocksummary")]
+        [Authorize]
+        [ProducesResponseType(typeof(Result<PaginatedList<ProductStockSummaryDto>>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(Result<PaginatedList<ProductStockSummaryDto>>), StatusCodes.Status404NotFound)]
+        public async Task<IActionResult> SearchProductStock([FromQuery] string keyword,[FromQuery]PageRequest pageRequest)
+        {
+            var result = await _mediator.Send(new SearchProductStockQuery(keyword,pageRequest));
+
+            if (!result.IsSuccess)
+                return NotFound(result);
+
+            return Ok(result);
+        }
+
     }
 }

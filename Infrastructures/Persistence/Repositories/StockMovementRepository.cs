@@ -66,19 +66,33 @@ namespace Infrastructures.Persistence.Repositories
 
         public async Task<PaginatedList<StockMovementDto>> GetByDateRangeAsync(DateTime start, DateTime end, PageRequest pageRequest)
         {
-            var query = _context.StockMovements.Include(a => a.WarehouseItem)
-                .Where(m => m.DateCreated >= start && m.DateCreated <= end)
-                .Select(a => a.ToDto());  
+            var startUtc = new DateTimeOffset(start, TimeSpan.Zero);
+            var endUtc = new DateTimeOffset(end, TimeSpan.Zero);
 
-            var total = await query.CountAsync();
+            var baseQuery = _context.StockMovements
+                .Include(a => a.WarehouseItem)
+                .Where(m => m.DateCreated >= startUtc && m.DateCreated <= endUtc);
 
-            var items = await query
-                .OrderByDescending(m => m.Date)
+
+            var totalCount = await baseQuery.CountAsync();
+
+            var items = await baseQuery
+                .OrderBy(a => a.DateCreated)
                 .Skip((pageRequest.Page - 1) * pageRequest.PageSize)
                 .Take(pageRequest.PageSize)
+                .Select(a => new StockMovementDto(
+                    a.Id,
+                    a.WarehouseItem.ProductId,
+                    a.MovementType,
+                    a.QuantityChanged,
+                    a.WarehouseItem.WarehouseId,
+                    a.DateCreated,
+                    a.PerformedByUserId,
+                    a.Reason
+                ))
                 .ToListAsync();
 
-            return new PaginatedList<StockMovementDto>(items, total, pageRequest.Page, pageRequest.PageSize);
+            return new PaginatedList<StockMovementDto>(items, totalCount, pageRequest.Page, pageRequest.PageSize);
         }
 
         public async Task<int> GetTotalQuantityInAsync(Guid warehouseItemId)
@@ -97,14 +111,29 @@ namespace Infrastructures.Persistence.Repositories
 
         public async Task<PaginatedList<StockMovementDto>> GetByWarehousePagedAsync(Guid warehouseItemId, PageRequest pageRequest)
         {
-            var query = _context.StockMovements.Include(a => a.WarehouseItem).Where(a => a.WarehouseItem.WarehouseId == warehouseItemId).Select(a => a.ToDto()).AsQueryable();
+            var baseQuery = _context.StockMovements
+                .Include(a => a.WarehouseItem)
+                .Where(a => a.WarehouseItemId == warehouseItemId);
 
-            var items = await query.OrderBy(a => a.Date)
+            var totalCount = await baseQuery.CountAsync();
+
+            var items = await baseQuery
+                .OrderBy(a => a.DateCreated)
                 .Skip((pageRequest.Page - 1) * pageRequest.PageSize)
                 .Take(pageRequest.PageSize)
+                .Select(a => new StockMovementDto(
+                    a.Id,
+                    a.WarehouseItem.ProductId,
+                    a.MovementType,
+                    a.QuantityChanged,
+                    a.WarehouseItem.WarehouseId,
+                    a.DateCreated,
+                    a.PerformedByUserId,
+                    a.Reason
+                ))
                 .ToListAsync();
 
-            return new PaginatedList<StockMovementDto>(items,query.Count(),pageRequest.Page,pageRequest.PageSize);
+            return new PaginatedList<StockMovementDto>(items, totalCount, pageRequest.Page, pageRequest.PageSize);
         }
 
         public async Task<StockMovement> GetByExpression(Expression<Func<StockMovement, bool>> predicate)
@@ -115,29 +144,58 @@ namespace Infrastructures.Persistence.Repositories
 
         public async Task<PaginatedList<StockMovementDto>> GetByProductId(Guid productId, PageRequest pageRequest)
         {
-            var query = _context.StockMovements.Include(a => a.WarehouseItem).Where(a => a.WarehouseItem.ProductId == productId)
-                .Select(a => a.ToDto()).AsQueryable();
+            var baseQuery = _context.StockMovements
+                .Include(a => a.WarehouseItem)
+                .Where(a => a.WarehouseItem.ProductId == productId);
 
-            var items = await query.OrderBy(a => a.Date)
+            var totalCount = await baseQuery.CountAsync();
+
+            var items = await baseQuery
+                .OrderBy(a => a.DateCreated)
                 .Skip((pageRequest.Page - 1) * pageRequest.PageSize)
                 .Take(pageRequest.PageSize)
+                .Select(a => new StockMovementDto(
+                    a.Id,
+                    a.WarehouseItem.ProductId,
+                    a.MovementType,
+                    a.QuantityChanged,
+                    a.WarehouseItem.WarehouseId,
+                    a.DateCreated,
+                    a.PerformedByUserId,
+                    a.Reason
+                ))
                 .ToListAsync();
 
-            return new PaginatedList<StockMovementDto>(items, query.Count(), pageRequest.Page, pageRequest.PageSize);
+            return new PaginatedList<StockMovementDto>(items, totalCount, pageRequest.Page, pageRequest.PageSize);
         }
 
         public async Task<PaginatedList<StockMovementDto>> GetByMovementType(StockMovementType movementType, PageRequest pageRequest)
         {
-            var query = _context.StockMovements.Include(a => a.WarehouseItem).Where(a => a.MovementType == movementType)
-               .Select(a => a.ToDto()).AsQueryable();
+            var baseQuery = _context.StockMovements
+                .Include(a => a.WarehouseItem)
+                .Where(a => a.MovementType == movementType);
 
-            var items = await query.OrderBy(a => a.Date)
+            var totalCount = await baseQuery.CountAsync();
+
+            var items = await baseQuery
+                .OrderBy(a => a.DateCreated) 
                 .Skip((pageRequest.Page - 1) * pageRequest.PageSize)
                 .Take(pageRequest.PageSize)
+                .Select(a => new StockMovementDto(
+                    a.Id,
+                    a.WarehouseItem.ProductId,
+                    a.MovementType,
+                    a.QuantityChanged,
+                    a.WarehouseItem.WarehouseId,
+                    a.DateCreated,
+                    a.PerformedByUserId,
+                    a.Reason
+                ))
                 .ToListAsync();
 
-            return new PaginatedList<StockMovementDto>(items, query.Count(), pageRequest.Page, pageRequest.PageSize);
+            return new PaginatedList<StockMovementDto>(items, totalCount, pageRequest.Page, pageRequest.PageSize);
         }
+
     }
 
 }

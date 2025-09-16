@@ -43,7 +43,7 @@ namespace Application.Commands.Categories.Update
             await unitOfWork.CommitTransactionAsync();
 
             await logRepository.AddAsync(new AuditLog(
-                userId: authService.CurrentUser().Id,
+                userId: authService.CurrentUser()!.Id,
                 action: $"Updated category '{category.Name}'",
                 entityName: nameof(Category),
                 entityId: category.Id

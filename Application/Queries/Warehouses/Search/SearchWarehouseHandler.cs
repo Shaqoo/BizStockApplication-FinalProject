@@ -3,12 +3,6 @@ using Application.Interfaces.Repository;
 using Application.Interfaces.Service;
 using Application.Pagination;
 using MediatR;
-using Nest;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Application.Queries.Warehouses.Search
 {
@@ -23,7 +17,7 @@ namespace Application.Queries.Warehouses.Search
                 {
                     var data = await warehouseRepository.SearchWarehousesAsync(request.Keyword, request.PageRequest);
                     return data;
-                },TimeSpan.FromMinutes(20));
+                },TimeSpan.FromMinutes(10));
                 return Result<PaginatedList<WarehouseDto>>.Success(result);
         }
     }

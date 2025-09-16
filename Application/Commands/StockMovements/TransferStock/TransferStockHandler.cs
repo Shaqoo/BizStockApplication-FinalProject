@@ -76,7 +76,7 @@ namespace Application.Commands.StockMovements.TransferStock
             await stockMovementRepository.AddAsync(stockMovementTo);
             await unitOfWork.CommitTransactionAsync();
 
-            await auditLogRepository.AddAsync(new AuditLog(user.Id, "TransferStock", nameof(StockMovement), stockMovement.Id,
+            await auditLogRepository.AddAsync(new AuditLog(user.Id, "TransferStock", "StockMovement", stockMovement.Id,
                 $"Transferred {request.Request.Quantity} units of Product {product.Name} (ID: {product.Id}) from Warehouse {fromWarehouseItem.Warehouse.Name} (ID: {request.Request.FromWarehouseId}) to Warehouse {toWarehouseItem.Warehouse.Name} (ID: {request.Request.ToWarehouseId}). Reason: {request.Request.Reason}",
                 request.RequestMetadata.IpAddress, request.RequestMetadata.UserAgent));
 

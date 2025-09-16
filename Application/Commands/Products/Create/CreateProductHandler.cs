@@ -52,14 +52,31 @@ namespace Application.Commands.Products.Create
                 return Result<ProductDto>.Failure("Product Image cannot be null");
             }
 
+           
+
             using var imageStream = request.RequestModel.ImageUrl.OpenReadStream();
             var imageUrl = await uploadService.UploadProductImageAsync(imageStream, request.RequestModel.ImageUrl.FileName);
+
+            var qrDataObject = new
+            {
+                request.RequestModel.Name,
+                request.RequestModel.SellingPrice,
+                request.RequestModel.CostPrice,
+                imageUrl
+            };
+            string qrPayload = System.Text.Json.JsonSerializer.Serialize(qrDataObject);
+
+            var qrCodePath = await uploadService.UploadQrCodeAsync(qrPayload);
+            if (!qrCodePath.IsSuccess)
+            {
+                qrCodePath = await uploadService.UploadQrCodeAsync(request.RequestModel.QrCodeValue);
+            }
 
             var newProduct = new Product(
                 name: request.RequestModel.Name,
                 sku: request.RequestModel.SKU,
                 barcode: request.RequestModel.Barcode,
-                qrCodeValue: request.RequestModel.QrCodeValue,
+                qrCodeValue:  qrCodePath.Data ?? "",
                 imageUrl: imageUrl,
                 costPrice: request.RequestModel.CostPrice,
                 sellingPrice: request.RequestModel.SellingPrice,

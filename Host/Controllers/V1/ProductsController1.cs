@@ -82,7 +82,7 @@ namespace Host.Controllers.V1
         {
             var result = await _mediator.Send(new AddProductQuantityCommand(dto, Request.GetRequestMetadata()));
             if (!result.IsSuccess)
-                return BadRequest(result.Message);
+                return BadRequest(result);
             return Ok(result);
         }
 

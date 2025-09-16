@@ -100,7 +100,7 @@ namespace Host.Controllers.V1
         /// </summary>
         /// <param name="messageId">The ID of the message to mark as read.</param>
         /// <returns>Confirmation string.</returns>
-        [HttpPost("{messageId}/read")]
+        [HttpPatch("{messageId}/read")]
         [ProducesResponseType(typeof(Result<string>), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> MarkAsRead(Guid messageId)

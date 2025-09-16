@@ -22,12 +22,10 @@ namespace Host.Controllers.V1
     public class SpecificationsController : ControllerBase
     {
         private readonly IMediator _mediator;
-        private readonly ILogger<SpecificationsController> _logger;
 
-        public SpecificationsController(IMediator mediator, ILogger<SpecificationsController> logger)
+        public SpecificationsController(IMediator mediator)
         {
             _mediator = mediator;
-            _logger = logger;
         }
 
         /// <summary>

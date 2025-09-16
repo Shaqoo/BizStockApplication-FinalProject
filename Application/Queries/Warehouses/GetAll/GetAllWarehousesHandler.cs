@@ -3,12 +3,6 @@ using Application.Interfaces.Repository;
 using Application.Interfaces.Service;
 using Application.Pagination;
 using MediatR;
-using Nest;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Application.Queries.Warehouses.GetAll
 {
@@ -17,13 +11,13 @@ namespace Application.Queries.Warehouses.GetAll
     {
         public async Task<Result<PaginatedList<WarehouseDto>>> Handle(GetAllWarehousesQuery request, CancellationToken cancellationToken)
         {
-            var cacheKey = $"GetAllWarehousesQuery:PageSize{request.PageRequest.PageSize}:PageNumber{request.PageRequest.PageSize}";
+            var cacheKey = $"GetAllWarehousesQuery:PageSize{request.PageRequest.PageSize}:PageNumber{request.PageRequest.Page}";
             var result = await distributedCache.GetOrAddAsync(cacheKey,
               async () =>
               {
                   var data = await warehouseRepository.GetAllAsyncWithDto(request.PageRequest);
                   return data;
-              },TimeSpan.FromMinutes(30));
+              },TimeSpan.FromMinutes(1));
 
             return Result<PaginatedList<WarehouseDto>>.Success(result);
         }

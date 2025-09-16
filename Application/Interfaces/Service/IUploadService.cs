@@ -1,8 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using Application.Dto;
+using Microsoft.AspNetCore.Http;
 
 namespace Application.Interfaces.Service
 {
@@ -12,6 +9,8 @@ namespace Application.Interfaces.Service
         Task<string> UploadProductImageAsync(Stream fileStream, string fileName);
         Task<string> MessageImageAsync(Stream fileStream, string fileName);
         Task<string> MessageAudioAsync(Stream fileStream, string fileName);
+        Task<Result<string>> UploadQrCodeAsync(IFormFile QrCode);
+        Task<Result<string>> UploadQrCodeAsync(string qrPayload);
 
     }
 }

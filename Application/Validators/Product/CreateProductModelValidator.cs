@@ -1,11 +1,6 @@
 ﻿using Application.Dto.RequestModels;
 using FluentValidation;
 using Microsoft.AspNetCore.Http;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Application.Validations.Product
 {
@@ -28,15 +23,16 @@ namespace Application.Validations.Product
                 .Matches(@"^\d{8,14}$")
                 .WithMessage("Barcode Must Be A Numeric String Between 8 and 14 digits");
 
-            RuleFor(x => x.QrCodeValue).NotEmpty()
-                .WithMessage("QrCode is Required")
-                .Must(BeAValidBase64OrUrl)
-                .WithMessage("QrCode Must Be A Valid Base64 string or URL");
+            RuleFor(x => x.QrCodeValue)
+             .NotNull().WithMessage("QR Code is required")
+             .Must(file => file.Length > 0).WithMessage("QR Code file cannot be empty")
+             .Must(file => file.Length <= 10 * 1024 * 1024).WithMessage("QR Code file must not exceed 3MB")
+             .Must(BeAnImage).WithMessage("QR Code must be a valid image file (PNG or JPG)");
 
             RuleFor(x => x.ImageUrl)
                 .NotNull().WithMessage("Product picture is required.")
                 .Must(BeAnImage).WithMessage("Only image files are allowed (jpeg, jpg, png, gif, bmp, webp, svg).")
-                .Must(f => f.Length <= 2 * 1024 * 1024)
+                .Must(f => f.Length <= 4 * 1024 * 1024)
                 .WithMessage("Image size must be less than or equal to 2MB.");
 
             RuleFor(x => x.UnitOfMeasure)

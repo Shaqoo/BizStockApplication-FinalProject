@@ -21,7 +21,7 @@ namespace Application.Queries.Warehouses.GetById
                    if(data != null)
                        return new Tuple<Warehouse,int>(data,count);
                    return null;
-               },TimeSpan.FromMinutes(30));
+               },TimeSpan.FromMinutes(1));
 
             if (result is null)
                 return Result<WarehouseDto>.Failure($"Warehouse With Id: {query.Id} Not Found");

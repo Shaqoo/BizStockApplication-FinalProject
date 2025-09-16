@@ -9,6 +9,7 @@ using Application.Queries.Categories.GetById;
 using Application.Queries.Categories.GetCategoryHierarchy;
 using Application.Queries.Categories.GetFilteredCategories;
 using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Net;
 
@@ -97,6 +98,7 @@ namespace Host.Controllers.V1
         /// This endpoint allows you to create a new category by providing name, description, and optional parent category.
         /// </remarks>
         /// <returns>The created <c>CategoryDto</c> object.</returns>
+        [Authorize]
         [HttpPost]
         [ProducesResponseType(typeof(Result<CategoryDto>), (int)HttpStatusCode.Created)]
         [ProducesResponseType(typeof(Result<CategoryDto>), (int)HttpStatusCode.BadRequest)]
@@ -117,6 +119,7 @@ namespace Host.Controllers.V1
         /// Use this endpoint to modify the name, description, or other details of an existing category.
         /// </remarks>
         /// <returns>The updated <c>CategoryDto</c> object.</returns>
+        [Authorize]
         [HttpPut("{categoryId:guid}")]
         [ProducesResponseType(typeof(Result<CategoryDto>), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(Result<CategoryDto>), (int)HttpStatusCode.NotFound)]
@@ -137,6 +140,7 @@ namespace Host.Controllers.V1
         /// This endpoint allows changing the parent category or order of a category within the hierarchy.
         /// </remarks>
         /// <returns>The updated <c>CategoryDto</c> object.</returns>
+        [Authorize]
         [HttpPut("{categoryId:guid}/move")]
         [ProducesResponseType(typeof(Result<CategoryDto>), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(Result<CategoryDto>), (int)HttpStatusCode.NotFound)]
@@ -156,6 +160,7 @@ namespace Host.Controllers.V1
         /// Deleting a category will remove it permanently. Ensure there are no dependent entities that rely on this category.
         /// </remarks>
         /// <returns>A confirmation message.</returns>
+        [Authorize]
         [HttpDelete("{categoryId:guid}")]
         [ProducesResponseType(typeof(Result<string>), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(Result<string>), (int)HttpStatusCode.NotFound)]

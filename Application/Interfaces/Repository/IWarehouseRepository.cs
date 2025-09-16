@@ -21,5 +21,6 @@ namespace Application.Interfaces.Repository
         Task<bool> IsNameUnique(string name);
         Task<PaginatedList<WarehouseDto>> GetAllAsyncWithDto(PageRequest pageRequest);
         Task<PaginatedList<WarehouseDto>> SearchWarehousesAsync(string keyword,PageRequest pageRequest);
+        Task<List<WarehouseStockDto>> GetStockByProductIdAsync(Guid productId);
     }
 }

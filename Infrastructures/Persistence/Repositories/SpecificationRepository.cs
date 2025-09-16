@@ -16,7 +16,7 @@ namespace Infrastructures.Persistence.Repositories
         }
 
         public async Task<Specification?> GetByIdAsync(Guid id) =>
-            await _context.Specifications.FindAsync(id);
+            await _context.Specifications.Include(a => a.ProductSpecifications).FirstOrDefaultAsync(a => a.Id == id);
 
         public async Task<IEnumerable<Specification>> GetAllAsync() =>
             await _context.Specifications.ToListAsync();
