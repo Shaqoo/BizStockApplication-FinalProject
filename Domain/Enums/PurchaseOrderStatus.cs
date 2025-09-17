@@ -4,6 +4,7 @@
     {
         Draft,
         Confirmed,
+        Rejected,
         PartiallyReceived,
         Received,
         Cancelled

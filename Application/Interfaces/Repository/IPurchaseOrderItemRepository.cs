@@ -16,6 +16,7 @@ namespace Application.Interfaces.Repository
         Task<int> CountPendingItemsAsync(Guid purchaseOrderId);
         Task UpdateQuantityReceivedAsync(Guid itemId, int quantityReceived);
         Task<decimal> GetTotalAmountForPurchaseOrderAsync(Guid purchaseOrderId);
+        Task DeleteItemAsync(PurchaseOrderItem item);
     }
 
 }

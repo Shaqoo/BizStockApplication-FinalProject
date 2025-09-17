@@ -76,6 +76,16 @@ namespace Domain.Entities
 
             Status = PurchaseOrderStatus.Cancelled;
         }
+
+        public void Update(decimal discount, decimal tax, string? notes)
+        {
+            if (Status != PurchaseOrderStatus.Draft)
+                throw new DomainException("Only draft orders can be updated.");
+            Discount = discount;
+            Tax = tax;
+            Notes = notes;
+            RecalculateSubTotal();
+        }
     }
 
 }

@@ -23,8 +23,7 @@ namespace Infrastructures.Persistence.Repositories
 
         public async Task<PurchaseOrderItem?> GetByIdAsync(Guid id)
         {
-            return await _context.PurchaseOrderItems.FindAsync(id)
-                ?? throw new KeyNotFoundException("Purchase order item not found.");
+            return await _context.PurchaseOrderItems.FirstOrDefaultAsync(a => a.Id == id);
         }
 
         public async Task<PaginatedList<PurchaseOrderItem>> GetAllAsync(PageRequest pageRequest)
@@ -89,10 +88,16 @@ namespace Infrastructures.Persistence.Repositories
                 .SumAsync(i => i.TotalPrice);
         }
 
-        public async Task<PurchaseOrderItem> GetByExpression(Expression<Func<PurchaseOrderItem, bool>> predicate)
+        public async Task<PurchaseOrderItem?> GetByExpression(Expression<Func<PurchaseOrderItem, bool>> predicate)
         {
             return await _context.PurchaseOrderItems.FirstOrDefaultAsync(predicate) ??
                throw new ArgumentNullException("Purchase Order Item Not Found");
+        }
+
+        public async Task DeleteItemAsync(PurchaseOrderItem item)
+        {
+            _context.PurchaseOrderItems.Remove(item);
+            await Task.CompletedTask;
         }
     }
 

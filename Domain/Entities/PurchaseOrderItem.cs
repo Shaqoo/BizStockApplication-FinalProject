@@ -46,6 +46,14 @@ namespace Domain.Entities
 
             QuantityReceived += quantity;
         }
+
+        public void Update(int quantityOrdered, decimal unitPrice)
+        {
+            if (quantityOrdered <= 0) throw new DomainException("Quantity must be positive.");
+            if (unitPrice < 0) throw new DomainException("Price cannot be negative.");
+            QuantityOrdered = quantityOrdered;
+            UnitPrice = unitPrice;
+        }
     }
 
 }
