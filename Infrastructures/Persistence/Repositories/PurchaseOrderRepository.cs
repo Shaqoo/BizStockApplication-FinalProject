@@ -109,6 +109,29 @@ namespace Infrastructures.Persistence.Repositories
             return await _context.PurchaseOrders.FirstOrDefaultAsync(predicate) ??
                 throw new ArgumentNullException("Purchase Order Not Found");
         }
+
+        public async Task<string> GetLastOrderNumber()
+        {
+            var lastOrder = await _context.PurchaseOrders
+                .OrderByDescending(o => o.DateCreated)
+                .FirstOrDefaultAsync();
+
+            return lastOrder?.OrderNumber ?? "PO-00000";
+        }
+
+        public async Task<string> GenerateNextOrderNumber()
+        {
+            var lastNumber = await GetLastOrderNumber();
+
+            var numberPart = lastNumber.Split('-').Last();
+            if (int.TryParse(numberPart, out int numericValue))
+            {
+                numericValue++;
+                return $"PO-{numericValue:D6}";
+            }
+
+            return "PO-00001";
+        }
     }
 
 }

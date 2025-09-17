@@ -30,8 +30,7 @@ namespace Infrastructures.Persistence.Repositories
 
         public async Task<Supplier?> GetByIdAsync(Guid id)
         {
-            return await _context.Suppliers.FindAsync(id)
-                ?? throw new EntityNotFoundException("Supplier","Id");
+            return await _context.Suppliers.FirstOrDefaultAsync(a => a.Id == id) ?? null;
         }
 
         public async Task<PaginatedList<Supplier>> GetAllAsync(PageRequest pageRequest)

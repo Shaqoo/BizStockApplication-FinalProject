@@ -9,19 +9,19 @@ using System.Threading.Tasks;
 
 namespace Domain.Entities
 {
-    public class PurchaseOrder : BaseEntity
-    {
-        public string OrderNumber { get; private set; } = default!;  
-        public Guid SupplierId { get; private set; }
-        public Supplier Supplier { get; private set; } = default!;
-        public DateTime? ExpectedDeliveryDate { get; private set; }
-        public PurchaseOrderStatus Status { get; private set; } = PurchaseOrderStatus.Draft;
-        public decimal SubTotal { get; private set; }
-        public decimal Discount { get; private set; }
-        public decimal Tax { get; private set; }
-        public decimal Total => SubTotal - Discount + Tax;
-        public ICollection<PurchaseOrderItem> Items { get; private set; } = new HashSet<PurchaseOrderItem>();
-        public string? Notes { get; private set; }
+        public class PurchaseOrder : BaseEntity
+        {
+            public string OrderNumber { get; private set; } = default!;  
+            public Guid SupplierId { get; private set; }
+            public Supplier Supplier { get; private set; } = default!;
+            public DateTime? ExpectedDeliveryDate { get; private set; }
+            public PurchaseOrderStatus Status { get; private set; } = PurchaseOrderStatus.Draft;
+            public decimal SubTotal { get; private set; }
+            public decimal Discount { get; private set; }
+            public decimal Tax { get; private set; }
+            public decimal Total => SubTotal - Discount + Tax;
+            public ICollection<PurchaseOrderItem> Items { get; private set; } = new HashSet<PurchaseOrderItem>();
+            public string? Notes { get; private set; }
 
         private PurchaseOrder() { }
 

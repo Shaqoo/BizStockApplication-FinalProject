@@ -1,5 +1,4 @@
 ﻿using Application.Dto;
-using Application.Extensions;
 using Application.Interfaces.Repository;
 using Application.Pagination;
 using Domain.Entities;
@@ -7,12 +6,7 @@ using Domain.Enums;
 using Domain.Exceptions;
 using Infrastructures.Persistence.Context;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Linq.Expressions;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Infrastructures.Persistence.Repositories
 {
@@ -113,7 +107,7 @@ namespace Infrastructures.Persistence.Repositories
         {
             var baseQuery = _context.StockMovements
                 .Include(a => a.WarehouseItem)
-                .Where(a => a.WarehouseItemId == warehouseItemId);
+                .Where(a => a.WarehouseItem.WarehouseId == warehouseItemId);
 
             var totalCount = await baseQuery.CountAsync();
 
