@@ -6,6 +6,7 @@ namespace Application.Commands.PurchaseOrders.ReceivePurchaseOrderItems
 {
     public record ReceivePurchaseOrderItemsCommand(
     Guid PurchaseOrderId,
+    Guid WarehouseId,
     List<ReceivePurchaseOrderItemDto> Items,
     RequestMetadata RequestMetadata
 ) : IRequest<Result<bool>>;

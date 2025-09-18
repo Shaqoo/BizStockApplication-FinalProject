@@ -3,6 +3,7 @@ using Application.Dto;
 using Application.Interfaces.Repository;
 using Application.Interfaces.Service;
 using Application.Interfaces.UnitOfWork;
+using Domain.DomainEvents;
 using Domain.Enums;
 using MediatR;
 using Microsoft.Extensions.Logging;

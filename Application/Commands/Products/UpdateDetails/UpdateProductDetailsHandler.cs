@@ -44,7 +44,7 @@ namespace Application.Commands.Products.UpdateDetails
                 "UpdateProductDetails",
                 nameof(Product),
                 product.Id,
-                $"Updated fields: {(dto.Name != null ? "Name, " : "")}{(dto.Description != null ? "Description, " : "")}{(dto.UnitOfMeasure != null ? "UnitOfMeasure" : "")}".Trim().TrimEnd(','),
+                $"Updated fields: {(dto.Name != null ? "Name, " : "")}{(dto.Description != null ? "Description, " : "")}{("UnitOfMeasure")}".Trim().TrimEnd(','),
                 request.RequestMetadata.IpAddress,
                 request.RequestMetadata.UserAgent
             ));

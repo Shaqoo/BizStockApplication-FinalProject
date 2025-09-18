@@ -9,6 +9,13 @@ using Application.Commands.PurchaseOrders.UpdatePurchaseOrder;
 using Application.Commands.PurchaseOrders.UpdatePurchaseOrderItem;
 using Application.Dto;
 using Application.Dto.RequestModels;
+using Application.Pagination;
+using Application.Queries.PurchaseOrders.GetPurchaseOrderById;
+using Application.Queries.PurchaseOrders.GetPurchaseOrderList;
+using Application.Queries.PurchaseOrders.GetPurchaseOrdersByStatus;
+using Application.Queries.PurchaseOrders.GetPurchaseOrdersBySupplier;
+using Application.Queries.PurchaseOrders.GetPurchaseOrderStats;
+using Domain.Enums;
 using Host.Extensions;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
@@ -253,9 +260,15 @@ namespace Host.Controllers.V1
         /// Records the receipt of items for a specific purchase order.
         /// </summary>
         /// <param name="purchaseOrderId">The unique identifier of the purchase order.</param>
+        /// <param name="warehouseId">The unique identifier of the warehouse where items are received.</param>
         /// <param name="items">The list of items being received, with <c>PurchaseOrderItemId</c> and <c>QuantityReceived</c>.</param>
         /// <returns>
         /// A <see cref="Result{T}"/> with a boolean value indicating whether the operation succeeded.
+        /// <list type="bullet">
+        /// <item><description><c>200 OK</c> if items were successfully received.</description></item>
+        /// <item><description><c>400 BadRequest</c> if the request is invalid (e.g., quantity mismatch).</description></item>
+        /// <item><description><c>404 NotFound</c> if the purchase order does not exist.</description></item>
+        /// </list>
         /// </returns>
         /// <response code="200">If the items were successfully recorded as received.</response>
         /// <response code="400">If the request is invalid or missing required information.</response>
@@ -264,9 +277,9 @@ namespace Host.Controllers.V1
         [ProducesResponseType(typeof(Result<bool>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(Result<bool>), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(typeof(Result<bool>), StatusCodes.Status404NotFound)]
-        public async Task<IActionResult> ReceiveItems(Guid purchaseOrderId,[FromBody] List<ReceivePurchaseOrderItemDto> items)
+        public async Task<IActionResult> ReceiveItems(Guid purchaseOrderId,Guid warehouseId,[FromBody] List<ReceivePurchaseOrderItemDto> items)
         {
-            var command = new ReceivePurchaseOrderItemsCommand(purchaseOrderId,items,Request.GetRequestMetadata());
+            var command = new ReceivePurchaseOrderItemsCommand(purchaseOrderId,warehouseId,items,Request.GetRequestMetadata());
 
             var result = await _mediator.Send(command);
 
@@ -275,7 +288,73 @@ namespace Host.Controllers.V1
 
             return Ok(result);
         }
+
+        /// <summary>
+        /// Get a paginated list of purchase orders.
+        /// </summary>
+        [HttpGet]
+        [ProducesResponseType(typeof(PaginatedList<PurchaseOrderListDto>), StatusCodes.Status200OK)]
+        public async Task<IActionResult> GetPurchaseOrders([FromQuery] PageRequest pageRequest)
+        {
+            var query = new GetPurchaseOrderListQuery(pageRequest);
+            var result = await _mediator.Send(query);
+            return Ok(result);
+        }
+
+        /// <summary>
+        /// Get details of a purchase order by its ID.
+        /// </summary>
+        [HttpGet("{purchaseOrderId:guid}/get-byId")]
+        [ProducesResponseType(typeof(Result<PurchaseOrderDetailDto>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(Result<PurchaseOrderDetailDto>), StatusCodes.Status404NotFound)]
+        public async Task<IActionResult> GetPurchaseOrderById(Guid purchaseOrderId)
+        {
+            var query = new GetPurchaseOrderByIdQuery(purchaseOrderId);
+            var result = await _mediator.Send(query);
+
+            if (!result.IsSuccess)
+                return NotFound(result);
+
+            return Ok(result);
+        }
+
+        /// <summary>
+        /// Get a paginated list of purchase orders for a given supplier.
+        /// </summary>
+        [HttpGet("supplier/{supplierId:guid}")]
+        [ProducesResponseType(typeof(PaginatedList<PurchaseOrderListDto>), StatusCodes.Status200OK)]
+        public async Task<IActionResult> GetPurchaseOrdersBySupplier(Guid supplierId, [FromQuery] PageRequest pageRequest)
+        {
+            var query = new GetPurchaseOrdersBySupplierQuery(supplierId, pageRequest);
+            var result = await _mediator.Send(query);
+            return Ok(result);
+        }
+
+        /// <summary>
+        /// Get a paginated list of purchase orders filtered by status.
+        /// </summary>
+        [HttpGet("status/{status}")]
+        [ProducesResponseType(typeof(PaginatedList<PurchaseOrderListDto>), StatusCodes.Status200OK)]
+        public async Task<IActionResult> GetPurchaseOrdersByStatus(PurchaseOrderStatus status, [FromQuery] PageRequest pageRequest)
+        {
+            var query = new GetPurchaseOrdersByStatusQuery(status, pageRequest);
+            var result = await _mediator.Send(query);
+            return Ok(result);
+        }
+
+        /// <summary>
+        /// Get overall purchase order statistics (counts, totals, etc.).
+        /// </summary>
+        [HttpGet("stats")]
+        [ProducesResponseType(typeof(Result<PurchaseOrderStatsDto>), StatusCodes.Status200OK)]
+        public async Task<IActionResult> GetPurchaseOrderStats()
+        {
+            var query = new GetPurchaseOrderStatsQuery();
+            var result = await _mediator.Send(query);
+            return Ok(result);
+        }
     }
 }
+
 
 
