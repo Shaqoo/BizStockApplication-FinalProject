@@ -31,8 +31,7 @@ namespace Application.EventHandlers
 
         public async Task Handle(ProductPictureUpdatedEvent notification, CancellationToken cancellationToken)
         {
-            var inventoryManagers = await _userRepository.FindAsync(u => u.UserRoles.Any(a => a.Role == Role.InventoryManager)
-            || u.HasRole(Role.Manager));
+            var inventoryManagers = await _userRepository.FindAsync(u => u.UserRoles.Any(a => a.Role == Role.InventoryManager ||a.Role == Role.Manager));
 
             await _unitOfWork.BeginTransactionAsync();
             foreach (var manager in inventoryManagers)

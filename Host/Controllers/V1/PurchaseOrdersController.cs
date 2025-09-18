@@ -1,5 +1,9 @@
 ﻿using Application.Commands.PurchaseOrders.AddPurchaseOrderItem;
+using Application.Commands.PurchaseOrders.CancelPurchaseOrder;
+using Application.Commands.PurchaseOrders.ConfirmPurchaseOrder;
 using Application.Commands.PurchaseOrders.CreatePurchaseOrder;
+using Application.Commands.PurchaseOrders.ReceivePurchaseOrderItems;
+using Application.Commands.PurchaseOrders.RejectPurchaseOrder;
 using Application.Commands.PurchaseOrders.RemovePurchaseOrderItem;
 using Application.Commands.PurchaseOrders.UpdatePurchaseOrder;
 using Application.Commands.PurchaseOrders.UpdatePurchaseOrderItem;
@@ -10,7 +14,6 @@ using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Net;
-using System.Net.Mime;
 
 namespace Host.Controllers.V1
 {
@@ -163,6 +166,116 @@ namespace Host.Controllers.V1
                 return BadRequest(result);
             return Ok(result);
         }
+
+        /// <summary>
+        /// Cancels a purchase order if it has not already been received.
+        /// </summary>
+        /// <param name="purchaseOrderId">The unique identifier of the purchase order to cancel.</param>
+        /// <param name="dto">The cancellation details, including reason.</param>
+        /// <returns>
+        /// A <see cref="Result{Boolean}"/> indicating whether the purchase order was successfully cancelled.
+        /// </returns>
+        /// <remarks>
+        /// Only purchase orders with status <c>Draft</c>, <c>Confirmed</c>, or <c>PartiallyReceived</c> 
+        /// can be cancelled. Orders that are <c>Received</c> or already <c>Cancelled</c> 
+        /// cannot be cancelled.
+        /// </remarks>
+        [HttpPatch("{purchaseOrderId:guid}/cancel")]
+        [ProducesResponseType(typeof(Result<bool>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(Result<bool>), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(Result<bool>), StatusCodes.Status404NotFound)]
+        public async Task<IActionResult> CancelPurchaseOrder(Guid purchaseOrderId, [FromBody] CancelPurchaseOrderDto dto)
+        {
+            var command = new CancelPurchaseOrderCommand(purchaseOrderId,dto,Request.GetRequestMetadata());
+
+            var result = await _mediator.Send(command);
+
+            if (!result.IsSuccess)
+                return BadRequest(result);
+
+            return Ok(result);
+        }
+
+        /// <summary>
+        /// Confirms an existing purchase order.
+        /// </summary>
+        /// <param name="purchaseOrderId">The unique identifier of the purchase order to confirm.</param>
+        /// <param name="confirmDto">The confirmation details, including comments if any.</param>
+        /// <param name="cancellationToken">Token to cancel the operation.</param>
+        /// <returns>
+        /// Returns <c>true</c> if the purchase order was successfully confirmed; otherwise, <c>false</c>.
+        /// </returns>
+        [HttpPatch("{purchaseOrderId:guid}/confirm")]
+        [ProducesResponseType(typeof(Result<bool>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(Result<bool>), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(Result<bool>), StatusCodes.Status404NotFound)]
+        public async Task<IActionResult> ConfirmPurchaseOrder(Guid purchaseOrderId,[FromBody] ConfirmPurchaseOrderDto confirmDto,
+            CancellationToken cancellationToken)
+        {
+            var command = new ConfirmPurchaseOrderCommand(purchaseOrderId, confirmDto, Request.GetRequestMetadata());
+
+            var result = await _mediator.Send(command, cancellationToken);
+
+            if (!result.IsSuccess)
+                return BadRequest(result);
+
+            return Ok(result);
+        }
+
+        /// <summary>
+        /// Rejects an existing purchase order.
+        /// </summary>
+        /// <param name="purchaseOrderId">The unique identifier of the purchase order to reject.</param>
+        /// <param name="rejectDto">The rejection details, including reason.</param>
+        /// <param name="cancellationToken">Token to cancel the operation.</param>
+        /// <returns>
+        /// Returns <c>true</c> if the purchase order was successfully rejected; otherwise, <c>false</c>.
+        /// </returns>
+        [HttpPatch("{purchaseOrderId:guid}/reject")]
+        [ProducesResponseType(typeof(Result<bool>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(Result<bool>), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(Result<bool>), StatusCodes.Status404NotFound)]
+        public async Task<IActionResult> RejectPurchaseOrder(Guid purchaseOrderId,[FromBody] RejectPurchaseOrderDto rejectDto,
+            CancellationToken cancellationToken)
+        {
+            var command = new RejectPurchaseOrderCommand(purchaseOrderId,rejectDto,Request.GetRequestMetadata());
+
+            var result = await _mediator.Send(command, cancellationToken);
+
+            if (!result.IsSuccess)
+                return BadRequest(result);
+
+            return Ok(result);
+        }
+
+
+        /// <summary>
+        /// Records the receipt of items for a specific purchase order.
+        /// </summary>
+        /// <param name="purchaseOrderId">The unique identifier of the purchase order.</param>
+        /// <param name="items">The list of items being received, with <c>PurchaseOrderItemId</c> and <c>QuantityReceived</c>.</param>
+        /// <returns>
+        /// A <see cref="Result{T}"/> with a boolean value indicating whether the operation succeeded.
+        /// </returns>
+        /// <response code="200">If the items were successfully recorded as received.</response>
+        /// <response code="400">If the request is invalid or missing required information.</response>
+        /// <response code="404">If the purchase order was not found.</response>
+        [HttpPost("{purchaseOrderId:guid}/receive-items")]
+        [ProducesResponseType(typeof(Result<bool>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(Result<bool>), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(Result<bool>), StatusCodes.Status404NotFound)]
+        public async Task<IActionResult> ReceiveItems(Guid purchaseOrderId,[FromBody] List<ReceivePurchaseOrderItemDto> items)
+        {
+            var command = new ReceivePurchaseOrderItemsCommand(purchaseOrderId,items,Request.GetRequestMetadata());
+
+            var result = await _mediator.Send(command);
+
+            if (!result.IsSuccess)
+                return BadRequest(result);
+
+            return Ok(result);
+        }
     }
 }
+
 

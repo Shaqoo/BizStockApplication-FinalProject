@@ -17,7 +17,7 @@ namespace Application.EventHandlers
     IUnitOfWork unitOfWork,
     INotifier notifier,
     ILogger<CreatePurchaseOrderEventHandler> logger,
-    [FromKeyedServices(EmailNotificationType.Mailjet)]IEmailNotificationService emailNotificationService
+    [FromKeyedServices(EmailNotificationType.Mailjet)] IEmailNotificationService emailNotificationService
 ) : INotificationHandler<CreatePurchaseOrderEvent>
     {
         public async Task Handle(CreatePurchaseOrderEvent notification, CancellationToken cancellationToken)
@@ -43,11 +43,11 @@ namespace Application.EventHandlers
                 $"-----------------" + Environment.NewLine +
                 $"Total: ₦{(notification.Items.Sum(i => i.QuantityOrdered * i.UnitPrice) - notification.Discount + notification.Tax):N2}";
 
-           var inAppNotification = new Notification(supplier.UserId, $"New purchase order {notification.OrderNumber} has been created.", message,"info");
+            var inAppNotification = new Notification(supplier.UserId, $"New purchase order {notification.OrderNumber} has been created.", message, "info");
             await notificationRepository.AddAsync(inAppNotification);
             await unitOfWork.SaveChangesAsync();
 
-            await notifier.SendNotificationAsync(supplier.UserId, new NotificationDto 
+            await notifier.SendNotificationAsync(supplier.UserId, new NotificationDto
             {
                 Title = $"New Purchase Order {notification.OrderNumber}",
                 Message = message,
@@ -55,91 +55,8 @@ namespace Application.EventHandlers
                 Id = inAppNotification.Id,
                 IsRead = inAppNotification.IsRead,
             });
-            using Application.Dto;
-            using Application.Interfaces.Repository;
-            using Application.Interfaces.Service;
-            using Application.Interfaces.UnitOfWork;
-            using Domain.DomainEvents;
-            using Domain.Entities;
-            using Domain.Enums;
-            using MediatR;
-            using Microsoft.Extensions.DependencyInjection;
-            using Microsoft.Extensions.Logging;
 
-namespace Application.EventHandlers
-    {
-        public class PurchaseOrderUpdatedEventHandler : INotificationHandler<PurchaseOrderUpdatedEvent>
-        {
-            private readonly ILogger<PurchaseOrderUpdatedEventHandler> _logger;
-            private readonly INotificationRepository _notificationService;
-            private readonly ISupplierRepository _supplierRepository;
-            private readonly IUnitOfWork _unitOfWork;
-            private readonly INotifier _notifier;
-            private readonly IEmailNotificationService _emailNotificationService;
-            public PurchaseOrderUpdatedEventHandler(
-                ILogger<PurchaseOrderUpdatedEventHandler> logger,
-                ISupplierRepository supplierRepository,
-                IUnitOfWork unitOfWork,
-                INotifier notifier,
-                [FromKeyedServices(EmailNotificationType.Mailjet)] IEmailNotificationService emailNotificationService,
-                INotificationRepository notificationService)
-            {
-                _logger = logger;
-                _notificationService = notificationService;
-                _supplierRepository = supplierRepository;
-                _unitOfWork = unitOfWork;
-                _notifier = notifier;
-                _emailNotificationService = emailNotificationService;
-            }
-
-            public async Task Handle(PurchaseOrderUpdatedEvent notification, CancellationToken cancellationToken)
-            {
-                var supplier = await _supplierRepository.GetByIdAsync(notification.SupplierId);
-                if (supplier == null)
-                {
-                    _logger.LogWarning("Supplier {SupplierId} not found when handling CreatePurchaseOrderEvent", notification.SupplierId);
-                    return;
-                }
-
-                _logger.LogInformation(
-                    "Purchase Order {PurchaseOrderId} updated. Notes: {Notes}, Discount: {Discount}, Tax: {Tax}",
-                    notification.PurchaseOrderId,
-                    notification.Notes ?? "N/A",
-                    notification.Discount,
-                    notification.Tax
-                );
-
-                var message = $"Purchase Order {notification.PurchaseOrderId} has been updated. " +
-                              $"OrderNumber {notification.orderNumber}" +
-                              $"Notes: {notification.Notes ?? "No notes"}, " +
-                              $"Discount: #{notification.Discount:N2}, Tax: #{notification.Tax:N2}";
-
-                string title = "Purchase Order Updated";
-
-                var appNotification = new Notification(supplier.UserId, title, message);
-
-                await _notificationService.AddAsync(appNotification);
-                await _unitOfWork.SaveChangesAsync();
-
-                await _notifier.SendNotificationAsync(supplier.UserId, new NotificationDto
-                {
-                    Id = appNotification.Id,
-                    Title = title,
-                    Message = message,
-                    IsRead = appNotification.IsRead,
-                    Type = appNotification.Type,
-                });
-
-                await _emailNotificationService.SendEmailAsync((string)supplier.Email, title, message);
-            }
-        }
-
-    }
-
-
-    await emailNotificationService.SendEmailAsync((string)supplier.Email, $"New Purchase Order {notification.OrderNumber}", message);
-            logger.LogInformation("Email notification sent to supplier {SupplierId} for purchase order {OrderNumber}", supplier.Id, notification.OrderNumber);
+            await emailNotificationService.SendEmailAsync((string)supplier.Email, $"New purchase order {notification.OrderNumber} has been created.", message);
         }
     }
-
 }

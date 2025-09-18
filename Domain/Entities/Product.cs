@@ -28,6 +28,8 @@ namespace Domain.Entities
         public decimal CostPrice { get; private set; }
         public decimal SellingPrice { get; private set; }
 
+        public ProductType Type { get; private set; } = ProductType.FinishedGood;
+
         public UnitOfMeasure UnitOfMeasure { get; private set; }
         public bool IsActive { get; private set; } = true;
         public ICollection<Review> Reviews { get; private set; } = new HashSet<Review>();

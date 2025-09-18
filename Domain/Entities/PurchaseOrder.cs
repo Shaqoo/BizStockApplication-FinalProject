@@ -47,10 +47,19 @@ namespace Domain.Entities
             SubTotal = Items.Sum(i => i.TotalPrice);
         }
 
-        public void Confirm()
+        public void Confirm(DateTime expectedDeliveryDate)
         {
             if (!Items.Any()) throw new DomainException("Cannot confirm an empty purchase order.");
+            ExpectedDeliveryDate = expectedDeliveryDate;
             Status = PurchaseOrderStatus.Confirmed;
+        }
+
+        public void Reject(string reason)
+        {
+            if (Status != PurchaseOrderStatus.Confirmed)
+                throw new DomainException("Only confirmed orders can be rejected.");
+            Status = PurchaseOrderStatus.Rejected;
+            Notes = reason;
         }
 
         public void ReceiveItem(Guid productId, int quantityReceived)
@@ -85,6 +94,16 @@ namespace Domain.Entities
             Tax = tax;
             Notes = notes;
             RecalculateSubTotal();
+        }
+
+        public void AddNotes(string notes)
+        {
+            Notes = notes;
+        }
+
+        public void UpdateStatus(PurchaseOrderStatus newStatus)
+        {
+            Status = newStatus;
         }
     }
 
