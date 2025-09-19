@@ -15,6 +15,7 @@ namespace Application.Dto
 
     public class PurchaseOrderItemDto
     {
+        public Guid Id { get; set; }
         public Guid ProductId { get; set; }
         public string ProductName { get; set; } = string.Empty;
         public string ProductImgUrl { get; set; } = string.Empty;
@@ -30,7 +31,7 @@ namespace Application.Dto
         public string PONumber { get; set; } = string.Empty;
         public string SupplierName { get; set; } = string.Empty;
         public PurchaseOrderStatus Status { get; set; }
-        public DateTime CreatedAt { get; set; }
+        public DateTimeOffset CreatedAt { get; set; }
         public DateTime? ApprovedAt { get; set; }
         public string? ApprovedBy { get; set; }
         public decimal TotalAmount { get; set; }
@@ -44,7 +45,7 @@ namespace Application.Dto
         public string PONumber { get; set; } = string.Empty;
         public string SupplierName { get; set; } = string.Empty;
         public PurchaseOrderStatus Status { get; set; }
-        public DateTime CreatedAt { get; set; }
+        public DateTimeOffset CreatedAt { get; set; }
         public decimal TotalAmount { get; set; }
     }
 
