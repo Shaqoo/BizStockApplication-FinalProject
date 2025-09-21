@@ -25,7 +25,7 @@ namespace Infrastructures.Persistence.Repositories
 
         public async Task<PurchaseOrder?> GetByIdAsync(Guid id)
         {
-            return await _context.PurchaseOrders.FirstOrDefaultAsync(a => a.Id == id);
+            return await _context.PurchaseOrders.Include(a => a.Items).FirstOrDefaultAsync(a => a.Id == id);
         }
 
         public async Task<PaginatedList<PurchaseOrder>> GetAllAsync(PageRequest pageRequest)
@@ -246,11 +246,12 @@ namespace Infrastructures.Persistence.Repositories
 
             var totalSpend = await query
                 .Where(po => po.Status == PurchaseOrderStatus.Received || po.Status == PurchaseOrderStatus.PartiallyReceived)
-                .SumAsync(po => (decimal?)po.Total) ?? 0m;
+                .SumAsync(po => (decimal?)(po.SubTotal - po.Discount + po.Tax)) ?? 0m;
 
             var outstandingAmount = await query
                 .Where(po => po.Status == PurchaseOrderStatus.Confirmed || po.Status == PurchaseOrderStatus.PartiallyReceived)
-                .SumAsync(po => (decimal?)po.Total) ?? 0m;
+                .SumAsync(po => (decimal?)(po.SubTotal - po.Discount + po.Tax)) ?? 0m;
+
 
             return new PurchaseOrderStatsDto
             {
@@ -264,6 +265,36 @@ namespace Infrastructures.Persistence.Repositories
             };
         }
 
+        public async Task<PaginatedList<PurchaseOrderListDto>> GetPurchaseOrdersByDateRangeAsync(DateTime startDate, DateTime endDate, PageRequest pageRequest)
+        {
+            var startDateOffset = new DateTimeOffset(startDate, TimeSpan.Zero);
+            var endDateOffset = new DateTimeOffset(endDate, TimeSpan.Zero);
+
+            var query = _context.PurchaseOrders
+                .Include(po => po.Supplier)
+                .ThenInclude(s => s.User)
+                 .Where(po => po.DateCreated >= startDateOffset && po.DateCreated <= endDateOffset)
+                .AsQueryable();
+
+            var total = await query.CountAsync();
+
+            var items = await query
+                .OrderByDescending(po => po.DateCreated)
+                .Skip((pageRequest.Page - 1) * pageRequest.PageSize)
+                .Take(pageRequest.PageSize)
+                .Select(po => new PurchaseOrderListDto
+                {
+                    Id = po.Id,
+                    PONumber = po.OrderNumber,
+                    SupplierName = po.Supplier.User.FullName,
+                    Status = po.Status,
+                    CreatedAt = po.DateCreated,
+                    TotalAmount = po.Total
+                })
+                .ToListAsync();
+
+            return new PaginatedList<PurchaseOrderListDto>(items, total, pageRequest.Page, pageRequest.PageSize);
+        }
     }
 
 }

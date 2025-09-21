@@ -64,7 +64,7 @@ namespace Application.EventHandlers
                 var managers = await _userRepository.FindAsync(u => u.UserRoles.Any(a => a.Role == Role.InventoryManager));
                 foreach (var item in managers)
                 {
-                    var managersNotification = new Notification(item.Id, title, message);
+                    var managersNotification = new Notification(item.Id, title, message,"warning");
                     await _notificationRepository.AddAsync(managersNotification);
 
                     await _notifier.SendNotificationAsync(item.Id, new NotificationDto
@@ -79,7 +79,7 @@ namespace Application.EventHandlers
                     await _emailNotificationService.SendEmailAsync((string)item.Email, title, message);
                 }
 
-                var appNotification = new Notification(supplier.UserId, title, message);
+                var appNotification = new Notification(supplier.UserId, title, message, "success");
                 await _notificationRepository.AddAsync(appNotification);
 
                 await _unitOfWork.SaveChangesAsync();

@@ -54,6 +54,7 @@ namespace Application.Commands.PurchaseOrders.ReceivePurchaseOrder
 
                 foreach (var dto in request.Items)
                 {
+                   
                     var poItem = po.Items.FirstOrDefault(i => i.Id == dto.PurchaseOrderItemId);
                     if (poItem == null)
                     {

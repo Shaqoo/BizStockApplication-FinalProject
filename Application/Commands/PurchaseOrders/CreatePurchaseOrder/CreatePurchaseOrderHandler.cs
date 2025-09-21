@@ -53,6 +53,7 @@ namespace Application.Commands.PurchaseOrders.CreatePurchaseOrder
                     await purchaseOrderItemRepository.AddAsync(orderItem);
                 }
 
+                purchaseOrder.RecalculateSubTotal();
 
                 await unitOfWork.CommitTransactionAsync();
 

@@ -1,4 +1,5 @@
-﻿using Application.Interfaces.Repository;
+﻿using Application.Dto;
+using Application.Interfaces.Repository;
 using Application.Pagination;
 using Domain.Entities;
 using Domain.Exceptions;
@@ -93,11 +94,27 @@ namespace Infrastructures.Persistence.Repositories
             return new PaginatedList<SalesOrderItem>(items, total, pageRequest.Page, pageRequest.PageSize);
         }
 
-        public async Task<SalesOrderItem> GetByExpression(Expression<Func<SalesOrderItem, bool>> predicate)
+        public async Task<SalesOrderItem?> GetByExpression(Expression<Func<SalesOrderItem, bool>> predicate)
         {
             return await _context.SalesOrderItems.FirstOrDefaultAsync(predicate) ??
                 throw new EntityNotFoundException("Sales Order Item","Predicate");
         }
+
+        public async Task<List<TopSellingProductDto>> GetTopSellingProductsAsync(int topN)
+        {
+            return await _context.SalesOrderItems
+                .GroupBy(oi => new { oi.ProductId, oi.Product.Name })
+                .Select(g => new TopSellingProductDto
+                {
+                    ProductId = g.Key.ProductId,
+                    ProductName = g.Key.Name,
+                    TotalSold = g.Sum(x => x.Quantity)
+                })
+                .OrderByDescending(p => p.TotalSold)
+                .Take(topN)
+                .ToListAsync();
+        }
+
     }
 
 }

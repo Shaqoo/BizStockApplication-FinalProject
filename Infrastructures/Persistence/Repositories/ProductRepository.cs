@@ -384,6 +384,23 @@ namespace Infrastructures.Persistence.Repositories
                         .Select(p => p.ToDto())
                         .ToListAsync();
         }
+
+        public async Task<ProductStatsDto> GetProductStatsAsync()
+        {
+            var stats = new ProductStatsDto
+            {
+                ActiveCount = await _context.Products.CountAsync(p => p.Status == ProductStatus.Approved),
+                InactiveCount = await _context.Products.CountAsync(p => p.Status != ProductStatus.Approved),
+                OutOfStockCount = await _context.Products.CountAsync(p => p.StockByWarehouse.Sum(a => a.Quantity) == 0),
+                LowStockCount = await _context.Products.CountAsync(p => p.StockByWarehouse.Any(a => a.Quantity < a.ReorderLevel && a.Quantity > 0)),
+                TotalInventoryValue = await _context.Products
+                    .Where(p => p.Status == ProductStatus.Approved)
+                    .SumAsync(p => p.SellingPrice * p.StockByWarehouse.Sum(a => a.Quantity)),
+                TotalProducts = await _context.Products.CountAsync()
+            };
+
+            return stats;
+        }
     }
 
     /*

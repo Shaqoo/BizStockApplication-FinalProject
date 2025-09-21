@@ -20,6 +20,8 @@ namespace Application.Interfaces.Repository
         Task<PaginatedList<PurchaseOrderListDto>> GetAllWithDtoAsync(PageRequest pageRequest);
         Task<PaginatedList<PurchaseOrderListDto>> FilterPurchaseOrderWithStatusPagedAsync(PurchaseOrderStatus purchaseOrderStatus,PageRequest pageRequest);
         Task<PurchaseOrderStatsDto> GetPurchaseOrderStatsAsync();
+
+        Task<PaginatedList<PurchaseOrderListDto>> GetPurchaseOrdersByDateRangeAsync(DateTime startDate, DateTime endDate, PageRequest pageRequest);
     }
 
 

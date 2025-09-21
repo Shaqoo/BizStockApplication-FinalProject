@@ -38,7 +38,7 @@ namespace Application.Commands.PurchaseOrders.AddPurchaseOrderItem
                     return Result<Guid>.Failure("Product not found.");
 
                 var item = new PurchaseOrderItem(dto.ProductId, dto.ProductName, dto.QuantityOrdered, dto.UnitPrice, purchaseOrder.Id);
-
+                purchaseOrder.RecalculateSubTotal();
                 await purchaseOrderItemRepository.AddAsync(item);
                 await unitOfWork.SaveChangesAsync();
 

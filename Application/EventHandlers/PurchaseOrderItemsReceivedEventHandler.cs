@@ -68,7 +68,7 @@ namespace Application.EventHandlers
                 var managers = await _userRepository.FindAsync(u => u.UserRoles.Any(r => r.Role == Role.InventoryManager));
                 foreach (var manager in managers)
                 {
-                    var managerNotification = new Notification(manager.Id, title, message);
+                    var managerNotification = new Notification(manager.Id, title, message,"success");
                     await _notificationRepository.AddAsync(managerNotification);
 
                     await _notifier.SendNotificationAsync(manager.Id, new NotificationDto
@@ -84,7 +84,7 @@ namespace Application.EventHandlers
                 }
 
              
-                var supplierNotification = new Notification(supplier.UserId, title, message);
+                var supplierNotification = new Notification(supplier.UserId, title, message,"success");
                 await _notificationRepository.AddAsync(supplierNotification);
                 await _unitOfWork.SaveChangesAsync();
 

@@ -10,6 +10,7 @@ using Application.Queries.Products.GetProductsByStatus;
 using Application.Queries.Products.GetProductsByWarehouseId;
 using Application.Queries.Products.GetProductsOrderdByPrice;
 using Application.Queries.Products.GetProductsOrderedByPriceandCateory;
+using Application.Queries.Products.GetProductStats;
 using Application.Queries.Products.GetProductWithLowStock;
 using Application.Queries.Products.GetRecentlyAddedProducts;
 using Application.Queries.Products.GetRelatedProducts;
@@ -266,7 +267,7 @@ namespace Host.Controllers.V1
         [HttpGet("low-stock")]
         [ProducesResponseType(typeof(Result<PaginatedList<ProductDto>>), 200)]
         [ProducesResponseType(404)]
-        public async Task<IActionResult> GetProductWithLowStock(int pageNumber, int pageSize)
+        public async Task<IActionResult> GetProductWithLowStock([FromQuery]int pageNumber,[FromQuery] int pageSize)
         {
             var query = new GetProductWithLowStockQuery(new PageRequest { Page = pageNumber, PageSize = pageSize });
             var result = await _mediator.Send(query);
@@ -340,6 +341,24 @@ namespace Host.Controllers.V1
             var query = new GetRelatedProductsByBrandQuery(id);
             var result = await _mediator.Send(query);
             return result.IsSuccess ? Ok(result) : NotFound(result);
+        }
+
+        /// <summary>
+        /// Retrieves statistics about products including Active, Inactive, Low Stock, and Out of Stock counts.
+        /// </summary>
+        /// <param name="cancellationToken">Cancellation token for the request.</param>
+        /// <returns>Product statistics summary.</returns>
+        [HttpGet("stats")]
+        [ProducesResponseType(typeof(ProductStatsDto), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public async Task<IActionResult> GetProductStats(CancellationToken cancellationToken)
+        {
+            var result = await _mediator.Send(new GetProductStatsQuery(), cancellationToken);
+
+            if (!result.IsSuccess)
+                return BadRequest(result);
+
+            return Ok(result);
         }
 
     }

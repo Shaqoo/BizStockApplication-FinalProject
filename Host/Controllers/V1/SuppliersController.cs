@@ -1,9 +1,12 @@
 ﻿using Application.Commands.Suppliers.Create;
 using Application.Dto;
 using Application.Dto.RequestModels;
+using Application.Pagination;
 using Application.Queries.Suppliers;
+using Application.Queries.Suppliers.GetAllSuppliers;
 using Application.Queries.Suppliers.GetByEmail;
 using Host.Extensions;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Net;
 using IMediator = MediatR.IMediator;
@@ -42,8 +45,6 @@ namespace Host.Controllers.V1
         [ProducesResponseType(typeof(Result<TwoFactorSetupDto>), StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> CreateSupplier([FromBody] CreateSupplierRequestModel request)
         {
-            if (!ModelState.IsValid)
-                return BadRequest(ModelState);
 
             var command = new CreateSupplierCommand(request, Request.GetRequestMetadata());
             var result = await _mediator.Send(command);
@@ -59,6 +60,7 @@ namespace Host.Controllers.V1
         /// View the details of a supplier.
         /// </summary>
         /// <returns>Supplier details</returns>
+        [Authorize]
         [HttpGet("supplier-me")]
         [ProducesResponseType(typeof(Result<SupplierDto>), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -85,6 +87,21 @@ namespace Host.Controllers.V1
             if (!result.IsSuccess || result.Data == null)
                 return NotFound(result);
 
+            return Ok(result);
+        }
+
+        /// <summary>
+        /// Gets a paginated list of all suppliers.
+        /// </summary>
+        /// <param name="pageRequest"></param>
+        /// <returns>A Paged Data Of Suppliers</returns>
+        [Authorize]
+        [HttpGet]
+        [ProducesResponseType(typeof(PaginatedList<SupplierDto>), StatusCodes.Status200OK)]
+        public async Task<IActionResult> GetAllSuppliers([FromQuery] PageRequest pageRequest)
+        {
+            var query = new GetAllSuppliersQuery(pageRequest);
+            var result = await _mediator.Send(query);
             return Ok(result);
         }
 

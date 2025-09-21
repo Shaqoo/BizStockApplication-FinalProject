@@ -37,7 +37,7 @@ namespace Domain.Entities
             RecalculateSubTotal();
         }
 
-        private void RecalculateSubTotal()
+        public void RecalculateSubTotal()
         {
             SubTotal = Items.Sum(i => i.TotalPrice);
         }

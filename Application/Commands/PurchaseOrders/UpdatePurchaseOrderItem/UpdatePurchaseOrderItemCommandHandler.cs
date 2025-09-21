@@ -39,6 +39,8 @@ namespace Application.Commands.PurchaseOrders.UpdatePurchaseOrderItem
                     return Result<Guid>.Failure("Item not found.");
 
                 item.Update(dto.QuantityOrdered, dto.UnitPrice);
+                purchaseOrder.RecalculateSubTotal();
+
 
                 await unitOfWork.SaveChangesAsync();
 

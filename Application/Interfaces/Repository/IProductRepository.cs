@@ -25,6 +25,7 @@ namespace Application.Interfaces.Repository
         Task<IEnumerable<ProductDto>> GetRelatedProducts(Product product);
         Task<IEnumerable<ProductDto>> GetRelatedProductsByBrand(Product product);
         Task<List<ProductDto>> GetByIdsAsync(List<Guid> ids);
+        Task<ProductStatsDto> GetProductStatsAsync();
     }
 
 }

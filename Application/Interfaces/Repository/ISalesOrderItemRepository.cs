@@ -1,4 +1,5 @@
-﻿using Application.Interfaces.Repository.BaseRepository;
+﻿using Application.Dto;
+using Application.Interfaces.Repository.BaseRepository;
 using Application.Pagination;
 using Domain.Entities;
 using Domain.Enums;
@@ -17,6 +18,7 @@ namespace Application.Interfaces.Repository
         Task<decimal> GetTotalSalesForProductAsync(Guid productId);
         Task<int> GetTotalUnitsSoldForProductAsync(Guid productId);
         Task<PaginatedList<SalesOrderItem>> GetByDateRangeAsync(DateTime start, DateTime end,PageRequest pageRequest);
+        Task<List<TopSellingProductDto>> GetTopSellingProductsAsync(int topN);
     }
 
 

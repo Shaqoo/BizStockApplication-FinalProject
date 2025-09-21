@@ -40,7 +40,7 @@ namespace Infrastructures.Persistence.Repositories
             var total = await query.CountAsync();
 
             var items = await query
-                .OrderByDescending(s => s.Id)
+                .OrderByDescending(s => s.DateCreated)
                 .Skip((pageRequest.Page - 1) * pageRequest.PageSize)
                 .Take(pageRequest.PageSize)
                 .ToListAsync();

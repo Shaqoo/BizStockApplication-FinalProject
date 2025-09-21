@@ -33,6 +33,7 @@ namespace Application.Commands.PurchaseOrders.UpdatePurchaseOrder
                     return Result<Guid>.Failure("Only purchase orders in Draft status can be updated.");
 
                 purchaseOrder.Update(dto.Discount, dto.Tax, dto.Notes);
+                purchaseOrder.RecalculateSubTotal();
 
                 await unitOfWork.SaveChangesAsync();
 

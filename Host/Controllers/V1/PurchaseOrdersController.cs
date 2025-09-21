@@ -12,6 +12,7 @@ using Application.Dto.RequestModels;
 using Application.Pagination;
 using Application.Queries.PurchaseOrders.GetPurchaseOrderById;
 using Application.Queries.PurchaseOrders.GetPurchaseOrderList;
+using Application.Queries.PurchaseOrders.GetPurchaseOrdersByDateRange;
 using Application.Queries.PurchaseOrders.GetPurchaseOrdersByStatus;
 using Application.Queries.PurchaseOrders.GetPurchaseOrdersBySupplier;
 using Application.Queries.PurchaseOrders.GetPurchaseOrderStats;
@@ -24,6 +25,7 @@ using System.Net;
 
 namespace Host.Controllers.V1
 {
+    [ApiController]
     [ApiVersion("1.0")]
     [Route("api/v{version:apiVersion}/[controller]")]
     [Authorize]
@@ -350,6 +352,18 @@ namespace Host.Controllers.V1
         public async Task<IActionResult> GetPurchaseOrderStats()
         {
             var query = new GetPurchaseOrderStatsQuery();
+            var result = await _mediator.Send(query);
+            return Ok(result);
+        }
+
+        /// <summary>
+        /// Get a paginated list of purchase orders filtered by DateRange.
+        /// </summary>
+        [HttpGet("date-range")]
+        [ProducesResponseType(typeof(PaginatedList<PurchaseOrderListDto>), StatusCodes.Status200OK)]
+        public async Task<IActionResult> GetPurchaseOrdersByDateRange([FromQuery] DateTime startDate, [FromQuery]DateTime endDate, [FromQuery] PageRequest pageRequest)
+        {
+            var query = new GetPurchaseOrdersByDateRangeQuery(startDate,endDate, pageRequest);
             var result = await _mediator.Send(query);
             return Ok(result);
         }
