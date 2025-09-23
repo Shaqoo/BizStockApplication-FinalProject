@@ -39,6 +39,8 @@ namespace Application.Commands.PurchaseOrders.RemovePurchaseOrderItem
                     return Result<Guid>.Failure("Item not found.");
 
                 await purchaseOrderItemRepository.DeleteItemAsync(item);
+
+                purchaseOrder.RecalculateSubTotal();
                 await unitOfWork.SaveChangesAsync();
 
                 var user = authService.CurrentUser();

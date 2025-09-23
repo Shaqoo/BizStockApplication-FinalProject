@@ -9,6 +9,8 @@ using Application.Queries.StockMovements.GetById;
 using Application.Queries.StockMovements.GetByMovementType;
 using Application.Queries.StockMovements.GetByProduct;
 using Application.Queries.StockMovements.GetByWarehouse;
+using Application.Queries.StockMovements.GetStats;
+using Application.Queries.StockMovements.GetStockMovementTrend;
 using Domain.Enums;
 using Host.Extensions;
 using MediatR;
@@ -178,5 +180,41 @@ namespace Host.Controllers.V1
 
             return Ok(result);
         }
+
+        /// <summary>
+        /// Retrieves stock movement statistics including inbound, outbound, adjustments, and transfers.
+        /// </summary>
+        /// <returns>
+        /// A result containing stock movement statistics such as total movements and counts by type.
+        /// </returns>
+        [HttpGet("stock-movements/stats")]
+        [ProducesResponseType(typeof(Result<StockMovementStatsDto>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(Result<StockMovementStatsDto>), StatusCodes.Status500InternalServerError)]
+        public async Task<IActionResult> GetStockMovementsStats()
+        {
+            var result = await _mediator.Send(new GetStockMovementsStatsQuery());
+            return Ok(result);
+        }
+
+        /// <summary>
+        /// Get stock movement trends (daily, weekly, or monthly).
+        /// </summary>
+        /// <param name="range">The range to group by. Options: daily, weekly, monthly.</param>
+        /// <param name="cancellationToken"></param>
+        /// <returns>Trend data for stock movements.</returns>
+        [HttpGet("trend/{range}")]
+        [ProducesResponseType(typeof(Result<List<StockMovementTrendDto>>), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<IActionResult> GetStockMovementTrend(string range, CancellationToken cancellationToken)
+        {
+            var result = await _mediator.Send(new GetStockMovementTrendQuery(range), cancellationToken);
+
+            if (!result.IsSuccess)
+                return BadRequest(result);
+
+            return Ok(result);
+        }
+
     }
 }

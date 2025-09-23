@@ -37,7 +37,7 @@ namespace Application.Commands.PurchaseOrders.CreatePurchaseOrder
                 await unitOfWork.BeginTransactionAsync();
 
                 var nextNumber = await purchaseOrderRepository.GenerateNextOrderNumber();
-                var purchaseOrder = new PurchaseOrder(nextNumber, supplier.Id, dto.Discount, dto.Tax, dto.ExpectedDeliveryDate, dto.Notes);
+                var purchaseOrder = new PurchaseOrder(nextNumber, supplier.Id, dto.Discount, dto.Tax, DateTime.SpecifyKind(dto.ExpectedDeliveryDate ?? DateTime.Today, DateTimeKind.Utc), dto.Notes);
                 await purchaseOrderRepository.AddAsync(purchaseOrder);
 
                 foreach (var item in dto.Items)

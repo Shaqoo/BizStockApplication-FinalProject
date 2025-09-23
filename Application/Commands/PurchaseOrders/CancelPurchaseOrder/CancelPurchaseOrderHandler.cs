@@ -39,6 +39,8 @@ namespace Application.Commands.PurchaseOrders.CancelPurchaseOrder
                 po.Cancel();
                 po.AddNotes($"{po.Notes}\n[Cancelled: {request.CancelPurchaseOrderDto.Reason}]");
 
+                await unitOfWork.BeginTransactionAsync();
+
                 await unitOfWork.CommitTransactionAsync();
 
                 var user = authService.CurrentUser();

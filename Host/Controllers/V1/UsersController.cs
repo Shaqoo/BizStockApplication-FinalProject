@@ -202,7 +202,7 @@ namespace Host.Controllers.V1
                     "Invalid Credentials" => Unauthorized(result),
                     "User is not active." => Unauthorized(result),
                     var msg when msg.StartsWith("Account locked.") => BadRequest(result),
-                    _ => BadRequest(result.Message)
+                    _ => BadRequest(result)
                 };
             }
 

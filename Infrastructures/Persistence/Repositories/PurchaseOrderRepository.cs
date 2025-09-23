@@ -243,6 +243,9 @@ namespace Infrastructures.Persistence.Repositories
             var confirmedCount = await query.CountAsync(po => po.Status == PurchaseOrderStatus.Confirmed);
             var receivedCount = await query.CountAsync(po => po.Status == PurchaseOrderStatus.Received);
             var cancelledCount = await query.CountAsync(po => po.Status == PurchaseOrderStatus.Cancelled);
+            var partiallyReceivedCount = await query.CountAsync(po => po.Status == PurchaseOrderStatus.PartiallyReceived);
+            var rejectedCount = await query.CountAsync(po => po.Status == PurchaseOrderStatus.Received);
+
 
             var totalSpend = await query
                 .Where(po => po.Status == PurchaseOrderStatus.Received || po.Status == PurchaseOrderStatus.PartiallyReceived)
@@ -260,6 +263,8 @@ namespace Infrastructures.Persistence.Repositories
                 ConfirmedCount = confirmedCount,
                 ReceivedCount = receivedCount,
                 CancelledCount = cancelledCount,
+                PartiallyReceivedCount = partiallyReceivedCount,
+                RejectedCount = rejectedCount,
                 TotalSpend = totalSpend,
                 OutstandingAmount = outstandingAmount
             };

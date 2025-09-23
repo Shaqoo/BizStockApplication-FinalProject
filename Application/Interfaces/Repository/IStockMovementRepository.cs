@@ -15,6 +15,8 @@ namespace Application.Interfaces.Repository
         Task<int> GetTotalQuantityInAsync(Guid warehouseItemId);
         Task<int> GetTotalQuantityOutAsync(Guid warehouseItemId);
         Task<PaginatedList<StockMovementDto>> GetByWarehousePagedAsync(Guid warehouseId, PageRequest pageRequest);
+        Task<StockMovementStatsDto> GetStockMovementStatsAsync();
+        Task<List<StockMovementTrendDto>> GetStockMovementTrendAsync(string range);
     }
 
 }

@@ -9,6 +9,8 @@ namespace Application.Dto
         public int ConfirmedCount { get; set; }
         public int ReceivedCount { get; set; }
         public int CancelledCount { get; set; }
+        public int RejectedCount { get; set; }
+        public int PartiallyReceivedCount { get; set; }
         public decimal TotalSpend { get; set; }
         public decimal OutstandingAmount { get; set; } 
     }
