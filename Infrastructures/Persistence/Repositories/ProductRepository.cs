@@ -118,12 +118,12 @@ namespace Infrastructures.Persistence.Repositories
 
         public async Task<PaginatedList<Product>> SearchProductsAsync(string keyword, PageRequest pageRequest)
         {
-            var fullTextQuery = await GetFullTextSearchQueryAsync(keyword) ?? Enumerable.Empty<Product>().AsQueryable();
-            var iLikeQuery = await GetILikeSearchQueryAsync(keyword) ?? Enumerable.Empty<Product>().AsQueryable();
+            var fullTextQuery = await SearchProductsAsync(keyword) ?? Enumerable.Empty<Product>().AsQueryable();
+           // var iLikeQuery = await GetILikeSearchQueryAsync(keyword) ?? Enumerable.Empty<Product>().AsQueryable();
 
-            var combinedQuery = fullTextQuery.Union(iLikeQuery);
+           // var combinedQuery = fullTextQuery.Union(iLikeQuery);
 
-            return await GetPaginatedResultsAsync(combinedQuery, pageRequest);
+            return await GetPaginatedResultsAsync(fullTextQuery, pageRequest);
         }
 
 
@@ -152,6 +152,38 @@ namespace Infrastructures.Persistence.Repositories
                             .Matches(EF.Functions.PlainToTsQuery("english", formattedKeyword))
                     )
                     && p.Status == ProductStatus.Approved);
+
+            return await query.AnyAsync() ? query : query;
+        }
+
+
+        private async Task<IQueryable<Product>> SearchProductsAsync(string keyword)
+        {
+            var formattedKeyword = keyword.Trim().Replace(" ", " & ");
+
+            var query = _context.Products
+                    .FromSqlRaw(@"
+                        SELECT p.*, 
+                               ts_rank(p.""SearchVector"", plainto_tsquery('english', {0})) AS rank,
+                               GREATEST(
+                                   similarity(p.""Name"", {0}),
+                                   similarity(c.""Name"", {0}),
+                                   similarity(b.""Name"", {0})
+                               ) AS sim
+                        FROM ""Products"" p
+                        LEFT JOIN ""Categories"" c ON p.""CategoryId"" = c.""Id""
+                        LEFT JOIN ""Brands"" b ON p.""BrandId"" = b.""Id""
+                        WHERE p.""Status"" = {1}
+                          AND (
+                                p.""SearchVector"" @@ plainto_tsquery('english', {0})
+                                OR similarity(p.""Name"", {0}) > 0.3
+                                OR similarity(c.""Name"", {0}) > 0.3
+                                OR similarity(b.""Name"", {0}) > 0.3
+                          )
+                        ORDER BY rank DESC, sim DESC
+                    ", keyword, (int)ProductStatus.Approved)
+                    .AsNoTracking();
+
 
             return await query.AnyAsync() ? query : query;
         }

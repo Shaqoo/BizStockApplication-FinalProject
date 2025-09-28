@@ -3,6 +3,7 @@ using Application.Dto;
 using Application.Dto.RequestModels;
 using Host.Extensions;
 using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Net;
 
@@ -34,14 +35,13 @@ namespace Host.Controllers.V1
         /// </returns>
         /// <response code="201">Officer created successfully, returns TwoFactorSetupDto.</response>
         /// <response code="400">Invalid request model.</response>
+        [Authorize(Roles = "Admin,Manager")]
         [HttpPost]
         [ProducesResponseType(typeof(TwoFactorSetupDto), (int)HttpStatusCode.Created)]
         [ProducesResponseType(typeof(ValidationProblemDetails), (int)HttpStatusCode.BadRequest)]
         public async Task<IActionResult> CreateOfficer([FromBody] CreateCustomerServiceRequestModel request)
         {
-            if (!ModelState.IsValid)
-                return BadRequest(ModelState);
-
+           
             var command = new CreateCustomerServiceCommand(request, Request.GetRequestMetadata());
             var result = await _mediator.Send(command);
 

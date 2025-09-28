@@ -3,8 +3,8 @@ using Application.Dto;
 using Application.Dto.RequestModels;
 using Host.Extensions;
 using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using System.Threading.Tasks;
 
 namespace Host.Controllers.V1
 {
@@ -18,13 +18,12 @@ namespace Host.Controllers.V1
         /// </summary>
         /// <param name="request">The manager creation details.</param>
         /// <returns>The Setup For Two Factor</returns>
-        [HttpPost("create")]
+        [Authorize(Roles = "Admin")]
+        [HttpPost]
         [ProducesResponseType(typeof(TwoFactorSetupDto), StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> CreateManager([FromBody] CreateManagerRequestModel request)
         {
-            if (!ModelState.IsValid)
-                return BadRequest(ModelState);
 
             var command = new CreateManagerCommand(request, Request.GetRequestMetadata());
             var result = await mediator.Send(command);

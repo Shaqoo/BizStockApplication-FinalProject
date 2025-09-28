@@ -1,10 +1,6 @@
-﻿using Application.Pagination;
+﻿using Application.Dto;
+using Application.Pagination;
 using Domain.Entities;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Application.Interfaces.Repository
 {
@@ -14,6 +10,7 @@ namespace Application.Interfaces.Repository
         Task<PaginatedList<AuditLog>> GetByUserId(Guid userId,PageRequest pageRequest);
         Task<PaginatedList<AuditLog>> GetByActionAsync(string action, PageRequest pageRequest);
         Task<PaginatedList<AuditLog>> SearchAsync(string search, PageRequest pageRequest);
+        Task<LoginHeatmapDto> GetLoginHeatMap();
         Task<bool> AddAsync(AuditLog auditLog);
     }
 }

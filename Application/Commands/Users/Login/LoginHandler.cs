@@ -7,7 +7,6 @@ using Application.Interfaces.UnitOfWork;
 using Domain.DomainEvents;
 using Domain.Entities;
 using MediatR;
-using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace Application.Commands.Users.Login
 {
@@ -44,7 +43,7 @@ namespace Application.Commands.Users.Login
                 var remaining = user.LockoutEnd!.Value - DateTime.UtcNow;
                 await auditLogRepository.AddAsync(new AuditLog(
                user.Id,
-               "LOGIN_ATTEMPT_LOCKED_OUT",
+               $"LOGIN_ATTEMPT_LOCKED_OUT FOR {user.Email.ToString().ToUpper()}",
                "User",
                user.Id,
                "Attempted login while account is locked.",
@@ -72,7 +71,7 @@ namespace Application.Commands.Users.Login
                   
                     await auditLogRepository.AddAsync(new AuditLog(
                         user.Id,
-                        "LOGIN_ATTEMPT_INVALID_CAPTCHA",
+                        $"LOGIN_ATTEMPT_INVALID_CAPTCHA FOR {user.Email.ToString().ToUpper()}",
                         "User",
                         user.Id,
                         "Attempted login with invalid CAPTCHA.",
@@ -111,7 +110,7 @@ namespace Application.Commands.Users.Login
 
                 await auditLogRepository.AddAsync(new AuditLog(
                     user.Id,
-                    "LOGIN_ATTEMPT_FAILED",
+                   $"LOGIN_ATTEMPT_FAILED FOR {user.Email.ToString().ToUpper()}",
                     "User",
                     user.Id,
                     "Failed login attempt with invalid password.",
@@ -125,7 +124,7 @@ namespace Application.Commands.Users.Login
             {
                 await auditLogRepository.AddAsync(new AuditLog(
                     user.Id,
-                    "LOGIN_ATTEMPT_SUCCESS",
+                   $"LOGIN_ATTEMPT_SUCCESS FOR {user.Email.ToString().ToUpper()}",
                     "User",
                     user.Id,
                     "Successful login attempt without MFA.",
@@ -154,7 +153,7 @@ namespace Application.Commands.Users.Login
 
             await auditLogRepository.AddAsync(new AuditLog(
                 user.Id,
-                "LOGIN_ATTEMPT_SUCCESS",
+                $"LOGIN_ATTEMPT_SUCCESS FOR {user.Email.ToString().ToUpper()}",
                 "User",
                 user.Id,
                 "Successful login attempt.",

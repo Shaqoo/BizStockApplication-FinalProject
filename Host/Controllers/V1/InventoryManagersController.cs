@@ -3,6 +3,7 @@ using Application.Dto;
 using Application.Dto.RequestModels;
 using Host.Extensions;
 using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Net;
 
@@ -35,6 +36,7 @@ namespace Host.Controllers.V1
         /// Returns <see cref="BadRequestObjectResult"/> if the request model is invalid.
         /// Returns <see cref="CreatedAtActionResult"/> containing a <see cref="TwoFactorSetupDto"/> if successful.
         /// </returns>
+        [Authorize(Roles = "Admin,Manager")]
         [HttpPost]
         [ProducesResponseType(typeof(TwoFactorSetupDto), (int)HttpStatusCode.Created)]
         [ProducesResponseType(typeof(ValidationProblemDetails), (int)HttpStatusCode.BadRequest)]

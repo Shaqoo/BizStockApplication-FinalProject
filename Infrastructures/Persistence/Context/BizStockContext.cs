@@ -49,6 +49,8 @@ namespace Infrastructures.Persistence.Context
         public DbSet<MessageReaction> MessageReactions { get; set; } = default!;
         public DbSet<Notification> Notifications { get; set; } = default!;
 
+
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.ApplyConfigurationsFromAssembly(typeof(UserEntityTypeConfiguration).Assembly);

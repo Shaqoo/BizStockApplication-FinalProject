@@ -10,6 +10,7 @@ using Application.Commands.PurchaseOrders.UpdatePurchaseOrderItem;
 using Application.Dto;
 using Application.Dto.RequestModels;
 using Application.Pagination;
+using Application.Queries.PurchaseOrders.GetPoTrend;
 using Application.Queries.PurchaseOrders.GetPurchaseOrderById;
 using Application.Queries.PurchaseOrders.GetPurchaseOrderList;
 using Application.Queries.PurchaseOrders.GetPurchaseOrdersByDateRange;
@@ -366,6 +367,30 @@ namespace Host.Controllers.V1
             var query = new GetPurchaseOrdersByDateRangeQuery(startDate,endDate, pageRequest);
             var result = await _mediator.Send(query);
             return Ok(result);
+        }
+
+
+        /// <summary>
+        /// Gets purchase order trends for the last 6 months.
+        /// </summary>
+        /// <remarks>
+        /// Returns the monthly count of purchase orders, with month labels.
+        /// </remarks>
+        /// <response code="200">Returns the purchase order trend data</response>
+        /// <response code="400">If the request is invalid</response>
+        /// <response code="500">If an unhandled server error occurs</response>
+        [HttpGet("trend")]
+        [ProducesResponseType(typeof(PoTrendDto), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(string), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<IActionResult> GetTrend()
+        {
+            var result = await _mediator.Send(new GetPurchaseOrderTrendQuery());
+
+            if (result.IsSuccess)
+                return Ok(result);
+
+            return BadRequest(result);
         }
     }
 }

@@ -8,6 +8,7 @@ using Application.Queries.ChatThreads.GetById;
 using Application.Queries.ChatThreads.GetByStatus;
 using Application.Queries.ChatThreads.GetChatThreadsByAgent;
 using Application.Queries.ChatThreads.GetChatThreadsByCustomer;
+using Application.Queries.ChatThreads.GetCopmlaintResolution;
 using Application.Queries.ChatThreads.GetCustomerOpenThread;
 using Application.Queries.ChatThreads.GetStats;
 using Domain.Enums;
@@ -161,6 +162,24 @@ namespace Host.Controllers.V1
             var result = await _mediator.Send(new GetCustomerOpenThreadQuery());
             return result.ToActionResult(this);
         }
+
+        /// <summary>
+        /// Gets the average complaint resolution time (in days) for the last 6 months.
+        /// </summary>
+        /// <remarks>
+        /// Returns labels (months) and average resolution days.
+        /// </remarks>
+        /// <response code="200">Returns the complaint resolution chart data</response>
+        /// <response code="500">If an internal error occurs</response>
+        [HttpGet("complaints/resolution-chart")]
+        [ProducesResponseType(typeof(Result<ComplaintResolutionChartDto>), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<IActionResult> GetComplaintResolutionChart()
+        {
+            var result = await _mediator.Send(new GetComplaintResolutionChartQuery());
+            return Ok(result);
+        }
+
     }
 
 }

@@ -40,6 +40,7 @@ namespace Host.Controllers.V1
         /// Returns <see cref="BadRequestObjectResult"/> if the request model is invalid.
         /// Returns <see cref="CreatedAtActionResult"/> with the two-factor setup details if the operation is successful.
         /// </returns>
+        [Authorize(Roles = "Admin,Manager")]
         [HttpPost]
         [ProducesResponseType(typeof(Result<TwoFactorSetupDto>), StatusCodes.Status201Created)]
         [ProducesResponseType(typeof(Result<TwoFactorSetupDto>), StatusCodes.Status400BadRequest)]

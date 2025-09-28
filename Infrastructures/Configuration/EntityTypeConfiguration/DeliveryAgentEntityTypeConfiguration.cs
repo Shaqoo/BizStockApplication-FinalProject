@@ -1,4 +1,5 @@
 ﻿using Domain.Entities;
+using Domain.ValueObjects;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -12,15 +13,15 @@ namespace Infrastructures.Configuration.EntityTypeConfiguration
 
             builder.HasKey(da => da.Id);
 
-             
-            builder.OwnsOne(da => da.Email, email =>
-            {
-                email.Property(e => e.Value)
-                     .HasColumnName("Email")
-                     .IsRequired()
-                     .HasMaxLength(150);
-                email.HasIndex(e => e.Value).IsUnique();
-            });
+
+            builder.Property(u => u.Email)
+                .HasConversion(
+                    v => v.Value,
+                    v => new Email(v)
+                )
+                .HasColumnName("Email")
+                .IsRequired()
+                .HasMaxLength(100);
 
             builder.Property(da => da.VehicleNumber)
                    .IsRequired()

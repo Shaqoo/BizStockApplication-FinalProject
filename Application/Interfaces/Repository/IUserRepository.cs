@@ -19,6 +19,8 @@ namespace Application.Interfaces.Repository
         Task DeleteUserAsync(Guid userId);
         Task<PaginatedList<User>> SearchUsers(string keyword, PageRequest pageRequest,Role? role);
         Task<int> CountAsync(Expression<Func<User, bool>>? predicate = null);
+        Task<List<UserGrowthDto>> GetUserGrowthLast10WeeksAsync();
+        Task<TotalUserStatsDto> GetTotalUserStats();
 
     }
 }

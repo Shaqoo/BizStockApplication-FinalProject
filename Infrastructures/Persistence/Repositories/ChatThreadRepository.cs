@@ -1,8 +1,10 @@
-﻿using Application.Interfaces.Repository;
+﻿using Application.Dto;
+using Application.Interfaces.Repository;
 using Application.Pagination;
 using Domain.Entities;
 using Domain.Enums;
 using Infrastructures.Persistence.Context;
+using MassTransit;
 using Microsoft.EntityFrameworkCore;
 using System.Linq.Expressions;
 
@@ -137,6 +139,55 @@ namespace Infrastructures.Persistence.Repositories
             return await _context.ChatThreads
                 .CountAsync(t => t.Status == ChatStatus.InProgress);
         }
+
+        public async Task<ComplaintResolutionChartDto> GetResolutionChartDto()
+        {
+            var now = DateTime.UtcNow;
+            var fromDate = new DateTime(now.Year, now.Month, 1).AddMonths(-5);
+
+            var resolvedComplaints = await _context.ChatThreads
+                .Where(ct => ct.Status == ChatStatus.Closed && ct.DateCreated >= DateTime.SpecifyKind(fromDate,DateTimeKind.Utc))
+                .ToListAsync();
+
+         
+            var months = Enumerable.Range(0, 6)
+                .Select(i => fromDate.AddMonths(i))
+                .ToList();
+
+            var labels = months.Select(m => m.ToString("MMM")).ToList();
+            var datas = new List<int>(new int[6]);
+
+          
+            var grouped = resolvedComplaints
+                .GroupBy(ct => new { ct.LastModified.Year, ct.LastModified.Month })
+                .Select(g => new
+                {
+                    Year = g.Key.Year,
+                    Month = g.Key.Month,
+                    AvgResolutionDays = (int)Math.Round(
+                        g.Average(x => (x.LastModified - x.DateCreated).TotalDays)
+                    )
+                })
+                .ToList();
+
+          
+            foreach (var g in grouped)
+            {
+                var key = new DateTime(g.Year, g.Month, 1);
+                var index = months.FindIndex(m => m.Year == key.Year && m.Month == key.Month);
+
+                if (index != -1)
+                    datas[index] = g.AvgResolutionDays;
+            }
+
+            return new ComplaintResolutionChartDto
+            {
+                Labels = labels,
+                Datas = datas
+            };
+        }
+
+
     }
 
 }

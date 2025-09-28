@@ -85,6 +85,15 @@ namespace Infrastructures.Configuration.EntityTypeConfiguration
                    .HasForeignKey(p => p.ProductId)
                    .OnDelete(DeleteBehavior.Restrict);
 
+
+            builder.HasIndex(p => p.Name)
+                   .HasMethod("GIN")
+                   .HasOperators("gin_trgm_ops");
+
+            builder.HasIndex(p => p.Description)
+                   .HasMethod("GIN")
+                   .HasOperators("gin_trgm_ops");
+
             builder.HasIndex(p => p.SKU).IsUnique();
             builder.HasIndex(p => p.Barcode).IsUnique();
         }

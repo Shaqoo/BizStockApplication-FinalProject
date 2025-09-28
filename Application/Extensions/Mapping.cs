@@ -25,7 +25,7 @@ namespace Application.Extensions
 
         public static DeliveryAgentDto DeliveryAgentAsDto(this DeliveryAgent deliveryAgent)
         {
-            return new DeliveryAgentDto(deliveryAgent.Id, deliveryAgent.FullName, deliveryAgent.Email.Value, deliveryAgent.VehicleNumber,
+            return new DeliveryAgentDto(deliveryAgent.Id, deliveryAgent.FullName, deliveryAgent.Email.ToString(), deliveryAgent.VehicleNumber,
                 deliveryAgent.ContactNumber,deliveryAgent.AvailabilityStatus);
         }
 

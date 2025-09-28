@@ -7,6 +7,7 @@ using Domain.Enums;
 using Domain.Exceptions;
 using Domain.ValueObjects;
 using Infrastructures.Persistence.Context;
+using MassTransit;
 using Microsoft.EntityFrameworkCore;
 using System.Linq.Expressions;
 
@@ -68,12 +69,14 @@ namespace Infrastructures.Persistence.Repositories
         public async Task<PaginatedList<UserDto>> GetUsersByRoleAsync(Role role, PageRequest pageRequest)
         {
             var query = _context.Users
-                .Where(u => u.UserRoles.Any(r => r.Role == role)).Select(a => a.UserAsDto());
+                .Include(a => a.UserRoles)
+                .Where(u => u.UserRoles.Any(r => r.Role == role));
 
             var totalCount = await query.CountAsync();
 
             var items = await query
-                .OrderBy(u => u.fullName)
+                .OrderBy(u => u.DateCreated).
+                 Select(a => a.UserAsDto())
                 .Skip((pageRequest.Page - 1) * pageRequest.PageSize)
                 .Take(pageRequest.PageSize)
                 .ToListAsync();
@@ -153,7 +156,7 @@ namespace Infrastructures.Persistence.Repositories
             await _context.UserRecoveryCodes.AddAsync(userRecoveryCode);
         }
 
-        public async Task<User> GetByExpression(Expression<Func<User, bool>> predicate)
+        public async Task<User?> GetByExpression(Expression<Func<User, bool>> predicate)
         {
              return await _context.Users
                 .FirstOrDefaultAsync(predicate) 
@@ -178,6 +181,59 @@ namespace Infrastructures.Persistence.Repositories
                 .Include(u => u.UserRoles)
                 .FirstOrDefaultAsync(u => u.RefreshToken == rfreshToken);
         }
+
+        private static DateTime GetStartOfWeek(DateTime date, DayOfWeek startOfWeek = DayOfWeek.Monday)
+        {
+            date = date.Date;
+            int diff = (7 + (date.DayOfWeek - startOfWeek)) % 7;
+            return date.AddDays(-diff);
+        }
+
+        public async Task<List<UserGrowthDto>> GetUserGrowthLast10WeeksAsync()
+        {
+            var today = DateTime.UtcNow.Date;
+            var lastWeekStart = GetStartOfWeek(today, DayOfWeek.Monday);
+            var firstWeekStart = lastWeekStart.AddDays(-7 * 9); 
+            var fetchEndExclusive = lastWeekStart.AddDays(7);  
+
+            var createdDates = await _context.Users
+                .Where(u => u.DateCreated >= firstWeekStart && u.DateCreated < fetchEndExclusive)
+                .Select(u => u.DateCreated)  
+                .ToListAsync();
+
+            var result = new List<UserGrowthDto>(10);
+
+           
+            for (var weekStart = firstWeekStart; weekStart <= lastWeekStart; weekStart = weekStart.AddDays(7))
+            {
+                var weekEnd = weekStart.AddDays(7);  
+                var count = createdDates.Count(d => d >= weekStart && d < weekEnd);
+                result.Add(new UserGrowthDto { WeekStart = weekStart, UserCount = count });
+            }
+
+            
+            return result;
+        }
+
+        public async Task<TotalUserStatsDto> GetTotalUserStats()
+        {
+          
+            var users = _context.Users.AsQueryable();
+
+            var dto = new TotalUserStatsDto
+            {
+                TotalAdmins = await users.CountAsync(a => a.UserRoles.Any(u => u.Role == Role.Admin)),
+                TotalCustomers = await users.CountAsync(a => a.UserRoles.Any(u => u.Role == Role.Customer)),
+                TotalManagers = await users.CountAsync(a => a.UserRoles.Any(u => u.Role == Role.Manager)),
+                TotalSuppliers = await users.CountAsync(a => a.UserRoles.Any(u => u.Role == Role.Supplier)),
+                TotalDeliveryAgents = await users.CountAsync(a => a.UserRoles.Any(u => u.Role == Role.DeliveryAgent)),
+                TotalCustomerServiceAgents = await users.CountAsync(a => a.UserRoles.Any(u => u.Role == Role.CustomerService)),
+                TotalInventoryManagers = await users.CountAsync(a => a.UserRoles.Any(u => u.Role == Role.InventoryManager)),
+                TotalUsers = await users.CountAsync()
+            };
+            return dto;
+        }
+
     }
 
 }

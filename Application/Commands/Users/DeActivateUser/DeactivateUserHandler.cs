@@ -3,13 +3,7 @@ using Application.Interfaces.Repository;
 using Application.Interfaces.Service;
 using Application.Interfaces.UnitOfWork;
 using Domain.Entities;
-using Domain.Enums;
 using MediatR;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Application.Commands.Users.DeActivateUser
 {
@@ -39,7 +33,7 @@ namespace Application.Commands.Users.DeActivateUser
             }
 
             user.ToogleDelete();
-            await userRepository.UpdateUserAsync(user);
+           // await userRepository.UpdateUserAsync(user);
 
             await unitOfWork.SaveChangesAsync(cancellationToken);
 

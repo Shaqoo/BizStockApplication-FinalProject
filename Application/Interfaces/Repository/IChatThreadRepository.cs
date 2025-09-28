@@ -1,4 +1,5 @@
-﻿using Application.Interfaces.Repository.BaseRepository;
+﻿using Application.Dto;
+using Application.Interfaces.Repository.BaseRepository;
 using Application.Pagination;
 using Domain.Entities;
 using Domain.Enums;
@@ -17,6 +18,8 @@ namespace Application.Interfaces.Repository
         Task<int> CountThreadsByAgentAsync(Guid agentId);
         Task<IEnumerable<ChatThread>> GetOpenThreadsWithoutAgentAsync();
         Task UpdateThread(ChatThread chatThread);
+        Task<ComplaintResolutionChartDto> GetResolutionChartDto();
     }
+
 
 }

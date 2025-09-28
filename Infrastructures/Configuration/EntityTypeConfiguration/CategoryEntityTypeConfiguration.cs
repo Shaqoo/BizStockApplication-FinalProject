@@ -31,6 +31,10 @@ namespace Infrastructures.Configuration.EntityTypeConfiguration
                    .HasForeignKey(p => p.CategoryId)
                    .OnDelete(DeleteBehavior.Restrict);
 
+            builder.HasIndex(c => c.Name)
+                    .HasMethod("GIN")
+                    .HasOperators("gin_trgm_ops");
+
         }
     }
 }

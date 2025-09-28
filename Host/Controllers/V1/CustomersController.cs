@@ -2,11 +2,15 @@
 using Application.Dto;
 using Application.Dto.RequestModels;
 using Application.Queries.Customers;
+using Application.Queries.Customers.GetCustomerByEmail;
 using Application.Queries.Customers.GetCustomerStats;
+using Application.Queries.Suppliers.GetByEmail;
 using Host.Extensions;
+
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Net;
 
 namespace Host.Controllers.V1
 {
@@ -82,6 +86,25 @@ namespace Host.Controllers.V1
         public async Task<IActionResult> GetCustomerStats()
         {
             var result = await mediator.Send(new GetCustomerStatsQuery());
+            return Ok(result);
+        }
+
+        /// <summary>
+        /// Retrieves a Customer by their email address.
+        /// </summary>
+        /// <param name="email">The email of the supplier.</param>
+        /// <returns>The supplier details.</returns>
+        [HttpGet("by-email/{email}")]
+        [ProducesResponseType(typeof(CustomerDto), (int)HttpStatusCode.OK)]
+        [ProducesResponseType((int)HttpStatusCode.NotFound)]
+        public async Task<IActionResult> GetByEmail(string email)
+        {
+            var query = new GetCustomerByEmailQuery(email);
+            var result = await mediator.Send(query);
+
+            if (!result.IsSuccess || result.Data == null)
+                return NotFound(result);
+
             return Ok(result);
         }
 

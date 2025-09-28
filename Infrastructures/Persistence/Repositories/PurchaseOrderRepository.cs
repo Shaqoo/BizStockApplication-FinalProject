@@ -300,6 +300,48 @@ namespace Infrastructures.Persistence.Repositories
 
             return new PaginatedList<PurchaseOrderListDto>(items, total, pageRequest.Page, pageRequest.PageSize);
         }
+
+        public async Task<PoTrendDto> GetMonthlyPurchaseOrderTrendsAsync(int months = 6)
+        {
+            var recentMonths = Enumerable.Range(1, months)
+                .Select(i => DateTime.UtcNow.AddMonths(-months + i))
+                .Select(d => new
+                {
+                    d.Year,
+                    d.Month,
+                    Label = d.ToString("MMM yyyy")
+                })
+                .ToList();
+
+            var startDate = new DateTime(recentMonths.First().Year, recentMonths.First().Month, 1);
+
+            var trends = await _context.PurchaseOrders
+                .Where(po => po.DateCreated >= DateTime.SpecifyKind(startDate,DateTimeKind.Utc))
+                .GroupBy(po => new { po.DateCreated.Year, po.DateCreated.Month })
+                .Select(g => new
+                {
+                    g.Key.Year,
+                    g.Key.Month,
+                    TotalCount = g.Count()
+                })
+                .ToListAsync();
+
+            var trendMap = trends.ToDictionary(
+                t => (t.Year, t.Month),
+                t => t.TotalCount
+            );
+
+            var trendData = new PoTrendDto
+            {
+                Labels = recentMonths.Select(m => m.Label).ToList(),
+                Data = recentMonths.Select(m =>
+                    trendMap.TryGetValue((m.Year, m.Month), out var count) ? count : 0
+                ).ToList()
+            };
+
+            return trendData;
+        }
+
     }
 
 }

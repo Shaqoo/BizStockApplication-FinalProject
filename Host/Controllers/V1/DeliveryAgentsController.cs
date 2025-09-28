@@ -5,6 +5,7 @@ using Application.Queries.DeliveryAgents.GetByEmail;
 using Application.Queries.DeliveryAgents.ViewMyDetails;
 using Host.Extensions;
 using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Net;
 
@@ -21,6 +22,7 @@ namespace Host.Controllers.V1
         /// </summary>
         /// <param name="request">The delivery agent creation details.</param>
         /// <returns>The newly created delivery agent's details.</returns>
+        [Authorize(Roles = "Admin,Manager")]
         [HttpPost]
         [ProducesResponseType(typeof(DeliveryAgentDto), StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]

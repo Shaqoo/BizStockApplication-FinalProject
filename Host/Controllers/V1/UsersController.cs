@@ -28,6 +28,8 @@ using Application.Queries.Users.GetById;
 using Application.Queries.Users.GetByRole;
 using Application.Queries.Users.GetLostAccessRequests;
 using Application.Queries.Users.GetMyProfile;
+using Application.Queries.Users.GetTotalStats;
+using Application.Queries.Users.GetUserGrowthLast10Weeks;
 using Application.Queries.Users.GetUserStats;
 using Application.Queries.Users.SearchBykeyword;
 using Domain.Enums;
@@ -680,5 +682,42 @@ namespace Host.Controllers.V1
 
             return Ok(result);
         }
+
+        /// <summary>
+        /// Get User Growth In The Last 10 Weeks
+        /// </summary>
+        /// <param name="cancellationToken">The cancellation for the request.</param>
+        [HttpGet("growth/weekly")]
+        [ProducesResponseType(typeof(Result<List<UserGrowthDto>>), StatusCodes.Status200OK)]
+        public async Task<IActionResult> GetUserGrowthLast10Weeks(CancellationToken cancellationToken)
+        {
+            var query = new GetUserGrowthLast10WeeksQuery();
+            var result = await _mediator.Send(query, cancellationToken);
+
+            return Ok(result);
+        }
+
+
+        /// <summary>
+        /// Gets total user statistics across all roles (Admin, Customer, Manager, Supplier, 
+        /// DeliveryAgent, CustomerService, InventoryManager, and overall totals).
+        /// </summary>
+        /// <remarks>
+        /// This endpoint returns aggregated counts of users grouped by their roles, 
+        /// including both active and inactive users.  
+        /// Useful for building admin dashboards and monitoring system usage.  
+        /// </remarks>
+        /// <response code="200">Returns total user statistics successfully</response>
+        /// <response code="400">If an error occurs while fetching the stats</response>
+        [HttpGet("stats/total")]
+        [ProducesResponseType(typeof(Result<TotalUserStatsDto>), StatusCodes.Status200OK)]
+        public async Task<IActionResult> GetTotalUserStats()
+        {
+            var query = new GetTotalUserStatsQuery();
+            var result = await _mediator.Send(query);
+
+            return result.IsSuccess ? Ok(result) : BadRequest(result);
+        }
+
     }
 }
