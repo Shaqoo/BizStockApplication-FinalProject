@@ -10,6 +10,7 @@ using Infrastructures.Persistence.UnitOfWork;
 using Infrastructures.Service.AuthService;
 using Infrastructures.Service.Email;
 using Infrastructures.Service.Messaging;
+using Infrastructures.Service.Payments;
 using Infrastructures.Service.RecoveryCode;
 using Infrastructures.Settings;
 using MassTransit;
@@ -60,6 +61,7 @@ namespace Infrastructures.Extensions
             services.Configure<CloudinarySettings>(configuration.GetSection("Cloudinary"));
             services.Configure<AiSettings>(configuration.GetSection("AiKeys"));
             services.Configure<AIResourcesSettings>(configuration.GetSection("AIResources"));
+            services.Configure<PaystackSettings>(configuration.GetSection("Paystack"));
 
 
 
@@ -79,6 +81,7 @@ namespace Infrastructures.Extensions
 
             services.AddScoped<IRecoveryCodeGenerator, RecoveryCodeGenerator>();
             services.AddScoped<IUnitOfWork, UnitOfWork>();
+            services.AddScoped<IPaymentGatewayService, PaystackPaymentGatewayService>();
 
 
             services.AddMassTransit(x =>

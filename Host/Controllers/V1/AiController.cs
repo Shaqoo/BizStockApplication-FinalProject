@@ -1,5 +1,4 @@
 ﻿using Application.Commands.AI;
-using Application.Dto;
 using Application.Dto.RequestModels;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;

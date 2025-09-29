@@ -1,10 +1,7 @@
-﻿using Application.Interfaces.Repository.BaseRepository;
+﻿using Application.Dto;
+using Application.Interfaces.Repository.BaseRepository;
+using Application.Pagination;
 using Domain.Entities;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Application.Interfaces.Repository
 {
@@ -17,7 +14,8 @@ namespace Application.Interfaces.Repository
         Task<bool> IsInvoiceFullyPaidAsync(Guid invoiceId);
         Task<IEnumerable<Payment>> GetPendingPaymentsAsync();
         Task UpdateAsync(Payment payment); 
-        Task DeleteAsync(Guid id);        
+        Task DeleteAsync(Guid id);
+        Task<PaginatedList<PaymentDto>> GetByCustomerIdAsync(Guid customerId, PageRequest pageRequest);
     }
 
 }

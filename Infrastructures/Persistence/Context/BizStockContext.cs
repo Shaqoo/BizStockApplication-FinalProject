@@ -48,7 +48,9 @@ namespace Infrastructures.Persistence.Context
         public DbSet<ChatThread> ChatThreads { get; set; } = default!;
         public DbSet<MessageReaction> MessageReactions { get; set; } = default!;
         public DbSet<Notification> Notifications { get; set; } = default!;
-
+        public DbSet<State> States { get; set; } = default!;
+        public DbSet<Lga> Lgas { get; set; } = default!;
+        public DbSet<DeliveryAddress> DeliveryAddresses { get; set; } = default!;
 
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)

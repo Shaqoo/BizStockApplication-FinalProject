@@ -14,4 +14,11 @@ namespace Domain.Enums
         Refunded
     }
 
+    public enum PaymentPurpose
+    {
+        OrderPayment = 1,
+        WalletFunding = 2
+    }
+
+
 }

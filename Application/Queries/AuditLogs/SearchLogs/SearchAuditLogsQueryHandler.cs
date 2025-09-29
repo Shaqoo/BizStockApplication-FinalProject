@@ -1,9 +1,10 @@
 ﻿using Application.Dto;
+using Application.Extensions;
 using Application.Interfaces.Repository;
 using Application.Interfaces.Service;
 using Application.Pagination;
-using Application.Extensions;
 using MediatR;
+using System.Collections.Generic;
 
 namespace Application.Queries.AuditLogs.SearchLogs
 {
@@ -12,11 +13,13 @@ namespace Application.Queries.AuditLogs.SearchLogs
     {
         private readonly IAuditLogRepository _auditLogRepository;
         private readonly IMemoryCacheService _cache;
+        private readonly IUserRepository _userRepository;
 
-        public SearchAuditLogsQueryHandler(IAuditLogRepository auditLogRepository, IMemoryCacheService cache)
+        public SearchAuditLogsQueryHandler(IAuditLogRepository auditLogRepository, IMemoryCacheService cache, IUserRepository userRepository)
         {
             _auditLogRepository = auditLogRepository;
             _cache = cache;
+            _userRepository = userRepository;
         }
 
         public async Task<PaginatedList<AuditLogReadDto>> Handle(SearchAuditLogsQuery request, CancellationToken cancellationToken)
@@ -29,8 +32,31 @@ namespace Application.Queries.AuditLogs.SearchLogs
                 {
                     var logs = await _auditLogRepository.SearchAsync(request.Keyword, request.PageRequest);
 
+                    var list = new List<AuditLogReadDto>();
+                    foreach (var item in logs.Items)
+                    {
+                        var user = await _userRepository.GetByIdAsync(item.UserId);
+                        if (user == null)
+                            break;
+                        list.Add(new AuditLogReadDto
+                        {
+                            Id = item.Id,
+                            Action = item.Action,
+                            Description = item.Description,
+                            Email = (string)user.Email,
+                            UserId = item.UserId,
+                            EntityId = item.UserId,
+                            EntityName = item.EntityName,
+                            Fullname = user.FullName,
+                            IpAddress = item.IpAddress,
+                            ProfilePic = user.ProfilePictureUrl,
+                            Timestamp = item.Timestamp,
+                            UserAgent = item.UserAgent
+                        });
+                    }
+
                     return new PaginatedList<AuditLogReadDto>(
-                        logs.Items.Select(a => a.MapToDto()).ToList(),
+                        list,
                         logs.TotalCount,
                         logs.PageNumber,
                         logs.PageSize

@@ -1,10 +1,5 @@
 ﻿using Domain.Auditable;
 using Domain.Enums;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Domain.Entities
 {
@@ -15,17 +10,19 @@ namespace Domain.Entities
         public decimal Amount { get; private set; }
         public TransactionType Type { get; private set; }
         public string Reference { get; private set; } = default!;
-        public string Description { get; private set; } = default!;
-
+        public string? Description { get; private set; }
+        public Guid? PaymentId { get; private set; }
+        public Payment? Payment { get; private set; }
         private WalletTransaction() { }
 
-        public WalletTransaction(Guid walletId, decimal amount, TransactionType type, string reference, string description)
+        public WalletTransaction(Guid walletId, decimal amount, TransactionType type, string reference, string? description, Guid? paymentId = null)
         {
             WalletId = walletId;
             Amount = amount;
             Type = type;
             Reference = reference;
             Description = description;
+            PaymentId = paymentId;
         }
     }
 

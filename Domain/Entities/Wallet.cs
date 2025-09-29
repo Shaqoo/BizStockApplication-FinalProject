@@ -1,19 +1,13 @@
 ﻿using Domain.Auditable;
 using Domain.Enums;
 using Domain.Exceptions;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Domain.Entities
 {
     public class Wallet : BaseEntity
     {
-        public Guid UserId { get; private set; }
-        public User User { get; private set; } = default!;
-
+        public Guid CustomerId { get; private set; }
+        public Customer Customer { get; private set; } = default!;
         public decimal Balance { get; private set; } = 0m;
         public bool IsActive { get; private set; } = true;
 
@@ -25,19 +19,17 @@ namespace Domain.Entities
 
         public Wallet(Guid userId)
         {
-            UserId = userId;
+            CustomerId = userId;
             Balance = 0;
             IsActive = true;
         }
 
-        public void Credit(decimal amount, string reference, string description)
+        public void Credit(decimal amount)
         {
             if (amount <= 0)
                 throw new DomainException("Credit amount must be positive.");
 
             Balance += amount;
-
-            _transactions.Add(new WalletTransaction(this.Id, amount, TransactionType.Credit, reference, description));
         }
 
         public void Debit(decimal amount, string reference, string description)
@@ -57,9 +49,6 @@ namespace Domain.Entities
         public void Reactivate() => IsActive = true;
         public void SetPin(string rawPin)
         {
-            if (string.IsNullOrWhiteSpace(rawPin) || rawPin.Length != 4)
-                throw new DomainException("PIN must be 4 digits.");
-
             PinHash = rawPin;
         }
 

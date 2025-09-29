@@ -24,8 +24,10 @@ namespace Infrastructures.Persistence.Repositories
 
         public async Task<Customer?> GetByIdAsync(Guid id)
         {
-            return await _context.Customers.FindAsync(id)
-                ?? throw new KeyNotFoundException("Customer not found.");
+            return await _context.Customers.Include(a => a.DeliveryAddresses)
+                .ThenInclude(a => a.State)
+                .ThenInclude(a => a.Lgas)
+                .FirstOrDefaultAsync(a => a.Id == id);
         }
 
         public async Task<PaginatedList<Customer>> GetAllAsync(PageRequest pageRequest)

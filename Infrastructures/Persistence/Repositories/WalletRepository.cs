@@ -1,19 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using Application.Interfaces.Repository;
+using Application.Pagination;
+using Domain.Entities;
+using Domain.Exceptions;
+using Infrastructures.Persistence.Context;
+using Microsoft.EntityFrameworkCore;
+using System.Linq.Expressions;
 
 namespace Infrastructures.Persistence.Repositories
 {
-    using Application.Interfaces.Repository;
-    using Application.Pagination;
-    using Domain.Entities;
-    using Domain.Exceptions;
-    using Infrastructures.Persistence.Context;
-    using Microsoft.EntityFrameworkCore;
-    using System.Linq.Expressions;
-
     public class WalletRepository : IWalletRepository
     {
         private readonly BizStockContext _context;
@@ -30,8 +24,7 @@ namespace Infrastructures.Persistence.Repositories
 
         public async Task<Wallet?> GetByIdAsync(Guid id)
         {
-            return await _context.Wallets.FindAsync(id)
-                ?? throw new EntityNotFoundException("Wallet","Id");
+            return await _context.Wallets.FirstOrDefaultAsync(a => a.Id == id);
         }
 
         public async Task<PaginatedList<Wallet>> GetAllAsync(PageRequest pageRequest)
@@ -55,16 +48,16 @@ namespace Infrastructures.Persistence.Repositories
                 .ToListAsync();
         }
 
-        public async Task<Wallet?> GetByUserIdAsync(Guid userId)
+        public async Task<Wallet?> GetByUserIdAsync(Guid customerId)
         {
             return await _context.Wallets
-                .FirstOrDefaultAsync(w => w.UserId == userId);
+                .FirstOrDefaultAsync(w => w.CustomerId == customerId);
         }
 
-        public async Task<bool> VerifyPinAsync(Guid userId, string rawPin)
+        public async Task<bool> VerifyPinAsync(Guid customerId, string rawPin)
         {
             var user = await _context.Wallets
-                .Where(u => u.UserId == userId)
+                .Where(u => u.CustomerId == customerId)
                 .Select(u => new { u.PinHash })
                 .FirstOrDefaultAsync();
 
@@ -74,9 +67,9 @@ namespace Infrastructures.Persistence.Repositories
             return rawPin == user.PinHash;
         }
 
-        public async Task SetPinAsync(Guid userId, string rawPin)
+        public async Task SetPinAsync(Guid customerId, string rawPin)
         {
-            var user = await _context.Wallets.FirstOrDefaultAsync(a => a.UserId == userId);
+            var user = await _context.Wallets.FirstOrDefaultAsync(a => a.CustomerId == customerId);
             if (user == null) throw new EntityNotFoundException("Wallet","UserId");
 
              user.SetPin(rawPin);  
@@ -84,19 +77,19 @@ namespace Infrastructures.Persistence.Repositories
             await Task.CompletedTask;
         }
 
-        public async Task<decimal> GetBalanceAsync(Guid userId)
+        public async Task<decimal> GetBalanceAsync(Guid customerId)
         {
             var wallet = await _context.Wallets
-                .Where(w => w.UserId == userId)
+                .Where(w => w.CustomerId == customerId)
                 .Select(w => w.Balance)
                 .FirstOrDefaultAsync();
 
             return wallet;
         }
 
-        public async Task<bool> HasSufficientBalanceAsync(Guid userId, decimal amount)
+        public async Task<bool> HasSufficientBalanceAsync(Guid customerId, decimal amount)
         {
-            var balance = await GetBalanceAsync(userId);
+            var balance = await GetBalanceAsync(customerId);
             return balance >= amount;
         }
 
@@ -106,7 +99,7 @@ namespace Infrastructures.Persistence.Repositories
             await Task.CompletedTask;
         }
 
-        public async Task<Wallet> GetByExpression(Expression<Func<Wallet, bool>> predicate)
+        public async Task<Wallet?> GetByExpression(Expression<Func<Wallet, bool>> predicate)
         {
              return await _context.Wallets.FirstOrDefaultAsync(predicate) ??
                 throw new EntityNotFoundException("Wallet","Predicate");

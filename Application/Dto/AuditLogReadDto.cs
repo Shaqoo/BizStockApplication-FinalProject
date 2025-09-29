@@ -1,15 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Application.Dto
+﻿namespace Application.Dto
 {
     public record AuditLogReadDto
     {
         public Guid Id { get; init; }
         public Guid UserId { get; init; }
+        public string Fullname { get; init; } = string.Empty;
+        public string Email { get; init; } = string.Empty ;
+        public string? ProfilePic { get; init; }
         public DateTime Timestamp { get; init; }
         public string Action { get; init; } = default!;
         public string? EntityName { get; init; }

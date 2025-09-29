@@ -12,7 +12,11 @@ namespace Domain.Entities
         public ICollection<ChatThread> ChatThreads { get; private set; } = new List<ChatThread>();
         public ICollection<SalesOrder> SalesOrders { get; private set; } = new List<SalesOrder>();
         public ICollection<Invoice> Invoices { get; private set; } = new List<Invoice>();
+        public ICollection<Payment> Payments { get; private set; } = new HashSet<Payment>();
+        public ICollection<DeliveryAddress> DeliveryAddresses { get; private set; } = new HashSet<DeliveryAddress>();
         public CustomerType CustomerType { get; private set; } = default!;
+        public Wallet Wallet { get; private set; } = default!;
+        public Guid WalletId { get; private set; }
         public string? BusinessName { get; private set; }
 
         public string? Address { get; private set; }
@@ -40,6 +44,26 @@ namespace Domain.Entities
             CustomerTypeId = newTypeId;
             Modified();
         }
+
+        public bool HasDefaultDeliveryAddress()
+        {
+            return DeliveryAddresses.Any(a => a.IsDefault);
+        }
+
+        public void ClearDefaultDeliveryAddresses()
+        {
+            foreach (var address in DeliveryAddresses)
+            {
+                if (address.IsDefault)
+                    address.SetDefault(false);  
+            }
+        }
+
+        public void AddWallet(Guid walletId)
+        {
+            WalletId = walletId;
+        }
+
     }
 
 }

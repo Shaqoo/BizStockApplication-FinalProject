@@ -152,5 +152,39 @@ namespace Application.Extensions
         {
             return items.Select(i => i.ToDto()).ToList();
         }
+
+        public static WalletTransactionDto AsDto(this WalletTransaction transaction)
+        {
+            return new WalletTransactionDto
+            {
+                Id = transaction.Id,
+                WalletId = transaction.WalletId,
+                Amount = transaction.Amount,
+                Type = transaction.Type,
+                Reference = transaction.Reference,
+                Description = transaction.Description,
+                PaymentId = transaction.PaymentId,
+                CreatedAt = transaction.DateCreated
+            };
+        }
+
+        public static PaymentDto AsDto(this Payment payment)
+        {
+            return new PaymentDto
+            {
+                Id = payment.Id,
+                PaymentReference = payment.PaymentReference,
+                InvoiceId = payment.InvoiceId,
+                Amount = payment.Amount,
+                Method = payment.Method,
+                Status = payment.Status,
+                Note = payment.Note,
+                PayerId = payment.PayerId,
+                PayerName = payment.Payer.FullName,
+                Purpose = payment.Purpose,
+                WalletTransactionId = payment.WalletTransactionId,
+                CreatedAt = payment.DateCreated
+            };
+        }
     }
 }

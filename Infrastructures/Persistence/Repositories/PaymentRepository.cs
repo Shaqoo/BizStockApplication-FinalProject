@@ -1,15 +1,12 @@
-﻿using Application.Interfaces.Repository;
+﻿using Application.Dto;
+using Application.Extensions;
+using Application.Interfaces.Repository;
 using Application.Pagination;
 using Domain.Entities;
 using Domain.Enums;
 using Infrastructures.Persistence.Context;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Linq.Expressions;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Infrastructures.Persistence.Repositories
 {
@@ -29,8 +26,8 @@ namespace Infrastructures.Persistence.Repositories
 
         public async Task<Payment?> GetByIdAsync(Guid id)
         {
-            return await _context.Payments.FindAsync(id)
-                ?? throw new KeyNotFoundException("Payment not found.");
+            return await _context.Payments.Include(a => a.Payer)
+                .FirstOrDefaultAsync(a => a.Id == id);
         }
 
         public async Task<PaginatedList<Payment>> GetAllAsync(PageRequest pageRequest)
@@ -63,6 +60,7 @@ namespace Infrastructures.Persistence.Repositories
         {
             return await _context.Payments
                 .Include(p => p.Invoice)
+                .Include(a => a.Payer)
                 .FirstOrDefaultAsync(p => p.PaymentReference == paymentReference);
         }
 
@@ -127,10 +125,28 @@ namespace Infrastructures.Persistence.Repositories
             await Task.CompletedTask;
         }
 
-        public async Task<Payment> GetByExpression(Expression<Func<Payment, bool>> predicate)
+        public async Task<Payment?> GetByExpression(Expression<Func<Payment, bool>> predicate)
         {
             return await _context.Payments.FirstOrDefaultAsync(predicate) ??
                throw new ArgumentNullException("Payment Not Found");
+        }
+
+        public async Task<PaginatedList<PaymentDto>> GetByCustomerIdAsync(Guid customerId, PageRequest pageRequest)
+        {
+            var query = _context.Payments
+                .Include(p => p.Invoice)
+                .Include(p => p.Payer)
+                .OrderByDescending(p => p.DateCreated);
+
+            var total = await query.CountAsync();
+
+            var items = await query
+                .Select(a => a.AsDto())
+                .Skip((pageRequest.Page - 1) * pageRequest.PageSize)
+                .Take(pageRequest.PageSize)
+                .ToListAsync();
+
+            return new PaginatedList<PaymentDto>(items, total, pageRequest.Page, pageRequest.PageSize);
         }
     }
 

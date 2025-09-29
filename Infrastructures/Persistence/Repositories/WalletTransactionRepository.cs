@@ -1,4 +1,6 @@
-﻿using Application.Interfaces.Repository;
+﻿using Application.Dto;
+using Application.Extensions;
+using Application.Interfaces.Repository;
 using Application.Pagination;
 using Domain.Entities;
 using Domain.Enums;
@@ -59,7 +61,7 @@ namespace Infrastructures.Persistence.Repositories
                 .ToListAsync();
         }
 
-        public async Task<PaginatedList<WalletTransaction>> GetByWalletPagedAsync(Guid walletId, PageRequest pageRequest)
+        public async Task<PaginatedList<WalletTransactionDto>> GetByWalletPagedAsync(Guid walletId, PageRequest pageRequest)
         {
             var query = _context.WalletTransactions
                 .Where(t => t.WalletId == walletId);
@@ -67,18 +69,19 @@ namespace Infrastructures.Persistence.Repositories
             var total = await query.CountAsync();
 
             var items = await query
-                .OrderByDescending(t => t.Id)
+                .OrderByDescending(t => t.DateCreated)
+                .Select(a => a.AsDto())
                 .Skip((pageRequest.Page - 1) * pageRequest.PageSize)
                 .Take(pageRequest.PageSize)
                 .ToListAsync();
 
-            return new PaginatedList<WalletTransaction>(items, total, pageRequest.Page, pageRequest.PageSize);
+            return new PaginatedList<WalletTransactionDto>(items, total, pageRequest.Page, pageRequest.PageSize);
         }
 
         public async Task<IEnumerable<WalletTransaction>> GetByUserIdAsync(Guid userId)
         {
             return await _context.WalletTransactions
-                .Where(t => t.Wallet.UserId == userId)
+                .Where(t => t.Wallet.CustomerId == userId)
                 .OrderByDescending(t => t.Id)
                 .ToListAsync();
         }
@@ -119,7 +122,7 @@ namespace Infrastructures.Persistence.Repositories
             return new PaginatedList<WalletTransaction>(items, total, pageRequest.Page, pageRequest.PageSize);
         }
 
-        public async Task<WalletTransaction> GetByExpression(Expression<Func<WalletTransaction, bool>> predicate)
+        public async Task<WalletTransaction?> GetByExpression(Expression<Func<WalletTransaction, bool>> predicate)
         {
             return await _context.WalletTransactions.FirstOrDefaultAsync(predicate) ??
                 throw new EntityNotFoundException("Transaction","Predicate"); 

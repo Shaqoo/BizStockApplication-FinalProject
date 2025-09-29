@@ -77,7 +77,8 @@ namespace Infrastructures.Persistence.Repositories
                 .Query(q => q.MultiMatch(m => m
                     .Fields(f => f.Field(ff => ff.Action).Field(ff => ff.Description).Field(ff => ff.UserAgent))
                     .Query(search)
-                     
+                    .Fuzziness(Fuzziness.Auto)
+
                 ))
                 .From((pageRequest.Page - 1) * pageRequest.PageSize)
                 .Size(pageRequest.PageSize)

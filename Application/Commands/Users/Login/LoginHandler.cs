@@ -43,7 +43,7 @@ namespace Application.Commands.Users.Login
                 var remaining = user.LockoutEnd!.Value - DateTime.UtcNow;
                 await auditLogRepository.AddAsync(new AuditLog(
                user.Id,
-               $"LOGIN_ATTEMPT_LOCKED_OUT FOR {user.Email.ToString().ToUpper()}",
+               $"LOGIN_ATTEMPT_LOCKED_OUT FOR {(string)user.Email}",
                "User",
                user.Id,
                "Attempted login while account is locked.",
@@ -71,7 +71,7 @@ namespace Application.Commands.Users.Login
                   
                     await auditLogRepository.AddAsync(new AuditLog(
                         user.Id,
-                        $"LOGIN_ATTEMPT_INVALID_CAPTCHA FOR {user.Email.ToString().ToUpper()}",
+                        $"LOGIN_ATTEMPT_INVALID_CAPTCHA FOR {(string)user.Email}",
                         "User",
                         user.Id,
                         "Attempted login with invalid CAPTCHA.",
@@ -110,7 +110,7 @@ namespace Application.Commands.Users.Login
 
                 await auditLogRepository.AddAsync(new AuditLog(
                     user.Id,
-                   $"LOGIN_ATTEMPT_FAILED FOR {user.Email.ToString().ToUpper()}",
+                   $"LOGIN_ATTEMPT_FAILED FOR {(string)user.Email}",
                     "User",
                     user.Id,
                     "Failed login attempt with invalid password.",
@@ -124,7 +124,7 @@ namespace Application.Commands.Users.Login
             {
                 await auditLogRepository.AddAsync(new AuditLog(
                     user.Id,
-                   $"LOGIN_ATTEMPT_SUCCESS FOR {user.Email.ToString().ToUpper()}",
+                   $"LOGIN_ATTEMPT_SUCCESS FOR {(string)user.Email}",
                     "User",
                     user.Id,
                     "Successful login attempt without MFA.",
@@ -153,7 +153,7 @@ namespace Application.Commands.Users.Login
 
             await auditLogRepository.AddAsync(new AuditLog(
                 user.Id,
-                $"LOGIN_ATTEMPT_SUCCESS FOR {user.Email.ToString().ToUpper()}",
+                $"LOGIN_ATTEMPT_SUCCESS FOR {(string)user.Email}",
                 "User",
                 user.Id,
                 "Successful login attempt.",

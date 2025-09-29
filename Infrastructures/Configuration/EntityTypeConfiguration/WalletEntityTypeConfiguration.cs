@@ -24,13 +24,13 @@ namespace Infrastructures.Configuration.EntityTypeConfiguration
             builder.Property(u => u.IsActive)
                 .IsRequired();
 
-            builder.Metadata
-               .FindNavigation(nameof(Wallet.Transactions))!
-               .SetPropertyAccessMode(PropertyAccessMode.Field);
+            //builder.Metadata
+            //   .FindNavigation(nameof(Wallet.Transactions))!
+            //   .SetPropertyAccessMode(PropertyAccessMode.Field);
 
-            builder.HasOne(w => w.User)
+            builder.HasOne(w => w.Customer)
                .WithOne(u => u.Wallet)  
-               .HasForeignKey<Wallet>(w => w.UserId)
+               .HasForeignKey<Wallet>(w => w.CustomerId)
                .OnDelete(DeleteBehavior.Cascade);
 
         }

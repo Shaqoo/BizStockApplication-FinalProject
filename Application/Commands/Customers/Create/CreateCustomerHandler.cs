@@ -25,6 +25,7 @@ namespace Application.Commands.Customers.Create
         IMediator mediator,
         IMemoryCacheService memoryCacheService,
         ILogger<CreateCustomerHandler> logger,
+        IWalletRepository walletRepository,
         IPublishEndpoint pubishEndpoint
         ) : IRequestHandler<CreateCustomerCommand, Result<TwoFactorSetupDto>>
     {
@@ -87,6 +88,9 @@ namespace Application.Commands.Customers.Create
                 request.RequestMetadata.UserAgent
             ));
 
+            var wallet = new Wallet(customer.Id);
+            wallet.SetPin(BCrypt.Net.BCrypt.HashPassword(request.Model.Pin.ToString()));
+            customer.AddWallet(wallet.Id);
 
             var mfa = await mfaService.GenerateSecretAndQrAsync(user);
             try
@@ -94,6 +98,7 @@ namespace Application.Commands.Customers.Create
                 await unitOfWork.BeginTransactionAsync();
                 await userRepository.AddAsync(user);
                 await customerRepository.AddAsync(customer);
+                await walletRepository.AddAsync(wallet);
 
                 var auditLog = new AuditLog(
                 user.Id,
