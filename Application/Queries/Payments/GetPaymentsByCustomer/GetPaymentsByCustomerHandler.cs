@@ -7,6 +7,8 @@ using MediatR;
 namespace Application.Queries.Payments.GetPaymentsByCustomer
 {
     public class GetPaymentsByCustomerHandler(IMemoryCacheService memoryCacheService,
+        ICustomerRepository customerRepository,
+        IUserRepository userRepository,
         IPaymentRepository paymentRepository) : IRequestHandler<GetPaymentsByCustomerQuery, Result<PaginatedList<PaymentDto>>>
     {
         public async Task<Result<PaginatedList<PaymentDto>>> Handle(GetPaymentsByCustomerQuery request, CancellationToken cancellationToken)
@@ -16,7 +18,9 @@ namespace Application.Queries.Payments.GetPaymentsByCustomer
             var cahedResult = await memoryCacheService.GetOrAddAsync(cacheKey,
                 async () =>
                 {
-                    var result = await paymentRepository.GetByCustomerIdAsync(request.CustomerId, request.PageRequest);
+                    var user = await userRepository.GetByIdAsync(request.CustomerId);
+                    var customer = await customerRepository.GetByEmailAsync((string)user!.Email);
+                    var result = await paymentRepository.GetByCustomerIdAsync(customer!.Id, request.PageRequest);
                     return result;
                 },TimeSpan.FromMinutes(5));
 

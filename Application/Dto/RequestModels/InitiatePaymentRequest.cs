@@ -11,6 +11,7 @@ namespace Application.Dto.RequestModels
         public Guid? InvoiceId { get; set; }
         public PaymentPurpose PaymentPurpose { get; set; }
         public string? Note { get; set; }
+        public int? Pin { get; set; }
     }
 
 }

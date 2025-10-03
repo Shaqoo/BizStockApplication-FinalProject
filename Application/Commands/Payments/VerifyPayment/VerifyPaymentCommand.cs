@@ -4,6 +4,6 @@ using MediatR;
 
 namespace Application.Commands.Payments.VerifyPayment
 {
-    public record VerifyPaymentCommand(string Reference,RequestMetadata RequestMetadata) : IRequest<Result<bool>>;
+    public record VerifyPaymentCommand(string Reference,RequestMetadata RequestMetadata) : IRequest<Result<PaystackVerifyResponse>>;
 
 }

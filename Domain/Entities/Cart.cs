@@ -8,7 +8,6 @@ namespace Domain.Entities
         public Guid? UserId { get; private set; }
         public string? SessionId { get; private set; } = default!;
         public bool IsLinked { get; private set; }
-
         private readonly List<CartItem> _items = new();
         public IReadOnlyCollection<CartItem> Items => _items.AsReadOnly();
         public DateTimeOffset CreatedAt { get; private set; } = DateTimeOffset.UtcNow;

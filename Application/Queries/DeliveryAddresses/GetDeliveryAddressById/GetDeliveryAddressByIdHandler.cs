@@ -51,11 +51,14 @@ namespace Application.Queries.DeliveryAddresses.GetDeliveryAddressById
                             PostalCode = address.PostalCode,
                             StateId = address.StateId,
                             StateName = address.State.Name,
-                            Street = address.Street
-
+                            Street = address.Street,
+                            PhoneNumber = address.PhoneNumber,
+                            AdditionalPhoneNumber = address.AdditionalPhoneNumber,
+                            CustomerName = address.FullName,
+                            Email = address.Email
                         };
                     },
-                    TimeSpan.FromMinutes(5)
+                    TimeSpan.FromMinutes(1)
                 );
 
                 if (address is null)

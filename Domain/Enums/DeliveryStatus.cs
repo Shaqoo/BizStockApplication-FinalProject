@@ -1,17 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Domain.Enums
+﻿namespace Domain.Enums
 {
     public enum DeliveryStatus
     {
-        Pending,
-        InTransit,
-        Delivered,
-        Failed
+        Pending = 0,       // Created but not yet handed to courier
+        Processing = 1,    // Sent to Fez
+        InTransit = 2,     // Courier picked it up
+        Delivered = 3,     // Successfully delivered
+        Failed = 4         // Delivery attempt failed
     }
 
 }

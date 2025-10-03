@@ -11,7 +11,7 @@ using System.Net;
 
 namespace Application.Commands.Payments.VerifyPayment
 {
-    public class VerifyPaymentCommandHandler : IRequestHandler<VerifyPaymentCommand, Result<bool>>
+    public class VerifyPaymentCommandHandler : IRequestHandler<VerifyPaymentCommand, Result<PaystackVerifyResponse>>
     {
         private readonly IPaymentRepository paymentRepository;
         private readonly IWalletRepository walletRepository;
@@ -44,7 +44,7 @@ namespace Application.Commands.Payments.VerifyPayment
             this.userRepository = userRepository;
         }
 
-        public async Task<Result<bool>> Handle(VerifyPaymentCommand request, CancellationToken cancellationToken)
+        public async Task<Result<PaystackVerifyResponse>> Handle(VerifyPaymentCommand request, CancellationToken cancellationToken)
         {
             try
             {
@@ -52,36 +52,36 @@ namespace Application.Commands.Payments.VerifyPayment
                 if (payment == null)
                 {
                     logger.LogWarning("Payment not found for reference {Reference}", request.Reference);
-                    return Result<bool>.Failure("Payment not found");
+                    return Result<PaystackVerifyResponse>.Failure("Payment not found");
                 }
 
                 if (payment.Status == PaymentStatus.Completed)
                 {
                     logger.LogInformation("Payment {Reference} already verified", request.Reference);
-                    return Result<bool>.Success(true);
+                    return Result<PaystackVerifyResponse>.Failure("Payment Already Verified");
                 }
                 var user = await userRepository.GetByEmailAsync((string)payment.Payer.Email);
                 if (user == null)
                 {
                     logger.LogWarning("Customer with ID {CustomerId} not found", payment.PayerId);
-                    return Result<bool>.Failure("User not found");
+                    return Result<PaystackVerifyResponse>.Failure("User not found");
                 }
 
-                var status = await paymentGatewayService.VerifyTransactionAsync(request.Reference);
+                var verifyResponse = await paymentGatewayService.VerifyTransactionAsync(request.Reference);
 
-                if (status == "success")
+                if (verifyResponse.Data.Status.Equals("success",StringComparison.OrdinalIgnoreCase))
                 {
                     payment.MarkAsCompleted();
                     if (payment.Purpose == PaymentPurpose.WalletFunding)
                     {
                         var wallet = await walletRepository.GetByUserIdAsync(payment.PayerId);
                         if (wallet == null)
-                            return Result<bool>.Failure("Wallet not found");
+                            return Result<PaystackVerifyResponse>.Failure("Wallet not found");
 
                         wallet.Credit(payment.Amount);
-                        var transaction = new WalletTransaction(wallet.Id, payment.Amount, TransactionType.Credit, payment.PaymentReference, payment.Note, payment.Id);
+                        var transaction = new WalletTransaction(wallet.Id, payment.Amount, TransactionType.Credit, payment.PaymentReference,payment.Id, payment.Note);
                         await walletTransactionRepository.AddAsync(transaction);
-                        payment.LinkToTransaction(transaction.Id);
+                        //payment.LinkToTransaction(transaction.Id);
                     }
 
                     await unitOfWork.SaveChangesAsync(cancellationToken);
@@ -96,7 +96,7 @@ namespace Application.Commands.Payments.VerifyPayment
        ));
                     await mediator.Publish(new PaymentStatusChangedEvent(payment.Id,payment.PayerId,payment.Status,payment.Amount,payment.PaymentReference));
                     logger.LogInformation("Payment {Reference} verified successfully", request.Reference);
-                    return Result<bool>.Success(true);
+                    return Result<PaystackVerifyResponse>.Success(verifyResponse);
                 }
 
                 payment.MarkAsFailed();
@@ -111,12 +111,12 @@ namespace Application.Commands.Payments.VerifyPayment
            userAgent: request.RequestMetadata.UserAgent
        ));
                 await mediator.Publish(new PaymentStatusChangedEvent(payment.Id, payment.PayerId, payment.Status, payment.Amount, payment.PaymentReference));
-                return Result<bool>.Failure("Payment verification failed");
+                return Result<PaystackVerifyResponse>.Failure("Payment verification failed");
             }
             catch (Exception ex)
             {
                 logger.LogError(ex, "Error verifying payment with reference {Reference}", request.Reference);
-                return Result<bool>.Failure("Error verifying payment");
+                return Result<PaystackVerifyResponse>.Failure("Error verifying payment");
             }
         }
     }

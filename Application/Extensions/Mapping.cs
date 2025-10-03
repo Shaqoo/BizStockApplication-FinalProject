@@ -182,7 +182,7 @@ namespace Application.Extensions
                 PayerId = payment.PayerId,
                 PayerName = payment.Payer.FullName,
                 Purpose = payment.Purpose,
-                WalletTransactionId = payment.WalletTransactionId,
+                //WalletTransactionId = payment.WalletTransactionId,
                 CreatedAt = payment.DateCreated
             };
         }

@@ -19,13 +19,14 @@ using System.Text.Json;
 namespace Host.Controllers.V1
 {
     [ApiController]
-    [Route("api/[controller]")]
-    public class PaymentController : ControllerBase
+    [ApiVersion("1.0")]
+    [Route("api/v{version:apiversion}/[controller]")]
+    public class PaymentsController : ControllerBase
     {
         private readonly IMediator mediator;
-        private readonly ILogger<PaymentController> logger;
+        private readonly ILogger<PaymentsController> logger;
 
-        public PaymentController(IMediator mediator, ILogger<PaymentController> logger)
+        public PaymentsController(IMediator mediator, ILogger<PaymentsController> logger)
         {
             this.mediator = mediator;
             this.logger = logger;
@@ -36,6 +37,7 @@ namespace Host.Controllers.V1
         /// </summary>
         /// <param name="request">The payment initiation request model.</param>
         /// <returns>Returns a URL where the user can complete the payment.</returns>
+        [Authorize]
         [HttpPost("initiate")]
         [ProducesResponseType(typeof(Result<string>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(Result<string>), StatusCodes.Status400BadRequest)]
@@ -55,9 +57,10 @@ namespace Host.Controllers.V1
         /// </summary>
         /// <param name="reference">The payment reference string.</param>
         /// <returns>Returns true if payment is successful, otherwise false.</returns>
+       // [Authorize]
         [HttpPost("verify")]
-        [ProducesResponseType(typeof(Result<bool>), StatusCodes.Status200OK)]
-        [ProducesResponseType(typeof(Result<bool>), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(Result<PaystackVerifyResponse>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(Result<PaystackVerifyResponse>), StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> VerifyPayment([FromQuery] string reference)
         {
             var command = new VerifyPaymentCommand(reference,Request.GetRequestMetadata());
@@ -152,7 +155,7 @@ namespace Host.Controllers.V1
             if (!result.IsSuccess)
                 return NotFound(result);
 
-            return Ok(result);
+            return Ok(result.Data);
         }
 
         /// <summary>

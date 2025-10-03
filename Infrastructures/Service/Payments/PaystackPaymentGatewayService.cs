@@ -1,4 +1,5 @@
-﻿using Application.Interfaces.Service;
+﻿using Application.Dto;
+using Application.Interfaces.Service;
 using Infrastructures.Settings;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -34,9 +35,11 @@ namespace Infrastructures.Service.Payments
             var payload = new
             {
                 email,
-                amount = (int)(amount * 100),
-                reference
+                amount = (int)(amount * 100),  
+                reference,
+                callback_url = "http://localhost:5500/roles/Customer/Pages/payment-status.html"
             };
+
 
             var json = JsonConvert.SerializeObject(payload);
             var content = new StringContent(json, Encoding.UTF8, "application/json");
@@ -56,7 +59,7 @@ namespace Infrastructures.Service.Payments
             return responseBody;
         }
 
-        public async Task<string> VerifyTransactionAsync(string reference)
+        public async Task<PaystackVerifyResponse> VerifyTransactionAsync(string reference)
         {
             _logger.LogInformation("Verifying Paystack transaction with reference {Reference}", reference);
 
@@ -69,9 +72,13 @@ namespace Infrastructures.Service.Payments
                 throw new ApplicationException("Paystack verification failed.");
             }
 
+            var result = JsonConvert.DeserializeObject<PaystackVerifyResponse>(responseBody)
+                         ?? throw new ApplicationException("Invalid response from Paystack");
+
             _logger.LogInformation("Paystack transaction verification successful for {Reference}", reference);
-            return responseBody;
+            return result;
         }
+
     }
 
 }

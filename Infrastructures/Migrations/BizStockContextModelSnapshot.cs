@@ -330,11 +330,25 @@ namespace Infrastructures.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
+                    b.Property<string>("AdditionalPhoneNumber")
+                        .HasColumnType("text");
+
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<Guid>("CustomerId")
                         .HasColumnType("uuid");
+
+                    b.Property<Guid?>("DeliveryStationId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Email")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("FullName")
+                        .IsRequired()
+                        .HasColumnType("text");
 
                     b.Property<bool>("IsDefault")
                         .ValueGeneratedOnAdd()
@@ -348,6 +362,10 @@ namespace Infrastructures.Migrations
 
                     b.Property<int>("LgaId")
                         .HasColumnType("integer");
+
+                    b.Property<string>("PhoneNumber")
+                        .IsRequired()
+                        .HasColumnType("text");
 
                     b.Property<string>("PostalCode")
                         .HasMaxLength(20)
@@ -365,6 +383,8 @@ namespace Infrastructures.Migrations
                         .HasColumnType("timestamp with time zone");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("DeliveryStationId");
 
                     b.HasIndex("LgaId");
 
@@ -441,13 +461,26 @@ namespace Infrastructures.Migrations
                     b.Property<DateTime?>("DeliveredAt")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<Guid>("DeliveryAgentId")
+                    b.Property<Guid>("DeliveryAddressId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid?>("DeliveryAgentId")
+                        .IsRequired()
                         .HasColumnType("uuid");
 
                     b.Property<decimal>("DeliveryFee")
                         .HasColumnType("decimal(18,2)");
 
+                    b.Property<string>("ExternalDeliveryService")
+                        .HasColumnType("text");
+
+                    b.Property<string>("ExternalJobId")
+                        .HasColumnType("text");
+
                     b.Property<bool>("IsDeleted")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("IsExternal")
                         .HasColumnType("boolean");
 
                     b.Property<DateTimeOffset>("LastModified")
@@ -457,6 +490,17 @@ namespace Infrastructures.Migrations
                         .HasMaxLength(1000)
                         .HasColumnType("character varying(1000)");
 
+                    b.Property<string>("RecipientEmail")
+                        .HasColumnType("text");
+
+                    b.Property<string>("RecipientName")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("RecipientPhone")
+                        .IsRequired()
+                        .HasColumnType("text");
+
                     b.Property<Guid>("SalesOrderId")
                         .HasColumnType("uuid");
 
@@ -465,6 +509,8 @@ namespace Infrastructures.Migrations
                         .HasColumnType("text");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("DeliveryAddressId");
 
                     b.HasIndex("SalesOrderId")
                         .IsUnique();
@@ -509,6 +555,53 @@ namespace Infrastructures.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("DeliveryFeeRules", (string)null);
+                });
+
+            modelBuilder.Entity("Domain.Entities.DeliveryStation", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<decimal>("BaseFee")
+                        .HasColumnType("numeric");
+
+                    b.Property<string>("CreatedBy")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<DateTimeOffset>("DateCreated")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<decimal>("FeePerKm")
+                        .HasColumnType("numeric");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("boolean");
+
+                    b.Property<DateTimeOffset>("LastModified")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int>("LgaId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<int>("StateId")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("LgaId");
+
+                    b.HasIndex("StateId");
+
+                    b.ToTable("DeliveryStation");
                 });
 
             modelBuilder.Entity("Domain.Entities.Domain.Entities.Wishlist", b =>
@@ -5471,7 +5564,7 @@ namespace Infrastructures.Migrations
                     b.Property<DateTimeOffset>("DateCreated")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<Guid>("InvoiceId")
+                    b.Property<Guid?>("InvoiceId")
                         .HasColumnType("uuid");
 
                     b.Property<bool>("IsDeleted")
@@ -5496,9 +5589,15 @@ namespace Infrastructures.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("character varying(100)");
 
+                    b.Property<int>("Purpose")
+                        .HasColumnType("integer");
+
                     b.Property<string>("Status")
                         .IsRequired()
                         .HasColumnType("text");
+
+                    b.Property<Guid?>("UserId")
+                        .HasColumnType("uuid");
 
                     b.HasKey("Id");
 
@@ -5508,6 +5607,8 @@ namespace Infrastructures.Migrations
 
                     b.HasIndex("PaymentReference")
                         .IsUnique();
+
+                    b.HasIndex("UserId");
 
                     b.ToTable("Payments", (string)null);
                 });
@@ -5599,6 +5700,9 @@ namespace Infrastructures.Migrations
                     b.Property<string>("UnitOfMeasure")
                         .IsRequired()
                         .HasColumnType("text");
+
+                    b.Property<double>("Weight")
+                        .HasColumnType("double precision");
 
                     b.HasKey("Id");
 
@@ -5828,6 +5932,62 @@ namespace Infrastructures.Migrations
                     b.ToTable("RecentlyViewedProducts");
                 });
 
+            modelBuilder.Entity("Domain.Entities.Refund", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<decimal>("Amount")
+                        .HasColumnType("numeric");
+
+                    b.Property<DateTime?>("CompletedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("CreatedBy")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<DateTimeOffset>("DateCreated")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("boolean");
+
+                    b.Property<DateTimeOffset>("LastModified")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int>("PaymentMethod")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Reason")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("RefundReference")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<DateTime>("RequestedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("SalesOrderId")
+                        .HasColumnType("uuid");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("TransactionReference")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("SalesOrderId");
+
+                    b.ToTable("Refunds");
+                });
+
             modelBuilder.Entity("Domain.Entities.Review", b =>
                 {
                     b.Property<Guid>("Id")
@@ -5956,6 +6116,12 @@ namespace Infrastructures.Migrations
                     b.Property<DateTimeOffset>("DateCreated")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<int>("DeliveryStatus")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("FezOrderNo")
+                        .HasColumnType("text");
+
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("boolean");
 
@@ -5975,6 +6141,9 @@ namespace Infrastructures.Migrations
 
                     b.Property<Guid>("SalesOrderId")
                         .HasColumnType("uuid");
+
+                    b.Property<string>("UniqueId")
+                        .HasColumnType("text");
 
                     b.Property<decimal>("UnitPrice")
                         .HasColumnType("decimal(18,2)");
@@ -6561,6 +6730,9 @@ namespace Infrastructures.Migrations
                     b.Property<DateTimeOffset>("LastModified")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<Guid>("PaymentId")
+                        .HasColumnType("uuid");
+
                     b.Property<string>("Reference")
                         .IsRequired()
                         .HasMaxLength(100)
@@ -6574,6 +6746,9 @@ namespace Infrastructures.Migrations
                         .HasColumnType("uuid");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("PaymentId")
+                        .IsUnique();
 
                     b.HasIndex("WalletId");
 
@@ -6774,6 +6949,10 @@ namespace Infrastructures.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.HasOne("Domain.Entities.DeliveryStation", "DeliveryStation")
+                        .WithMany("Addresses")
+                        .HasForeignKey("DeliveryStationId");
+
                     b.HasOne("Domain.Entities.Lga", "Lga")
                         .WithMany()
                         .HasForeignKey("LgaId")
@@ -6788,6 +6967,8 @@ namespace Infrastructures.Migrations
 
                     b.Navigation("Customer");
 
+                    b.Navigation("DeliveryStation");
+
                     b.Navigation("Lga");
 
                     b.Navigation("State");
@@ -6795,6 +6976,12 @@ namespace Infrastructures.Migrations
 
             modelBuilder.Entity("Domain.Entities.DeliveryAssignment", b =>
                 {
+                    b.HasOne("Domain.Entities.DeliveryAddress", "DeliveryAddress")
+                        .WithMany()
+                        .HasForeignKey("DeliveryAddressId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.HasOne("Domain.Entities.DeliveryAgent", "DeliveryAgent")
                         .WithMany("Assignments")
                         .HasForeignKey("DeliveryAgentId")
@@ -6807,9 +6994,30 @@ namespace Infrastructures.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.Navigation("DeliveryAddress");
+
                     b.Navigation("DeliveryAgent");
 
                     b.Navigation("SalesOrder");
+                });
+
+            modelBuilder.Entity("Domain.Entities.DeliveryStation", b =>
+                {
+                    b.HasOne("Domain.Entities.Lga", "Lga")
+                        .WithMany()
+                        .HasForeignKey("LgaId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Domain.Entities.State", "State")
+                        .WithMany()
+                        .HasForeignKey("StateId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Lga");
+
+                    b.Navigation("State");
                 });
 
             modelBuilder.Entity("Domain.Entities.FidoCredential", b =>
@@ -6906,14 +7114,17 @@ namespace Infrastructures.Migrations
                     b.HasOne("Domain.Entities.Invoice", "Invoice")
                         .WithMany("Payments")
                         .HasForeignKey("InvoiceId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.Cascade);
 
-                    b.HasOne("Domain.Entities.User", "Payer")
+                    b.HasOne("Domain.Entities.Customer", "Payer")
                         .WithMany("Payments")
                         .HasForeignKey("PayerId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
+
+                    b.HasOne("Domain.Entities.User", null)
+                        .WithMany("Payments")
+                        .HasForeignKey("UserId");
 
                     b.Navigation("Invoice");
 
@@ -7028,6 +7239,17 @@ namespace Infrastructures.Migrations
                     b.Navigation("Product");
 
                     b.Navigation("RecentlyViewedProducts");
+                });
+
+            modelBuilder.Entity("Domain.Entities.Refund", b =>
+                {
+                    b.HasOne("Domain.Entities.SalesOrder", "Order")
+                        .WithMany()
+                        .HasForeignKey("SalesOrderId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Order");
                 });
 
             modelBuilder.Entity("Domain.Entities.Review", b =>
@@ -7169,11 +7391,19 @@ namespace Infrastructures.Migrations
 
             modelBuilder.Entity("Domain.Entities.WalletTransaction", b =>
                 {
+                    b.HasOne("Domain.Entities.Payment", "Payment")
+                        .WithOne("WalletTransaction")
+                        .HasForeignKey("Domain.Entities.WalletTransaction", "PaymentId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.HasOne("Domain.Entities.Wallet", "Wallet")
                         .WithMany("Transactions")
                         .HasForeignKey("WalletId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("Payment");
 
                     b.Navigation("Wallet");
                 });
@@ -7251,6 +7481,8 @@ namespace Infrastructures.Migrations
 
                     b.Navigation("Invoices");
 
+                    b.Navigation("Payments");
+
                     b.Navigation("SalesOrders");
 
                     b.Navigation("Wallet")
@@ -7269,6 +7501,11 @@ namespace Infrastructures.Migrations
                     b.Navigation("Reviews");
                 });
 
+            modelBuilder.Entity("Domain.Entities.DeliveryStation", b =>
+                {
+                    b.Navigation("Addresses");
+                });
+
             modelBuilder.Entity("Domain.Entities.Domain.Entities.Wishlist", b =>
                 {
                     b.Navigation("Items");
@@ -7279,6 +7516,11 @@ namespace Infrastructures.Migrations
                     b.Navigation("Items");
 
                     b.Navigation("Payments");
+                });
+
+            modelBuilder.Entity("Domain.Entities.Payment", b =>
+                {
+                    b.Navigation("WalletTransaction");
                 });
 
             modelBuilder.Entity("Domain.Entities.Product", b =>

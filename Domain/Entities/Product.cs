@@ -24,6 +24,7 @@ namespace Domain.Entities
         public NpgsqlTsVector SearchVector { get; private set; } = default!;
         public Guid CategoryId { get; private set; }
         public Category Category { get; private set; } = default!;
+        public double Weight { get; private set; } = default!;
 
         public decimal CostPrice { get; private set; }
         public decimal SellingPrice { get; private set; }

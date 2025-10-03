@@ -32,7 +32,7 @@ namespace Domain.Entities
             Balance += amount;
         }
 
-        public void Debit(decimal amount, string reference, string description)
+        public void Debit(decimal amount)
         {
             if (amount <= 0)
                 throw new DomainException("Debit amount must be positive.");
@@ -41,8 +41,6 @@ namespace Domain.Entities
                 throw new InsufficientBalanceException(Balance,amount);
 
             Balance -= amount;
-
-            _transactions.Add(new WalletTransaction(this.Id, amount, TransactionType.Debit, reference, description));
         }
 
         public void Deactivate() => IsActive = false;

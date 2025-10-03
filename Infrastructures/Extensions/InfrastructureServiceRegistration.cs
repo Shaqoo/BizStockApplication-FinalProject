@@ -62,6 +62,7 @@ namespace Infrastructures.Extensions
             services.Configure<AiSettings>(configuration.GetSection("AiKeys"));
             services.Configure<AIResourcesSettings>(configuration.GetSection("AIResources"));
             services.Configure<PaystackSettings>(configuration.GetSection("Paystack"));
+            services.Configure<FezSettings>(configuration.GetSection("FezSettings"));
 
 
 
@@ -93,6 +94,7 @@ namespace Infrastructures.Extensions
                 x.AddConsumer<StockTransferredConsumer>();
                 x.AddConsumer<StockAdjustedConsumer>();
                 x.AddConsumer<MfaResetEventConsumer>();
+                x.AddConsumer<OrderCreatedEventConsumer>();
 
                 x.UsingRabbitMq((context, cfg) =>
                 {
@@ -164,6 +166,17 @@ namespace Infrastructures.Extensions
                             r.Interval(3, TimeSpan.FromSeconds(10));
                         });
                     });
+
+                    cfg.ReceiveEndpoint("order-created-queue", e =>
+                    {
+                        e.ConfigureConsumer<OrderCreatedEventConsumer>(context);
+                        e.UseMessageRetry(r =>
+                        {
+                            r.Interval(3, TimeSpan.FromSeconds(10));
+                        });
+
+                    });
+
 
                 });
             });

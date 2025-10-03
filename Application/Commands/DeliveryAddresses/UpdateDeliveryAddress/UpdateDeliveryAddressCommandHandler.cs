@@ -54,6 +54,8 @@ namespace Application.Commands.DeliveryAddresses.UpdateDeliveryAddress
                     address.UpdateStreet(request.Request.Street);
                 if(!string.IsNullOrWhiteSpace(request.Request.PostalCode))
                     address.UpdatePostalCode(request.Request.PostalCode);
+                if (!string.IsNullOrWhiteSpace(request.Request.AdditionalPhoneNumber))
+                    address.ChangeDetails(address.Email,address.FullName,address.AdditionalPhoneNumber,address.PhoneNumber);
                  
                 await _deliveryAddressRepository.UpdateAsync(address);
 

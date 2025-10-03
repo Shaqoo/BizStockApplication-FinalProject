@@ -15,7 +15,7 @@ namespace Domain.Entities
         public Guid PayerId { get; private set; }
         public Customer Payer { get; private set; } = default!;
         public PaymentPurpose Purpose { get; private set; }
-        public Guid? WalletTransactionId { get; private set; }
+       // public Guid? WalletTransactionId { get; private set; }
         public WalletTransaction? WalletTransaction { get; private set; }
 
         private Payment() { }
@@ -28,15 +28,15 @@ namespace Domain.Entities
             Method = method;
             Purpose = purpose;
             InvoiceId = invoiceId;
-            WalletTransactionId = walletTransactionId;
+           // WalletTransactionId = walletTransactionId;
             Note = note;
         }
 
-        public void LinkToTransaction(Guid transactionId)
-        {
-            WalletTransactionId = transactionId;
-            Modified();
-        }
+        //public void LinkToTransaction(Guid transactionId)
+        //{
+        //    WalletTransactionId = transactionId;
+        //    Modified();
+        //}
         public void MarkAsCompleted()
         {
             Status = PaymentStatus.Completed;

@@ -37,10 +37,14 @@ namespace Application.Queries.DeliveryAddresses.GetDefaultDeliveryAddress
                         PostalCode = defaultAddress.PostalCode,
                         StateId = defaultAddress.StateId,
                         StateName = defaultAddress.State.Name,
-                        Street = defaultAddress.Street
+                        Street = defaultAddress.Street,
+                        AdditionalPhoneNumber = defaultAddress.AdditionalPhoneNumber,
+                        CustomerName = defaultAddress.FullName,
+                        Email = defaultAddress.Email,
+                        PhoneNumber = defaultAddress.PhoneNumber
 
                     };
-                },TimeSpan.FromMinutes(5));
+                },TimeSpan.FromMinutes(1));
 
             if (cachedResult != null)
                 return Result<DeliveryAddressDto>.Success(cachedResult);

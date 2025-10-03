@@ -53,6 +53,10 @@ namespace Application.Commands.DeliveryAddresses.AddDeliveryAddress
                     request.Request.LgaId,
                     request.Request.Street,
                     request.Request.IsDefault,
+                    request.Request.Email,
+                    request.Request.PhoneNumber,
+                    request.Request.CustomerName,
+                    request.Request.AdditionalPhoneNumber,
                     request.Request.Landmark,
                     request.Request.PostalCode
                 );

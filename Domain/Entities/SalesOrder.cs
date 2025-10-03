@@ -1,10 +1,5 @@
 ﻿using Domain.Auditable;
 using Domain.Enums;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Domain.Entities
 {
@@ -25,6 +20,13 @@ namespace Domain.Entities
         public DeliveryAssignment DeliveryAssignment { get; private set; } = default!; 
         public Guid? DeliveryAssignmentId { get; private set; }
         public string? Note { get; private set; }
+
+        public DeliveryStatus OverallDeliveryStatus =>
+           Items.All(i => i.DeliveryStatus == DeliveryStatus.Delivered)
+               ? DeliveryStatus.Delivered
+               : Items.Any(i => i.DeliveryStatus == DeliveryStatus.InTransit)
+                   ? DeliveryStatus.InTransit
+                   : DeliveryStatus.Pending;
 
         private SalesOrder() { }
 
@@ -50,6 +52,12 @@ namespace Domain.Entities
         public void RecalculateTotals()
         {
             SubTotal = Items.Sum(i => i.TotalPrice);
+        }
+
+        public void AddDeliveryAssignment(Guid deliveryAssignmentId)
+        {
+            DeliveryAssignmentId = deliveryAssignmentId;
+            Modified();
         }
 
         public void MarkAsConfirmed() => Status = OrderStatus.Confirmed;

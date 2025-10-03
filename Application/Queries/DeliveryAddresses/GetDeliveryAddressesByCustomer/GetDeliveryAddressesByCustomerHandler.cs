@@ -44,9 +44,13 @@ namespace Application.Queries.DeliveryAddresses.GetDeliveryAddressesByCustomer
                             Landmark = a.Landmark,
                             StateName = a.State.Name,
                             PostalCode = a.PostalCode,
-                            IsDefault = a.IsDefault
+                            IsDefault = a.IsDefault,
+                            PhoneNumber = a.PhoneNumber,
+                            Email = a.Email,
+                            CustomerName = a.FullName,
+                            AdditionalPhoneNumber = a.AdditionalPhoneNumber
                         }).ToList();
-                    });
+                    },TimeSpan.FromMinutes(1));
 
                 return Result<IEnumerable<DeliveryAddressDto>>.Success(addresses ?? []);
             }

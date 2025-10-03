@@ -11,11 +11,11 @@ namespace Domain.Entities
         public TransactionType Type { get; private set; }
         public string Reference { get; private set; } = default!;
         public string? Description { get; private set; }
-        public Guid? PaymentId { get; private set; }
-        public Payment? Payment { get; private set; }
+        public Guid PaymentId { get; private set; }
+        public Payment Payment { get; private set; } = default!;
         private WalletTransaction() { }
 
-        public WalletTransaction(Guid walletId, decimal amount, TransactionType type, string reference, string? description, Guid? paymentId = null)
+        public WalletTransaction(Guid walletId, decimal amount, TransactionType type, string reference, Guid paymentId , string? description)
         {
             WalletId = walletId;
             Amount = amount;

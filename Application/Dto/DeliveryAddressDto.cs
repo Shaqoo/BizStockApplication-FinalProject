@@ -13,6 +13,10 @@
         public string? PostalCode { get; set; }
         public bool IsDefault { get; set; }
         public DateTime CreatedAt { get; set; }
+        public string CustomerName { get; set; } = string.Empty;
+        public string PhoneNumber { get; set; } = string.Empty;
+        public string Email { get; set; } = string.Empty;
+        public string? AdditionalPhoneNumber { get; set; }
     }
 
 }

@@ -1,10 +1,5 @@
 ﻿using Domain.Auditable;
 using Domain.Enums;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Domain.Entities
 {
@@ -47,7 +42,7 @@ namespace Domain.Entities
         public decimal AmountPaid => Payments.Where(p => p.Status == PaymentStatus.Completed).Sum(p => p.Amount);
 
         public decimal BalanceDue => TotalAmount - AmountPaid;
-        private void RecalculateSubTotal()
+        public void RecalculateSubTotal()
         {
             SubTotal = Items.Sum(i => i.TotalPrice);
         }

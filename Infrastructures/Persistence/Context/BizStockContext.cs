@@ -51,6 +51,7 @@ namespace Infrastructures.Persistence.Context
         public DbSet<State> States { get; set; } = default!;
         public DbSet<Lga> Lgas { get; set; } = default!;
         public DbSet<DeliveryAddress> DeliveryAddresses { get; set; } = default!;
+        public DbSet<Refund> Refunds { get; set; } = default!;
 
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)

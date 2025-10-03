@@ -1,4 +1,5 @@
 ﻿using Domain.Auditable;
+using Domain.Enums;
 using Domain.Exceptions;
 using System;
 using System.Collections.Generic;
@@ -19,6 +20,9 @@ namespace Domain.Entities
         public int Quantity { get; private set; }
         public decimal UnitPrice { get; private set; }
         public decimal TotalPrice => Quantity * UnitPrice;
+        public string? UniqueId { get; private set; }   
+        public string? FezOrderNo { get; private set; }  
+        public DeliveryStatus DeliveryStatus { get; private set; } = DeliveryStatus.Pending;
 
         private SalesOrderItem() { }
 
@@ -33,6 +37,19 @@ namespace Domain.Entities
             UnitPrice = unitPrice;
             SalesOrderId = salesOrderId;
         }
+
+        public void SetTracking(string uniqueId, string fezOrderNo)
+        {
+            UniqueId = uniqueId;
+            FezOrderNo = fezOrderNo;
+            DeliveryStatus = DeliveryStatus.Processing;
+        }
+
+        public void UpdateDeliveryStatus(DeliveryStatus status)
+        {
+            DeliveryStatus = status;
+        }
+
     }
 
 }
