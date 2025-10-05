@@ -22,25 +22,31 @@ namespace Application.Extensions
 
         public static GetDeliveryInfoDto GetDeliveryInfo(this ISession session)
         {
-            var stateString = session.GetString(DeliveryAddressKey);
+            if (session == null)
+                return new GetDeliveryInfoDto(null, null, null);
+
+            var addressIdString = session.GetString(DeliveryAddressKey);
             var costString = session.GetString(DeliveryCostKey);
-            var eta = session.GetString(DeliveryDateKey);
+            var etaString = session.GetString(DeliveryDateKey);
 
-            decimal? cost = null;
-            if (!string.IsNullOrEmpty(costString))
-                cost = decimal.Parse(costString);
+            if (string.IsNullOrEmpty(addressIdString) ||
+                string.IsNullOrEmpty(costString) ||
+                string.IsNullOrEmpty(etaString))
+                return new GetDeliveryInfoDto(null, null, null);
 
-            Guid? addressId = null;
-            if (!string.IsNullOrEmpty(stateString))
-                addressId = Guid.Parse(stateString);
+            if (!Guid.TryParse(addressIdString, out var addressId) ||
+                !decimal.TryParse(costString, out var cost) ||
+                !DateTime.TryParse(etaString, out var eta))
+                return new GetDeliveryInfoDto(null, null, null);
 
-            DateTime? parsedEta = null;
-            if (!string.IsNullOrEmpty(eta))
-                parsedEta = DateTime.Parse(eta,null,DateTimeStyles.RoundtripKind);
-
-            return new GetDeliveryInfoDto(addressId,cost,parsedEta);
+            return new GetDeliveryInfoDto(addressId, cost, eta);
         }
 
+        public static bool IsValidDeliveryInfo(this ISession session)
+        {
+            var info = session.GetDeliveryInfo();
+            return info.AddressId.HasValue && info.Cost.HasValue && info.ETA.HasValue;
+        }
         public record GetDeliveryInfoDto(Guid? AddressId,decimal? Cost,DateTime? ETA);
     }
 }

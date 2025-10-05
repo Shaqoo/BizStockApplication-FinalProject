@@ -34,5 +34,16 @@ namespace Application.Dto
         public DateTime? Paid_At { get; set; }
     }
 
+    public class PaystackRefundResponse
+    {
+        public bool Status { get; set; }
+        public string Message { get; set; } = default!;
+        public string RefundReference { get; set; } = default!;
+        public string TransactionReference { get; set; } = default!;
+        public decimal Amount { get; set; }
+        public string StatusDescription { get; set; } = default!;
+    }
+
+
 
 }

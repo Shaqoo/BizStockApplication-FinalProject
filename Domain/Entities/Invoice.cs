@@ -56,6 +56,12 @@ namespace Domain.Entities
         {
             Status = InvoiceStatus.Cancelled;
         }
+
+        public void AddSalesOrder(Guid salesOrderId)
+        {
+            SalesOrderId = salesOrderId;
+            Modified();
+        }
     }
 
 }

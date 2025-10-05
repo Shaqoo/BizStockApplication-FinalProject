@@ -18,7 +18,7 @@ namespace Host.Controllers.V1
     [ApiController]
     [ApiVersion("1.0")]
     [Route("api/v{version:apiversion}/[controller]")]
-    [Authorize(Roles = "Customer")]
+    [Authorize]
     public class DeliveryAddressesController : ControllerBase
     {
         private readonly IMediator mediator;
@@ -35,6 +35,7 @@ namespace Host.Controllers.V1
         /// <returns>The ID of the created delivery address.</returns>
         [ProducesResponseType(typeof(Guid), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(string), StatusCodes.Status400BadRequest)]
+        [Authorize(Roles = "Customer")]
         [HttpPost]
         public async Task<IActionResult> Create([FromBody] CreateDeliveryAddressRequest request)
         {
@@ -52,6 +53,7 @@ namespace Host.Controllers.V1
         /// <returns>True if the update was successful.</returns>
         [ProducesResponseType(typeof(bool), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(string), StatusCodes.Status400BadRequest)]
+        [Authorize(Roles = "Customer")]
         [HttpPut]
         public async Task<IActionResult> Update([FromBody] UpdateDeliveryAddressRequest request)
         {
@@ -69,6 +71,7 @@ namespace Host.Controllers.V1
         /// <returns>True if the deletion was successful.</returns>
         [ProducesResponseType(typeof(bool), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(string), StatusCodes.Status400BadRequest)]
+        [Authorize(Roles = "Customer")]
         [HttpDelete("{id:guid}")]
         public async Task<IActionResult> Delete(Guid id)
         {
@@ -87,6 +90,7 @@ namespace Host.Controllers.V1
         /// <returns>True if the operation was successful.</returns>
         [ProducesResponseType(typeof(bool), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(string), StatusCodes.Status400BadRequest)]
+        [Authorize(Roles = "Customer")]
         [HttpPatch("{customerId:guid}/default/{addressId:guid}")]
         public async Task<IActionResult> SetDefault(Guid customerId, Guid addressId)
         {

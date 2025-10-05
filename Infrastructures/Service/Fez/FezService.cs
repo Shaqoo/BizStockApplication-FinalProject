@@ -146,16 +146,43 @@ namespace Infrastructures.Service.Fez
 
         public async Task<FezResponse<bool>> CancelOrderAsync(string orderNumber)
         {
-            await EnsureAuthHeadersAsync();
+            await EnsureAuthHeadersAsync();  
 
-            var response = await _httpClient.DeleteAsync($"orders/{orderNumber}");
+            var requestBody = new
+            {
+                orderNo = orderNumber
+            };
+
+            var content = new StringContent(
+                System.Text.Json.JsonSerializer.Serialize(requestBody),
+                System.Text.Encoding.UTF8,
+                "application/json"
+            );
+            var request = new HttpRequestMessage(HttpMethod.Delete, "order")
+            {
+                Content = content
+            };
+
+            var response = await _httpClient.SendAsync(request);
             var responseString = await response.Content.ReadAsStringAsync();
 
             if (!response.IsSuccessStatusCode)
-                return new FezResponse<bool> { Success = false, Message = responseString };
+            {
+                return new FezResponse<bool>
+                {
+                    Success = false,
+                    Message = $"Failed to cancel order: {responseString}"
+                };
+            }
 
-            return new FezResponse<bool> { Success = true, Data = true, Message = "Order cancelled successfully" };
+            return new FezResponse<bool>
+            {
+                Success = true,
+                Data = true,
+                Message = "Order cancelled successfully"
+            };
         }
+
 
         private async Task<FezResponse<TResponse>> PostAsync<TRequest, TResponse>(string url, TRequest request)
         {

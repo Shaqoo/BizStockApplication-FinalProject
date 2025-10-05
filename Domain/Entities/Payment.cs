@@ -48,6 +48,12 @@ namespace Domain.Entities
             Status = PaymentStatus.Failed;
             Note = note;
         }
+
+        public void AddInvoice(Guid invoiceId)
+        {
+            InvoiceId = invoiceId;
+            Modified();
+        }
     }
 
 }

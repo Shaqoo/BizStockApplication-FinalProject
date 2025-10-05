@@ -6977,7 +6977,7 @@ namespace Infrastructures.Migrations
             modelBuilder.Entity("Domain.Entities.DeliveryAssignment", b =>
                 {
                     b.HasOne("Domain.Entities.DeliveryAddress", "DeliveryAddress")
-                        .WithMany()
+                        .WithMany("DeliveryAssignments")
                         .HasForeignKey("DeliveryAddressId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -7492,6 +7492,11 @@ namespace Infrastructures.Migrations
             modelBuilder.Entity("Domain.Entities.CustomerType", b =>
                 {
                     b.Navigation("Customers");
+                });
+
+            modelBuilder.Entity("Domain.Entities.DeliveryAddress", b =>
+                {
+                    b.Navigation("DeliveryAssignments");
                 });
 
             modelBuilder.Entity("Domain.Entities.DeliveryAgent", b =>

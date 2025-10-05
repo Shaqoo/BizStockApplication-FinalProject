@@ -28,6 +28,7 @@ namespace Application.Commands.SalesOrders.Create
         private readonly IAuditLogRepository _auditLogRepository;
         private readonly IUnitOfWork _unitOfWork;
         private readonly ILogger<CreateSalesOrderCommandHandler> _logger;
+        private readonly IPaymentRepository _paymentRepository;
 
         public CreateSalesOrderCommandHandler(
             IDeliveryAddressRepository deliveryAddressRepository,
@@ -40,6 +41,7 @@ namespace Application.Commands.SalesOrders.Create
             ICartRepository cartRepository,
             IInvoiceRepository invoiceRepository,
             IInvoiceItemRepository invoiceItemRepository,
+            IPaymentRepository paymentRepository,
             ICustomerRepository customerRepository,
             IAuditLogRepository auditLogRepository,
             IUserRepository userRepository,
@@ -59,6 +61,7 @@ namespace Application.Commands.SalesOrders.Create
             _customerRepository = customerRepository;
             _auditLogRepository = auditLogRepository;
             _userRepository = userRepository;
+            _paymentRepository = paymentRepository;
             _unitOfWork = unitOfWork;
             _logger = logger;
         }
@@ -105,9 +108,12 @@ namespace Application.Commands.SalesOrders.Create
                     tax: order.Tax
                 );
 
+                invoice.AddSalesOrder(order.Id);
+
                 await _invoiceRepository.AddAsync(invoice);
 
-                
+                order.AddInvoice(invoice.Id);
+
                 var fezRequestItems = new List<CreateFezOrderRequestItem>();
                 int itemIndex = 1;
 
@@ -190,6 +196,15 @@ namespace Application.Commands.SalesOrders.Create
                 order.RecalculateTotals();
                 invoice.RecalculateSubTotal();
                 invoice.MarkAsPaid();
+
+                var payment = await _paymentRepository.GetByReferenceAsync(request.CreateSalesOrderRequestModel.paymentReference);
+                if (payment == null)
+                {
+                    await _unitOfWork.RollbackTransactionAsync();
+                    return Result<Guid>.Failure("Payment not found");
+                }
+
+                payment.AddInvoice(invoice.Id);
 
                 cart.ClearItems();
 

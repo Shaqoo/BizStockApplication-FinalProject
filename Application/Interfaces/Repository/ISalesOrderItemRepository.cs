@@ -2,12 +2,6 @@
 using Application.Interfaces.Repository.BaseRepository;
 using Application.Pagination;
 using Domain.Entities;
-using Domain.Enums;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Application.Interfaces.Repository
 {
@@ -19,6 +13,7 @@ namespace Application.Interfaces.Repository
         Task<int> GetTotalUnitsSoldForProductAsync(Guid productId);
         Task<PaginatedList<SalesOrderItem>> GetByDateRangeAsync(DateTime start, DateTime end,PageRequest pageRequest);
         Task<List<TopSellingProductDto>> GetTopSellingProductsAsync(int topN);
+        Task<IEnumerable<SalesOrderItem>> GetPendingOrInTransitAsync();
     }
 
 

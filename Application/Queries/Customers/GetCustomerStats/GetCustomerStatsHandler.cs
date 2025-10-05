@@ -20,7 +20,7 @@ namespace Application.Queries.Customers.GetCustomerStats
                  var totalCustomers = await customerRepository.CountAsync(a => a.UserRoles.Any(a => a.Role == Role.Customer));
                  var verifiedCustomers = await customerRepository.CountAsync(c => c.UserRoles.Any(a => a.Role == Role.Customer) &&
                  c.IsEmailVerified);
-                 var totalOrders = await orderRepository.CountByStatusAsync(OrderStatus.Delivered);
+                 var totalOrders = await orderRepository.CountByStatusAsync(OrderStatus.Completed);
                  var openComplaints = await chatThreadRepository.CountOpenThreadsAsync();
                  return new CustomerStatsDto
                  {

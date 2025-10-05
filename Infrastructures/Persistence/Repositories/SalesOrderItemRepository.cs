@@ -2,6 +2,7 @@
 using Application.Interfaces.Repository;
 using Application.Pagination;
 using Domain.Entities;
+using Domain.Enums;
 using Domain.Exceptions;
 using Infrastructures.Persistence.Context;
 using Microsoft.EntityFrameworkCore;
@@ -112,6 +113,13 @@ namespace Infrastructures.Persistence.Repositories
                 })
                 .OrderByDescending(p => p.TotalSold)
                 .Take(topN)
+                .ToListAsync();
+        }
+
+        public async Task<IEnumerable<SalesOrderItem>> GetPendingOrInTransitAsync()
+        {
+            return await _context.SalesOrderItems
+                .Where(x => x.DeliveryStatus == DeliveryStatus.Pending || x.DeliveryStatus == DeliveryStatus.InTransit || x.DeliveryStatus == DeliveryStatus.Processing)
                 .ToListAsync();
         }
 

@@ -23,6 +23,7 @@ namespace Domain.Entities
         public DateTime UpdatedAt { get; private set; }
         public Guid? DeliveryStationId { get; private set; }
         public DeliveryStation? DeliveryStation { get; private set; }
+        public ICollection<DeliveryAssignment> DeliveryAssignments { get; private set; } = new HashSet<DeliveryAssignment>();
         private DeliveryAddress() {}
 
         private DeliveryAddress(Guid id, Guid customerId, int stateId,int lgaId, string street, bool isDefault,string email,string phone,string fullname,string? additonalNumber = null, string? landmark = null, string? postalCode = null)

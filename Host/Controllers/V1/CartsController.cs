@@ -12,6 +12,7 @@ using Application.Queries.Carts.GetByCurrentUser;
 using Application.Queries.Carts.GetById;
 using Application.Queries.Carts.GetBySessionId;
 using Application.Queries.Carts.GetByUserId;
+using Application.Queries.Carts.ValidateCartAvailability;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -187,6 +188,27 @@ namespace Host.Controllers.V1
             if (!result.IsSuccess)
                 return NotFound(result);
             return Ok(result);
+        }
+
+        /// <summary>
+        /// Validates the current user's cart to ensure all items are available in the requested quantities.
+        /// </summary>
+        /// <returns>Returns a list of cart items with their availability status.</returns>
+        /// <response code="200">Cart validation successful, all items are available.</response>
+        /// <response code="400">Some or all items are not available in the requested quantity.</response>
+        [HttpGet("validate-availability")]
+        [ProducesResponseType(typeof(Result<List<CartItemAvailabilityDto>>), 200)]
+        [ProducesResponseType(typeof(Result<List<CartItemAvailabilityDto>>), 400)]
+        [Authorize(Roles = "Customer")]  
+        public async Task<IActionResult> ValidateCartAvailability()
+        {
+            var query = new ValidateCartAvailabilityQuery(); 
+            var result = await _mediator.Send(query);
+
+            if (result.IsSuccess)
+                return Ok(result);
+
+            return BadRequest(result);
         }
     }
 

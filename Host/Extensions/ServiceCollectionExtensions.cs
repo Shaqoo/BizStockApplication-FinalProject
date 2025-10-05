@@ -1,4 +1,5 @@
 ﻿using Application.Interfaces.Service;
+using Host.BackgroundServices;
 using Host.Filters;
 using Host.Service;
 using Infrastructures.Service.Ai;
@@ -12,13 +13,14 @@ using System.Reflection;
 using System.Text;
 
 namespace Host.Extensions
-{    public static class ServiceCollectionExtensions
+{   public static class ServiceCollectionExtensions
     {
         public static IServiceCollection AddHostServices(this IServiceCollection services, IConfiguration configuration)
         {
             services.AddScoped<INotifier, Notifier>();
             services.AddScoped<SanitizeInputFilter>();
             services.AddHttpClient<IAiService, AiService>();
+            services.AddHostedService<DeliveryStatusUpdaterService>();
 
             services.AddResponseCompression(options =>
             {

@@ -24,15 +24,20 @@ namespace Infrastructures.Persistence.Repositories
 
         public async Task<Invoice?> GetByIdAsync(Guid id)
         {
-            return await _context.Invoices.FindAsync(id)
-                ?? throw new KeyNotFoundException("Invoice not found.");
+            return await _context.Invoices
+                .Include(a => a.Customer)
+                .Include(a => a.Items)
+                .Include(a => a.SalesOrder)
+                .FirstOrDefaultAsync(a => a.Id == id);
         }
 
         public async Task<PaginatedList<Invoice>> GetAllAsync(PageRequest pageRequest)
         {
             var query = _context.Invoices
-                .Include(i => i.Customer)
-                .OrderByDescending(i => i.DueDate);
+                .Include(a => a.Customer)
+                .Include(a => a.Items)
+                .Include(a => a.SalesOrder)
+                .OrderByDescending(i => i.DateCreated);
 
             var total = await query.CountAsync();
 
@@ -63,8 +68,11 @@ namespace Infrastructures.Persistence.Repositories
         public async Task<PaginatedList<Invoice>> GetByCustomerIdAsync(Guid customerId, PageRequest pageRequest)
         {
             var query = _context.Invoices
+                .Include(a => a.Customer)
+                .Include(a => a.Items)
+                .Include(a => a.SalesOrder)
                 .Where(i => i.CustomerId == customerId)
-                .OrderByDescending(i => i.DueDate);
+                .OrderByDescending(i => i.DateCreated);
 
             var total = await query.CountAsync();
 
@@ -131,10 +139,12 @@ namespace Infrastructures.Persistence.Repositories
             await Task.CompletedTask;
         }
 
-        public async Task<Invoice> GetByExpression(Expression<Func<Invoice, bool>> predicate)
+        public async Task<Invoice?> GetByExpression(Expression<Func<Invoice, bool>> predicate)
         {
-            return await _context.Invoices.FirstOrDefaultAsync(predicate) ??
-               throw new ArgumentNullException("Invoice Not Found");
+            return await _context.Invoices
+                .Include(i => i.Customer)
+                .Include(i => i.Payments)
+                .FirstOrDefaultAsync(predicate);
         }
     }
 

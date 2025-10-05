@@ -60,9 +60,19 @@ namespace Domain.Entities
             Modified();
         }
 
+        public void AddInvoice(Guid invoiceId)
+        {
+            InvoiceId = invoiceId;
+            Modified();
+        }
+
         public void MarkAsConfirmed() => Status = OrderStatus.Confirmed;
+        public void MarkAsShipped() => Status = OrderStatus.Shipped;
+        public void MarkAsProcessing() => Status = OrderStatus.Processing;
+
         public void MarkAsCancelled() => Status = OrderStatus.Cancelled;
-        public void MarkAsDelivered() => Status = OrderStatus.Delivered;
+        public void MarkAsDelivered() => Status = OrderStatus.DeliveredPendingConfirmation;
+        public void MarkAsCompleted() => Status = OrderStatus.Completed;
     }
 
 }

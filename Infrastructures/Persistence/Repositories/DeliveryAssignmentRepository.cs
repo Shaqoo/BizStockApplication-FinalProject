@@ -29,17 +29,20 @@ namespace Infrastructures.Persistence.Repositories
 
         public async Task<DeliveryAssignment?> GetByIdAsync(Guid id)
         {
-            return await _context.DeliveryAssignments.FindAsync(id)
-                ?? throw new KeyNotFoundException("Delivery assignment not found.");
+            return await _context.DeliveryAssignments
+                .Include(a => a.DeliveryAgent)
+                .FirstOrDefaultAsync(a => a.Id.Equals(id));
         }
 
         public async Task<PaginatedList<DeliveryAssignment>> GetAllAsync(PageRequest pageRequest)
         {
-            var query = _context.DeliveryAssignments.AsQueryable();
+            var query = _context.DeliveryAssignments
+                .Include(a => a.DeliveryAgent)
+                .AsQueryable();
             var total = await query.CountAsync();
 
             var items = await query
-                .OrderByDescending(d => d.Id)
+                .OrderByDescending(d => d.DateCreated)
                 .Skip((pageRequest.Page - 1) * pageRequest.PageSize)
                 .Take(pageRequest.PageSize)
                 .ToListAsync();
@@ -55,6 +58,7 @@ namespace Infrastructures.Persistence.Repositories
         public async Task<DeliveryAssignment?> GetBySalesOrderIdAsync(Guid salesOrderId)
         {
             return await _context.DeliveryAssignments
+                .Include(a => a.DeliveryAgent)
                 .FirstOrDefaultAsync(d => d.SalesOrderId == salesOrderId);
         }
 
@@ -126,7 +130,7 @@ namespace Infrastructures.Persistence.Repositories
                 .CountAsync(d => d.DeliveryAgentId == deliveryAgentId && d.Status == DeliveryStatus.Delivered);
         }
 
-        public async Task<DeliveryAssignment> GetByExpression(Expression<Func<DeliveryAssignment, bool>> predicate)
+        public async Task<DeliveryAssignment?> GetByExpression(Expression<Func<DeliveryAssignment, bool>> predicate)
         {
             return await _context.DeliveryAssignments.FirstOrDefaultAsync(predicate) ??
                 throw new ArgumentNullException("Delivery Assignment Not Found");

@@ -1,4 +1,7 @@
-﻿using Application.Dto;
+﻿using Application.Commands.SalesOrders.Create;
+using Application.Dto;
+using Application.Dto.RequestModels;
+using Application.Extensions;
 using Application.Interfaces.Repository;
 using Application.Interfaces.Service;
 using Application.Interfaces.UnitOfWork;
@@ -6,6 +9,7 @@ using Domain.DomainEvents;
 using Domain.Entities;
 using Domain.Enums;
 using MediatR;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 
 namespace Application.Commands.Payments.InitiatePayment
@@ -23,6 +27,7 @@ namespace Application.Commands.Payments.InitiatePayment
         private readonly IMediator _mediator;
         private readonly IWalletRepository _walletRepository;
         private readonly IWalletTransactionRepository _walletTransactionRepository;
+        private readonly IHttpContextAccessor _httpContextAccessor; 
         public InitiatePaymentCommandHandler(
             IPaymentGatewayService paymentGatewayService,
             IWalletTransactionRepository walletTransactionRepository,
@@ -30,6 +35,7 @@ namespace Application.Commands.Payments.InitiatePayment
             IWalletRepository walletRepository,
             IUserRepository userRepository,
             IAuditLogRepository auditLogRepository,
+            IHttpContextAccessor httpContextAccessor,
             IPaymentRepository paymentRepository,
             ICustomerRepository customerRepository,
             IUnitOfWork unitOfWork,
@@ -43,6 +49,7 @@ namespace Application.Commands.Payments.InitiatePayment
             _paymentGatewayService = paymentGatewayService;
             _paymentRepository = paymentRepository;
             _customerRepository = customerRepository;
+            _httpContextAccessor = httpContextAccessor;
             _unitOfWork = unitOfWork;
             _logger = logger;
         }
@@ -85,6 +92,12 @@ namespace Application.Commands.Payments.InitiatePayment
             {
                 try
                 {
+                    var deliveryInfo = _httpContextAccessor.HttpContext?.Session.GetDeliveryInfo();
+                    if (deliveryInfo == null)
+                    {
+                        _logger.LogWarning("Delivery information is missing in session for Customer {CustomerId}", request.CustomerId);
+                        return Result<string>.Failure("Delivery information is required for wallet payments");
+                    }
                     var wallet = await _walletRepository.GetByUserIdAsync(customer.Id);
                     if (wallet == null)
                     {
@@ -129,6 +142,7 @@ namespace Application.Commands.Payments.InitiatePayment
                  
                     wallet.Debit(request.Amount);
 
+
                    
                     await _paymentRepository.AddAsync(payment);
                     await _walletTransactionRepository.AddAsync(walletTransaction);
@@ -149,7 +163,9 @@ namespace Application.Commands.Payments.InitiatePayment
                         userAgent: command.RequestMetadata.UserAgent
                     ));
 
-                    return Result<string>.Success("Wallet payment completed successfully");
+                    var dto = new CreateSalesOrderRequestModel(deliveryInfo.AddressId.Value,deliveryInfo.ETA ?? DateTime.Now,deliveryInfo.Cost.Value,payment.PaymentReference);
+                    var result = await _mediator.Send(new CreateSalesOrderCommand(dto,command.RequestMetadata));
+                    return Result<string>.Success(result.Data.ToString(),"Wallet payment completed successfully");
                 }
                 catch (Exception ex)
                 {

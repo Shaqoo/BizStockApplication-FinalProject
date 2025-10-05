@@ -1,4 +1,7 @@
-﻿using Application.Dto;
+﻿using Application.Commands.SalesOrders.Create;
+using Application.Dto;
+using Application.Dto.RequestModels;
+using Application.Extensions;
 using Application.Interfaces.Repository;
 using Application.Interfaces.Service;
 using Application.Interfaces.UnitOfWork;
@@ -6,8 +9,8 @@ using Domain.DomainEvents;
 using Domain.Entities;
 using Domain.Enums;
 using MediatR;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
-using System.Net;
 
 namespace Application.Commands.Payments.VerifyPayment
 {
@@ -22,6 +25,7 @@ namespace Application.Commands.Payments.VerifyPayment
         private readonly IMediator mediator;
         private readonly IAuditLogRepository auditLogRepository;
         private readonly IUserRepository userRepository;
+        private readonly IHttpContextAccessor _httpContextAccessor;
         public VerifyPaymentCommandHandler(
             IWalletTransactionRepository walletTransactionRepository,
             IUserRepository userRepository,
@@ -29,6 +33,7 @@ namespace Application.Commands.Payments.VerifyPayment
             IPaymentRepository paymentRepository,
             IWalletRepository walletRepository,
             IUnitOfWork unitOfWork,
+            IHttpContextAccessor httpContextAccessor,
             IMediator mediator,
             IPaymentGatewayService paymentGatewayService,
             ILogger<VerifyPaymentCommandHandler> logger)
@@ -38,6 +43,7 @@ namespace Application.Commands.Payments.VerifyPayment
             this.walletRepository = walletRepository;
             this.unitOfWork = unitOfWork;
             this.paymentGatewayService = paymentGatewayService;
+            _httpContextAccessor = httpContextAccessor;
             this.logger = logger;
             this.mediator = mediator;
             this.auditLogRepository = auditLogRepository;
@@ -59,6 +65,12 @@ namespace Application.Commands.Payments.VerifyPayment
                 {
                     logger.LogInformation("Payment {Reference} already verified", request.Reference);
                     return Result<PaystackVerifyResponse>.Failure("Payment Already Verified");
+                }
+                var deliveryInfo = _httpContextAccessor.HttpContext?.Session.GetDeliveryInfo();
+                if (payment.Purpose == PaymentPurpose.OrderPayment && deliveryInfo == null)
+                {
+                    logger.LogWarning("Delivery information is missing in session for Customer {CustomerId}", payment.PayerId);
+                    return Result<PaystackVerifyResponse>.Failure("Delivery information is required for wallet payments");
                 }
                 var user = await userRepository.GetByEmailAsync((string)payment.Payer.Email);
                 if (user == null)
@@ -86,16 +98,23 @@ namespace Application.Commands.Payments.VerifyPayment
 
                     await unitOfWork.SaveChangesAsync(cancellationToken);
                     await auditLogRepository.AddAsync(new AuditLog(
-           userId: user.Id,
-           action: "Payment Successful",
-           entityName: "Payment",
-           entityId: payment.Id,
-           details: $"Payment of {payment.Amount:C} was successful. Reference: {payment.PaymentReference}",
-           ip: request.RequestMetadata.IpAddress,
-           userAgent: request.RequestMetadata.UserAgent
-       ));
+                       userId: user.Id,
+                       action: "Payment Successful",
+                       entityName: "Payment",
+                       entityId: payment.Id,
+                       details: $"Payment of {payment.Amount:C} was successful. Reference: {payment.PaymentReference}",
+                       ip: request.RequestMetadata.IpAddress,
+                       userAgent: request.RequestMetadata.UserAgent
+                   ));
                     await mediator.Publish(new PaymentStatusChangedEvent(payment.Id,payment.PayerId,payment.Status,payment.Amount,payment.PaymentReference));
                     logger.LogInformation("Payment {Reference} verified successfully", request.Reference);
+
+                    if (payment.Purpose == PaymentPurpose.OrderPayment)
+                    {
+                        var dto = new CreateSalesOrderRequestModel(deliveryInfo!.AddressId!.Value, deliveryInfo.ETA ?? DateTime.Now, deliveryInfo.Cost!.Value, payment.PaymentReference);
+                        var result = await mediator.Send(new CreateSalesOrderCommand(dto, request.RequestMetadata));
+                    }
+                   
                     return Result<PaystackVerifyResponse>.Success(verifyResponse);
                 }
 

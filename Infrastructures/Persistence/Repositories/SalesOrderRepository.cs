@@ -25,8 +25,11 @@ namespace Infrastructures.Persistence.Repositories
 
         public async Task<SalesOrder?> GetByIdAsync(Guid id)
         {
-            return await _context.SalesOrders.FindAsync(id)
-                ?? throw new EntityNotFoundException("Sales order","Id");
+            return await _context.SalesOrders
+                .Include(a => a.Customer)
+                .Include(a => a.Items)
+                .Include(a => a.Invoice)
+                .FirstOrDefaultAsync(o => o.Id == id);
         }
 
         public async Task<PaginatedList<SalesOrder>> GetAllAsync(PageRequest pageRequest)
@@ -56,7 +59,11 @@ namespace Infrastructures.Persistence.Repositories
 
         public async Task<PaginatedList<SalesOrder>> GetByCustomerIdAsync(Guid customerId, PageRequest pageRequest)
         {
-            var query = _context.SalesOrders.Where(o => o.CustomerId == customerId);
+            var query = _context.SalesOrders
+                .Include(o => o.Items)
+                .Include(a => a.Customer)
+                .Include(b => b.Invoice)
+                .Where(o => o.CustomerId == customerId);
 
             var total = await query.CountAsync();
 
@@ -88,6 +95,8 @@ namespace Infrastructures.Persistence.Repositories
         {
             return await _context.SalesOrders
                 .Include(o => o.Items)
+                .Include(a => a.Customer)
+                .Include(b => b.Invoice)
                 .FirstOrDefaultAsync(o => o.Id == salesOrderId);
         }
 
@@ -101,7 +110,7 @@ namespace Infrastructures.Persistence.Repositories
         public async Task<decimal> GetTotalSalesAsync(DateTime startDate, DateTime endDate)
         {
             return await _context.SalesOrders
-                .Where(o => o.DateCreated >= startDate && o.DateCreated <= endDate && o.Status == OrderStatus.Delivered)
+                .Where(o => o.DateCreated >= startDate && o.DateCreated <= endDate && o.Status == OrderStatus.Completed)
                 .SumAsync(o => o.Total);
         }
 
@@ -116,7 +125,7 @@ namespace Infrastructures.Persistence.Repositories
             await Task.CompletedTask;
         }
 
-        public async Task<SalesOrder> GetByExpression(Expression<Func<SalesOrder, bool>> predicate)
+        public async Task<SalesOrder?> GetByExpression(Expression<Func<SalesOrder, bool>> predicate)
         {
             return await _context.SalesOrders.FirstOrDefaultAsync(predicate) ??
                throw new EntityNotFoundException("Sales Order","Predicate");

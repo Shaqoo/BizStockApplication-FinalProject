@@ -4,9 +4,11 @@
     {
         Pending,
         Confirmed,
-        Delivered,
-        Received,
-        Cancelled
+        Cancelled,
+        Processing,
+        Shipped,
+        DeliveredPendingConfirmation,
+        Completed
     }
 
 }

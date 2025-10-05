@@ -1,25 +1,40 @@
 ﻿using MediatR;
 
-namespace Domain.DomainEvents
+namespace Domain.DomainEvents;
+
+public class RefundProcessedEvent : INotification
 {
-    public class PaymentRefundedEvent : INotification
+    public Guid RefundId { get; }
+    public Guid SalesOrderId { get; }
+    public string SalesOrderNumber { get; }
+    public decimal Amount { get; }
+    public string PaymentMethod { get; }
+    public string RefundReference { get; }
+    public string Status { get; }
+    public string Reason { get; }
+    public Guid customerId { get; }
+    public DateTime ProcessedAt { get; }
+
+    public RefundProcessedEvent(
+        Guid refundId,
+        Guid salesOrderId,
+        string salesOrderNumber,
+        decimal amount,
+        string paymentMethod,
+        string refundReference,
+        string status,
+        string reason,
+        Guid customerId,
+        DateTime processedAt)
     {
-        public Guid PaymentId { get; init; }
-        public Guid InvoiceId { get; init; }
-        public Guid PayerId { get; init; }
-        public decimal Amount { get; init; }
-        public string? Reason { get; init; }
-        public DateTime RefundedAt { get; init; }
-
-        public PaymentRefundedEvent(Guid paymentId, Guid invoiceId, Guid payerId, decimal amount, string? reason, DateTime refundedAt)
-        {
-            PaymentId = paymentId;
-            InvoiceId = invoiceId;
-            PayerId = payerId;
-            Amount = amount;
-            Reason = reason;
-            RefundedAt = refundedAt;
-        }
+        RefundId = refundId;
+        SalesOrderId = SalesOrderId;
+        SalesOrderNumber = salesOrderNumber;
+        Reason = reason;
+        Amount = amount;
+        PaymentMethod = paymentMethod;
+        RefundReference = refundReference;
+        Status = status;
+        ProcessedAt = processedAt;
     }
-
 }

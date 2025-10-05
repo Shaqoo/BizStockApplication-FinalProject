@@ -1,4 +1,11 @@
-﻿using Application.Queries.SalesOrders.GetOrderCostAndETA;
+﻿using Application.Dto;
+using Application.Dto.RequestModels;
+using Application.Pagination;
+using Application.Queries.SalesOrders.GetOrderCostAndETA;
+using Application.Queries.SalesOrders.GetSalesOrderById;
+using Application.Queries.SalesOrders.GetSalesOrdersByCustomerId;
+using Application.Queries.SalesOrders.GetSalesOrdersByUser;
+using Application.Queries.SalesOrders.TrackItem;
 using Host.Extensions;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
@@ -32,6 +39,163 @@ namespace Host.Controllers.V1
                 return BadRequest(result);
 
             return Ok(result);
+        }
+
+        /// <summary>
+        /// Get a sales order by its unique identifier.
+        /// </summary>
+        /// <param name="id">The unique identifier of the sales order.</param>
+        /// <remarks>
+        /// Sample request:
+        ///
+        ///     GET /api/salesorder/3fa85f64-5717-4562-b3fc-2c963f66afa6
+        ///
+        /// Sample response (200 OK):
+        /// ```json
+        /// {
+        ///   "isSuccess": true,
+        ///   "data": {
+        ///     "id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+        ///     "orderNumber": "SO-2025-0001",
+        ///     "customerId": "11111111-2222-3333-4444-555555555555",
+        ///     "status": "Pending",
+        ///     "subTotal": 25000,
+        ///     "discount": 0,
+        ///     "tax": 1250,
+        ///     "total": 26250,
+        ///     "items": [
+        ///       {
+        ///         "productId": "aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee",
+        ///         "productName": "iPhone 14",
+        ///         "quantity": 1,
+        ///         "unitPrice": 25000,
+        ///         "totalPrice": 25000
+        ///       }
+        ///     ]
+        ///   }
+        /// }
+        /// ```
+        /// </remarks>
+        [HttpGet("{id:guid}")]
+        [Produces("application/json")]
+        [ProducesResponseType(typeof(Result<SalesOrderDto>), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<IActionResult> GetById(Guid id)
+        {
+            var result = await _mediator.Send(new GetSalesOrderByIdQuery(id));
+            return result.IsSuccess ? Ok(result) : NotFound(result);
+        }
+
+        /// <summary>
+        /// Track an order item by tracking number.
+        /// </summary>
+        /// <param name="trackingNumber">The tracking number for the item.</param>
+        /// <remarks>
+        /// Sample request:
+        ///
+        ///     GET /api/salesorder/track/FEZ123456
+        ///
+        /// Sample response (200 OK):
+        /// ```json
+        /// {
+        ///   "isSuccess": true,
+        ///   "data": {
+        ///     "trackingNumber": "FEZ123456",
+        ///     "status": "InTransit",
+        ///     "lastUpdated": "2025-10-02T08:30:00Z",
+        ///     "location": "Lagos Hub"
+        ///   }
+        /// }
+        /// ```
+        /// </remarks>
+        [HttpGet("track/{trackingNumber}")]
+        [Produces("application/json")]
+        [ProducesResponseType(typeof(Result<TrackOrderResponseDto>), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<IActionResult> Track(string trackingNumber)
+        {
+            var result = await _mediator.Send(new TrackItemQuery(trackingNumber));
+            return result.IsSuccess ? Ok(result) : NotFound(result);
+        }
+
+        /// <summary>
+        /// Get paginated sales orders for the current customer.
+        /// </summary>
+        /// <param name="pageRequest">Pagination parameters (page number, page size).</param>
+        /// <remarks>
+        /// Sample request:
+        ///
+        ///     GET /api/salesorder/customer?pageNumber=1&amp;pageSize=10
+        ///
+        /// Sample response (200 OK):
+        /// ```json
+        /// {
+        ///   "isSuccess": true,
+        ///   "data": {
+        ///     "items": [
+        ///       {
+        ///         "id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+        ///         "orderNumber": "SO-2025-0001",
+        ///         "status": "Dispatched",
+        ///         "total": 15000
+        ///       }
+        ///     ],
+        ///     "pageNumber": 1,
+        ///     "pageSize": 10,
+        ///     "totalCount": 1,
+        ///     "totalPages": 1
+        ///   }
+        /// }
+        /// ```
+        /// </remarks>
+        [HttpGet("customer")]
+        [Produces("application/json")]
+        [ProducesResponseType(typeof(Result<PaginatedList<SalesOrderDto>>), StatusCodes.Status200OK)]
+        public async Task<IActionResult> GetByCurrentCustomer([FromQuery] PageRequest pageRequest)
+        {
+            var result = await _mediator.Send(new GetSalesOrdersByCustomerQuery(pageRequest));
+            return Ok(result);
+        }
+
+        /// <summary>
+        /// Get paginated sales orders for a specific customer by customerId.
+        /// </summary>
+        /// <param name="customerId">The unique identifier of the customer.</param>
+        /// <param name="pageRequest">Pagination parameters (page number, page size).</param>
+        /// <remarks>
+        /// Sample request:
+        ///
+        ///     GET /api/salesorder/customer/11111111-2222-3333-4444-555555555555?pageNumber=1&amp;pageSize=5
+        ///
+        /// Sample response (200 OK):
+        /// ```json
+        /// {
+        ///   "isSuccess": true,
+        ///   "data": {
+        ///     "items": [
+        ///       {
+        ///         "id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+        ///         "orderNumber": "SO-2025-0002",
+        ///         "status": "Pending",
+        ///         "total": 5000
+        ///       }
+        ///     ],
+        ///     "pageNumber": 1,
+        ///     "pageSize": 5,
+        ///     "totalCount": 1,
+        ///     "totalPages": 1
+        ///   }
+        /// }
+        /// ```
+        /// </remarks>
+        [HttpGet("customer/{customerId:guid}")]
+        [Produces("application/json")]
+        [ProducesResponseType(typeof(Result<PaginatedList<SalesOrderDto>>), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<IActionResult> GetByCustomerId(Guid customerId, [FromQuery] PageRequest pageRequest)
+        {
+            var result = await _mediator.Send(new GetSalesOrderByCustomerIdQuery(customerId, pageRequest));
+            return result.IsSuccess ? Ok(result) : NotFound(result);
         }
     }
 }

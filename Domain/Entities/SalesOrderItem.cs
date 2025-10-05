@@ -1,11 +1,6 @@
 ﻿using Domain.Auditable;
 using Domain.Enums;
 using Domain.Exceptions;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Domain.Entities
 {
@@ -13,7 +8,6 @@ namespace Domain.Entities
     {
         public Guid SalesOrderId { get; private set; }
         public SalesOrder SalesOrder { get; private set; } = default!;
-
         public Guid ProductId { get; private set; }
         public Product Product { get; private set; } = default!;
         public string ProductName { get; private set; } = default!;

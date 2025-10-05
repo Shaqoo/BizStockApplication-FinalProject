@@ -59,6 +59,65 @@ namespace Infrastructures.Service.Payments
             return responseBody;
         }
 
+        public async Task<PaystackRefundResponse> RefundTransactionAsync(string transactionReference, decimal? amount = null, string? reason = null)
+        {
+            try
+            {
+                _logger.LogInformation("Initiating refund for transaction {TransactionReference}, Amount: {Amount}, Reason: {Reason}",
+                    transactionReference, amount, reason);
+
+                var payload = new Dictionary<string, object>
+                {
+                    { "transaction", transactionReference }
+                };
+
+                if (amount.HasValue)
+                {
+                    payload["amount"] = (int)(amount.Value * 100);  
+                }
+
+                if (!string.IsNullOrEmpty(reason))
+                {
+                    payload["reason"] = reason;
+                }
+
+                var json = JsonConvert.SerializeObject(payload);
+                var content = new StringContent(json, Encoding.UTF8, "application/json");
+
+                var response = await _httpClient.PostAsync("refund", content);
+                var responseBody = await response.Content.ReadAsStringAsync();
+
+                if (!response.IsSuccessStatusCode)
+                {
+                    _logger.LogError("Paystack refund failed. Status: {StatusCode}, Response: {Response}",
+                        response.StatusCode, responseBody);
+                    throw new ApplicationException($"Paystack refund failed: {responseBody}");
+                }
+
+                var result = JsonConvert.DeserializeObject<PaystackRefundResponse>(responseBody)
+                             ?? throw new ApplicationException("Invalid response from Paystack refund API");
+
+                if (!result.Status)
+                {
+                    _logger.LogWarning("Paystack refund returned failure for transaction {TransactionReference}: {Message}",
+                        transactionReference, result.Message);
+                }
+                else
+                {
+                    _logger.LogInformation("Paystack refund successful for transaction {TransactionReference}, RefundReference: {RefundReference}",
+                        transactionReference, result.RefundReference);
+                }
+
+                return result;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Exception occurred while refunding transaction {TransactionReference}", transactionReference);
+                throw; 
+            }
+        }
+ 
+
         public async Task<PaystackVerifyResponse> VerifyTransactionAsync(string reference)
         {
             _logger.LogInformation("Verifying Paystack transaction with reference {Reference}", reference);
@@ -78,6 +137,7 @@ namespace Infrastructures.Service.Payments
             _logger.LogInformation("Paystack transaction verification successful for {Reference}", reference);
             return result;
         }
+
 
     }
 
