@@ -9,6 +9,7 @@ namespace Application.Interfaces.Repository
         Task<Invoice?> GetByInvoiceNumberAsync(string invoiceNumber);
         Task<PaginatedList<Invoice>> GetByCustomerIdAsync(Guid customerId,PageRequest pageRequest);
         Task<IEnumerable<Invoice>> GetUnpaidInvoicesAsync(Guid customerId);
+        Task<IEnumerable<Invoice>> GetInvoicesByOrderIdAsync(Guid orderId);
         Task<PaginatedList<Invoice>> GetOverdueInvoicesAsync(PageRequest pageRequest);
         Task<decimal> GetTotalOutstandingAsync(Guid customerId);
         Task<bool> IsInvoicePaidAsync(Guid invoiceId);

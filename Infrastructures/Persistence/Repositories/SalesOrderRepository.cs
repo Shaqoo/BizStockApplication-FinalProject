@@ -5,6 +5,7 @@ using Domain.Enums;
 using Domain.Exceptions;
 using Infrastructures.Persistence.Context;
 using Microsoft.EntityFrameworkCore;
+using Nest;
 using System.Linq.Expressions;
 
 namespace Infrastructures.Persistence.Repositories
@@ -61,6 +62,8 @@ namespace Infrastructures.Persistence.Repositories
         {
             var query = _context.SalesOrders
                 .Include(o => o.Items)
+                .ThenInclude(a => a.Product)
+                .Include(a => a.DeliveryAssignment)
                 .Include(a => a.Customer)
                 .Include(b => b.Invoice)
                 .Where(o => o.CustomerId == customerId);
@@ -95,6 +98,8 @@ namespace Infrastructures.Persistence.Repositories
         {
             return await _context.SalesOrders
                 .Include(o => o.Items)
+                .ThenInclude(a => a.Product)
+                .Include(a => a.DeliveryAssignment)
                 .Include(a => a.Customer)
                 .Include(b => b.Invoice)
                 .FirstOrDefaultAsync(o => o.Id == salesOrderId);
@@ -127,9 +132,46 @@ namespace Infrastructures.Persistence.Repositories
 
         public async Task<SalesOrder?> GetByExpression(Expression<Func<SalesOrder, bool>> predicate)
         {
-            return await _context.SalesOrders.FirstOrDefaultAsync(predicate) ??
-               throw new EntityNotFoundException("Sales Order","Predicate");
+            return await _context.SalesOrders.FirstOrDefaultAsync(predicate);
         }
+
+        public async Task<PaginatedList<SalesOrder>> Search(string query, PageRequest pageRequest)
+        {
+             
+            query = query?.Trim().ToLower() ?? string.Empty;
+
+            
+            var searchQuery = _context.SalesOrders
+                .Include(a => a.Items)
+                 .ThenInclude(a => a.Product)
+                .Include(o => o.Customer)
+                .Include(b => b.Invoice)
+                .Include(a => a.DeliveryAssignment)
+                .AsQueryable();
+
+             
+            if (!string.IsNullOrEmpty(query))
+            {
+                searchQuery = searchQuery.Where(o =>
+                    EF.Functions.ILike((string)o.Customer.Email,$"%{query}%") ||
+                    EF.Functions.ILike(o.Customer.FullName, $"%{query}%") ||
+                    EF.Functions.ILike(o.OrderNumber, $"%{query}%"));
+            }
+
+           
+            var total = await searchQuery.CountAsync();
+
+             
+            var items = await searchQuery
+                .OrderByDescending(o => o.DateCreated)
+                .Skip((pageRequest.Page - 1) * pageRequest.PageSize)
+                .Take(pageRequest.PageSize)
+                .ToListAsync();
+
+            
+            return new PaginatedList<SalesOrder>(items, total, pageRequest.Page, pageRequest.PageSize);
+        }
+
     }
 
 }

@@ -16,6 +16,7 @@ namespace Application.Commands.Users.AddBiometrics
         PublicKey
     }
     public class RegisterBiometricsHandler(IFidoCredentialService fidoCredentialService,
+        IFidoCredentialRepository fidoCredentialRepository,
         IAuditLogRepository auditLogRepository,
         IUnitOfWork unitOfWork) : IRequestHandler<RegisterFingerprintCommand, Result<object>>
     {
@@ -39,6 +40,7 @@ namespace Application.Commands.Users.AddBiometrics
             {
                 await unitOfWork.BeginTransactionAsync();
                 var credential = await fidoCredentialService.RegisterCredentialAsync(attestation);
+                await fidoCredentialRepository.AddAsync(credential);
                 await unitOfWork.CommitTransactionAsync();
                 if (credential is null)
                 {

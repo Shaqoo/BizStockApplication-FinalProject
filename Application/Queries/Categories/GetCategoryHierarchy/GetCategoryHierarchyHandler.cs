@@ -29,7 +29,7 @@ namespace Application.Queries.Categories.GetCategoryHierarchy
                     var tree = CategoryTreeBuilder.BuildHierarchy(categories);
                     return tree;
                 },
-                TimeSpan.FromHours(1));  
+                TimeSpan.FromMinutes(10));  
 
             return Result<List<CategoryTreeDto>>.Success(result);
         }

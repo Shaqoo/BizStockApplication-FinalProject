@@ -15,6 +15,7 @@ namespace Application.Interfaces.Repository
         Task<decimal> GetTotalSalesAsync(DateTime startDate, DateTime endDate);
         Task<int> CountByStatusAsync(OrderStatus status);
         Task UpdateStatusAsync(SalesOrder salesOrder);
+        Task<PaginatedList<SalesOrder>> Search(string query,PageRequest pageRequest);
     }
 
 }

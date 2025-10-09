@@ -14,7 +14,7 @@ namespace Application.Extensions
             return new UserDto(user.Id,(string)user.Email,user.FullName, user.DateOfBirth.Age, user.PhoneNumber.ToString()
                 , user.DateOfBirth.Value, user.LastLoggedIn, user.UserRoles.FirstOrDefault()!.Role.ToString(),
                 user.Gender.ToString(),user.IsEmailVerified,
-                user.IsTwoFactorEnabled,user.ProfilePictureUrl);
+                user.IsTwoFactorEnabled,user.ProfilePictureUrl,!user.IsDeleted,user.IsFidoRegistered,user.FidoCredentials.Count);
         }
 
         public static SupplierDto SupplierAsDto(this Supplier supplier)

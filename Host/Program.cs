@@ -75,7 +75,7 @@ internal class Program
             options.AddPolicy("BizStockPolicy", policyBuilder =>
             {
                 policyBuilder
-                    .WithOrigins("http://localhost:5500")  
+                    .WithOrigins("http://localhost:5500", "http://localhost:54985")  
                     .AllowAnyHeader()
                     .AllowAnyMethod()
                     .AllowCredentials();

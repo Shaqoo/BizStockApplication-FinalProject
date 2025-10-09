@@ -22,9 +22,11 @@ namespace Application.Commands.Users.RegenerateMfa
         private readonly IAuditLogRepository _auditLogRepository;
         private readonly IUnitOfWork _unitOfWork;
         private readonly IPublishEndpoint _publishEndpoint;
+        private readonly IMemoryCacheService _memoryCacheService;
 
         public RegenerateMfaCommandHandler(
             IUserRepository userRepository,
+            IMemoryCacheService memoryCacheService,
             IMfaService mfaService,
             IRecoveryCodeGenerator recoveryCodeGenerator,
             IAuthService authService,
@@ -35,6 +37,7 @@ namespace Application.Commands.Users.RegenerateMfa
         {
             _userRepository = userRepository;
             _mfaService = mfaService;
+            _memoryCacheService = memoryCacheService;
             _recoveryCodeGenerator = recoveryCodeGenerator;
             _authService = authService;
             _logger = logger;
@@ -50,6 +53,15 @@ namespace Application.Commands.Users.RegenerateMfa
             {
                 _logger.LogWarning("Unauthorized access attempt to regenerate MFA by an unauthenticated user.");
                 return Result<TwoFactorSetupDto>.Failure("Unauthorized");
+            }
+
+            var cacheKey = $"MfaRegenerateRequest_{currentUser.Id}";
+
+            var cachedCode = await _memoryCacheService.GetAsync<string>(cacheKey);
+            if (cachedCode is null || cachedCode != request.code)
+            {
+                _logger.LogWarning($"Invalid or expired MFA regeneration code attempt for user ID {currentUser.Id}.");
+                return Result<TwoFactorSetupDto>.Failure("Invalid or expired verification code");
             }
 
             var user = await _userRepository.GetByIdAsync(currentUser.Id);

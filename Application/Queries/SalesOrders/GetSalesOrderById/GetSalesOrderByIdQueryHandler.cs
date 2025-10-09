@@ -36,6 +36,8 @@ namespace Application.Queries.SalesOrders.GetSalesOrderById
                     OverallDeliveryStatus = salesOrder.OverallDeliveryStatus,
                     Total = salesOrder.Total,
                     ExpectedDeliveryDate = salesOrder.ExpectedDeliveryDate,
+                    DeliveredAt = salesOrder.DeliveryAssignment.DeliveredAt,
+                    DeliveryFee = salesOrder.DeliveryAssignment.DeliveryFee,
                     DateCreated = salesOrder.DateCreated,
                     InvoiceNumber = salesOrder.Invoice.InvoiceNumber,
                     Items = salesOrder.Items.Select(item => new SalesOrderItemDto
@@ -50,6 +52,7 @@ namespace Application.Queries.SalesOrders.GetSalesOrderById
                         SalesOrderId = item.SalesOrderId,
                         TotalPrice = item.TotalPrice,
                         UniqueId = item.UniqueId,
+                        ProductImg = item.Product.ImageUrl
                     }).ToList()
                 };
                 return Result<SalesOrderDto>.Success(salesOrderDto);

@@ -6,6 +6,7 @@ namespace Application.Interfaces.Service
     public interface IFezService
     {
         Task<FezResponse<CreateFezOrderResponseDto>> CreateOrderAsync(List<CreateFezOrderRequestItem> requestItems);
+        Task<FezResponse<List<FezOrderSummaryDto>>> GetOrdersByStatusAsync(DateTime startDate, DateTime endDate);
         Task<FezResponse<CostEstimateResponseDto>> GetCostAsync(CostEstimateRequestDto request);
         Task<FezResponse<CheckOrderStatusResponseDto>> GetOrderStatusAsync(CheckOrderStatusRequestDto request);
         Task<FezResponse<IEnumerable<CheckOrderStatusResponseDto>>> GetAllOrdersAsync();

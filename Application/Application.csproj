@@ -10,6 +10,7 @@
     <Folder Include="Queries\DeliveryAgents\ViewMyDeliveries\" />
     <Folder Include="Commands\DeliveryAgents\UpdateContact\" />
     <Folder Include="Commands\Suppliers\UpdateDetails\" />
+    <Folder Include="Queries\Products\NewFolder\" />
   </ItemGroup>
 
   <ItemGroup>

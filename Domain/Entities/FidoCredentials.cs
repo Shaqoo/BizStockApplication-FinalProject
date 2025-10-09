@@ -35,7 +35,7 @@ namespace Domain.Entities
             PublicKey = !string.IsNullOrWhiteSpace(publicKey) ? publicKey : throw new DomainException("Public key cannot be empty.");
             AuthenticatorAAGUID = authenticatorAAGUID;
             SignatureCounter = signatureCounter;
-            CreatedAt = DateTimeOffset.Now;
+            CreatedAt = DateTimeOffset.UtcNow;
         }
 
         public void UpdateSignatureCounter(uint newCounter)

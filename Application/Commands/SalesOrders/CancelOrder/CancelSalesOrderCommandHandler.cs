@@ -1,8 +1,10 @@
 ﻿using Application.Commands.Refunds.ProcessRefund;
+using Application.Commands.StockMovements.RestoreStock;
 using Application.Dto;
 using Application.Interfaces.Repository;
 using Application.Interfaces.Service;
 using Application.Interfaces.UnitOfWork;
+using Domain.DomainEvents;
 using Domain.Enums;
 using MediatR;
 using Microsoft.Extensions.Logging;
@@ -57,11 +59,11 @@ namespace Application.Commands.SalesOrders.CancelOrder
 
             order.MarkAsCancelled();
 
-            await unitOfWork.CommitTransactionAsync();
+            await unitOfWork.SaveChangesAsync(cancellationToken);
 
             foreach (var item in order.Items)
             {
-                await fezService.CancelOrderAsync(item.UniqueId!);
+                await fezService.CancelOrderAsync(item.FezOrderNo!);
             }
             logger.LogInformation("Order {SalesOrderId} marked as cancelled", request.SalesOrderId);
 
@@ -70,6 +72,12 @@ namespace Application.Commands.SalesOrders.CancelOrder
             {
                 logger.LogInformation("Order {SalesOrderId} has been cancelled successfully", request.SalesOrderId);
                 logger.LogInformation("Refund of {Amount:N2} processed successfully for Order {SalesOrderId}", payment.Amount, request.SalesOrderId);
+                var result = await mediator.Send(new RestoreStockCommand(order.Id,order.Items.Select(a => new StockItemDto
+                (a.ProductId,a.ProductName,a.Quantity)).ToList()));
+                if (result.IsSuccess)
+                {
+                    Console.WriteLine(result);
+                }
                 return Result<string>.Success("Order cancelled and refund processed successfully");
             }
             else

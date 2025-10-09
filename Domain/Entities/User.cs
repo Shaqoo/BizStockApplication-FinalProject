@@ -30,6 +30,8 @@ namespace Domain.Entities
         private readonly HashSet<FidoCredential> _fidoCredentials = new();
         public IReadOnlyCollection<FidoCredential> FidoCredentials => _fidoCredentials;
 
+        public bool IsFidoRegistered { get; private set; } = false;
+
         private readonly HashSet<UserRole> _userRoles = new();
         public IReadOnlyCollection<UserRole> UserRoles => _userRoles;
         public DateTime LastLoggedIn { get; private set; } = DateTime.UtcNow;
@@ -91,6 +93,7 @@ namespace Domain.Entities
                 throw new DomainException(nameof(credential));
 
             _fidoCredentials.Add(credential);
+            IsFidoRegistered = true;
             Modified();
         }
 

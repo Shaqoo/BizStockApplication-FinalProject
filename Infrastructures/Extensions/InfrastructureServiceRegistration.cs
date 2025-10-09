@@ -95,6 +95,7 @@ namespace Infrastructures.Extensions
                 x.AddConsumer<StockAdjustedConsumer>();
                 x.AddConsumer<MfaResetEventConsumer>();
                 x.AddConsumer<OrderCreatedEventConsumer>();
+                x.AddConsumer<OrderStatusChangedConsumer>();
 
                 x.UsingRabbitMq((context, cfg) =>
                 {
@@ -170,6 +171,16 @@ namespace Infrastructures.Extensions
                     cfg.ReceiveEndpoint("order-created-queue", e =>
                     {
                         e.ConfigureConsumer<OrderCreatedEventConsumer>(context);
+                        e.UseMessageRetry(r =>
+                        {
+                            r.Interval(3, TimeSpan.FromSeconds(10));
+                        });
+
+                    });
+
+                    cfg.ReceiveEndpoint("order-status-changed-queue", e =>
+                    {
+                        e.ConfigureConsumer<OrderStatusChangedConsumer>(context);
                         e.UseMessageRetry(r =>
                         {
                             r.Interval(3, TimeSpan.FromSeconds(10));

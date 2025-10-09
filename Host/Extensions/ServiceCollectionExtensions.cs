@@ -21,6 +21,7 @@ namespace Host.Extensions
             services.AddScoped<SanitizeInputFilter>();
             services.AddHttpClient<IAiService, AiService>();
             services.AddHostedService<DeliveryStatusUpdaterService>();
+            services.AddHostedService<FezOrderSyncService>();
 
             services.AddResponseCompression(options =>
             {

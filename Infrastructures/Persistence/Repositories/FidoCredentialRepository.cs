@@ -3,12 +3,7 @@ using Application.Pagination;
 using Domain.Entities;
 using Infrastructures.Persistence.Context;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Linq.Expressions;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Infrastructures.Persistence.Repositories
 {
@@ -58,11 +53,10 @@ namespace Infrastructures.Persistence.Repositories
                 .ToListAsync();
         }
 
-        public async Task<FidoCredential> GetByCredentialIdAsync(string credentialId)
+        public async Task<FidoCredential?> GetByCredentialIdAsync(string credentialId)
         {
             return await _context.FidoCredentials.Include(a => a.User)
-                .FirstOrDefaultAsync(f => f.CredentialId == credentialId)
-                ?? throw new KeyNotFoundException("FIDO credential not found for the credential ID.");
+                .FirstOrDefaultAsync(f => f.CredentialId == credentialId);
         }
 
 
@@ -87,7 +81,7 @@ namespace Infrastructures.Persistence.Repositories
             await Task.CompletedTask;
         }
 
-        public async Task<FidoCredential> GetByExpression(Expression<Func<FidoCredential, bool>> predicate)
+        public async Task<FidoCredential?> GetByExpression(Expression<Func<FidoCredential, bool>> predicate)
         {
             return await _context.FidoCredentials.FirstOrDefaultAsync(predicate) ??
 

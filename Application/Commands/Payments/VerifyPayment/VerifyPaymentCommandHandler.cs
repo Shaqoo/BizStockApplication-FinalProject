@@ -66,7 +66,7 @@ namespace Application.Commands.Payments.VerifyPayment
                     logger.LogInformation("Payment {Reference} already verified", request.Reference);
                     return Result<PaystackVerifyResponse>.Failure("Payment Already Verified");
                 }
-                var deliveryInfo = _httpContextAccessor.HttpContext?.Session.GetDeliveryInfo();
+                var deliveryInfo = _httpContextAccessor.HttpContext?.GetDeliveryInfo();
                 if (payment.Purpose == PaymentPurpose.OrderPayment && deliveryInfo == null)
                 {
                     logger.LogWarning("Delivery information is missing in session for Customer {CustomerId}", payment.PayerId);
@@ -113,6 +113,7 @@ namespace Application.Commands.Payments.VerifyPayment
                     {
                         var dto = new CreateSalesOrderRequestModel(deliveryInfo!.AddressId!.Value, deliveryInfo.ETA ?? DateTime.Now, deliveryInfo.Cost!.Value, payment.PaymentReference);
                         var result = await mediator.Send(new CreateSalesOrderCommand(dto, request.RequestMetadata));
+                        return Result<PaystackVerifyResponse>.Success(verifyResponse,result.Data.ToString());
                     }
                    
                     return Result<PaystackVerifyResponse>.Success(verifyResponse);

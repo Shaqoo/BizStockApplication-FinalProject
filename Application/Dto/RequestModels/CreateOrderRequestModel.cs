@@ -5,18 +5,67 @@ namespace Application.Dto.RequestModels
 {
     public class CreateFezOrderRequestItem
     {
+        [JsonPropertyName("recipientAddress")]
         public string RecipientAddress { get; set; } = string.Empty;
+
+        [JsonPropertyName("recipientState")]
         public string RecipientState { get; set; } = string.Empty;
+
+        [JsonPropertyName("recipientName")]
         public string RecipientName { get; set; } = string.Empty;
+
+        [JsonPropertyName("recipientPhone")]
         public string RecipientPhone { get; set; } = string.Empty;
+
+        [JsonPropertyName("recipientEmail")]
         public string? RecipientEmail { get; set; }
-        public string? PickUpState { get; set; } = string.Empty;
+
+        [JsonPropertyName("uniqueID")]
         public string UniqueID { get; set; } = string.Empty;
+
+        [JsonPropertyName("BatchID")]
         public string BatchID { get; set; } = string.Empty;
-        public decimal ValueOfItem { get; set; }
-        public decimal Weight { get; set; }
+
+        [JsonPropertyName("CustToken")]
+        public string? CustToken { get; set; }
+
+        [JsonPropertyName("itemDescription")]
         public string? ItemDescription { get; set; }
+
+        [JsonPropertyName("additionalDetails")]
+        public string? AdditionalDetails { get; set; }
+
+        [JsonPropertyName("valueOfItem")]
+        public decimal ValueOfItem { get; set; }
+
+        [JsonPropertyName("weight")]
+        public decimal Weight { get; set; } = 1;
+
+        [JsonPropertyName("pickUpState")]
+        public string? PickUpState { get; set; }
+
+        [JsonPropertyName("pickUpAddress")]
+        public string? PickUpAddress { get; set; }
+
+        [JsonPropertyName("waybillNumber")]
+        public string? WaybillNumber { get; set; }
+
+        [JsonPropertyName("pickUpDate")]
+        public DateTime? PickUpDate { get; set; }
+
+        [JsonPropertyName("isItemCod")]
+        public bool? IsItemCod { get; set; } = false;
+
+        [JsonPropertyName("cashOnDeliveryAmount")]
+        public decimal? CashOnDeliveryAmount { get; set; }
+
+        [JsonPropertyName("fragile")]
+        public bool? Fragile { get; set; } = false;
+
+        [JsonPropertyName("lockerID")]
+        public string? LockerID { get; set; }
     }
+
 
     public class CreateFezOrderResponseDto
     {
@@ -139,4 +188,47 @@ namespace Application.Dto.RequestModels
             JsonSerializer.Serialize(writer, value, options);
         }
     }
+
+    public class FezOrderSummaryDto
+    {
+        [JsonPropertyName("orderNo")]
+        public string OrderNo { get; set; } = string.Empty;
+
+        [JsonPropertyName("recipientName")]
+        public string RecipientName { get; set; } = string.Empty;
+
+        [JsonPropertyName("recipientAddress")]
+        public string RecipientAddress { get; set; } = string.Empty;
+
+        [JsonPropertyName("recipientPhone")]
+        public string RecipientPhone { get; set; } = string.Empty;
+
+        [JsonPropertyName("orderStatus")]
+        public string OrderStatus { get; set; } = string.Empty;
+
+        [JsonPropertyName("cost")]
+        public string? Cost { get; set; }
+
+        [JsonPropertyName("orderDate")]
+        public string? OrderDate { get; set; }
+    }
+
+    public class FezOrderListResponse
+    {
+        [JsonPropertyName("status")]
+        public string Status { get; set; } = string.Empty;
+
+        [JsonPropertyName("description")]
+        public string Description { get; set; } = string.Empty;
+
+        [JsonPropertyName("orders")]
+        public FezOrderData Orders { get; set; } = new();
+    }
+
+    public class FezOrderData
+    {
+        [JsonPropertyName("data")]
+        public List<FezOrderSummaryDto> Data { get; set; } = new();
+    }
+
 }

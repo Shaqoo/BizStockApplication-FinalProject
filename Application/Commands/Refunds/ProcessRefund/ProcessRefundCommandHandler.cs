@@ -88,13 +88,16 @@ namespace Application.Commands.Refunds.ProcessRefund
                         }
                         wallet.Credit(request.Amount);
                         _logger.LogInformation("Crediting wallet {WalletId} with amount {Amount}", wallet.Id, request.Amount);
-
-                        var payment = await _paymentRepository.GetByReferenceAsync(request.ReferenceNo);
-                        if (payment == null)
-                        {
-                            _logger.LogWarning("Payment not found for reference {ReferenceNo}", request.ReferenceNo);
-                            return Result<Guid>.Failure("Payment not found");
-                        }
+                        var reference = $"PAY-{Guid.NewGuid():N}";
+                        var payment = new Payment(
+                            reference,
+                            order.CustomerId,
+                            request.Amount,
+                            PaymentMethod.Wallet,
+                            PaymentPurpose.WalletFunding,
+                            null, null,
+                            $"Payment for {PaymentPurpose.WalletFunding}"
+                        );
 
                         var walletTransaction = new WalletTransaction(
                             wallet.Id,
@@ -105,6 +108,8 @@ namespace Application.Commands.Refunds.ProcessRefund
                             refund.Reason
                         );
                         _logger.LogInformation("Creating wallet transaction for refund: {WalletTransaction}", walletTransaction);
+                        payment.MarkAsCompleted();
+                        await _paymentRepository.AddAsync(payment);
                         await _walletTransactionRepository.AddAsync(walletTransaction);
                         refund.MarkCompleted("WalletRefund_" + Guid.NewGuid());
                         break;
@@ -119,7 +124,7 @@ namespace Application.Commands.Refunds.ProcessRefund
                 order.Invoice.MarkAsCancelled();
 
                // await _refundRepository.UpdateAsync(refund);
-                await _unitOfWork.CommitTransactionAsync();
+                await _unitOfWork.SaveChangesAsync(cancellationToken);
 
                _logger.LogInformation("Refund processed successfully for Order {OrderId}", order.Id);
 
@@ -150,7 +155,7 @@ namespace Application.Commands.Refunds.ProcessRefund
             catch (Exception ex)
             {
                 refund.MarkFailed(ex.Message);
-                await _unitOfWork.CommitTransactionAsync();
+                await _unitOfWork.SaveChangesAsync(cancellationToken);
 
                 await _auditLogRepository.AddAsync(new AuditLog(
                     userId: order.CustomerId,

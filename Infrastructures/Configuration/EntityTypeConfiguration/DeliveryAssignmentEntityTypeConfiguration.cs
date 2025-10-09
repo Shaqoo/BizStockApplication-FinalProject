@@ -20,8 +20,7 @@ namespace Infrastructures.Configuration.EntityTypeConfiguration
             builder.Property(d => d.SalesOrderId)
                    .IsRequired();
 
-            builder.Property(d => d.DeliveryAgentId)
-                   .IsRequired();
+            builder.Property(d => d.DeliveryAgentId);
 
             builder.Property(d => d.DeliveredAt);
 

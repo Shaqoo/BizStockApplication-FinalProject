@@ -53,6 +53,7 @@ namespace Domain.Entities
             UnitOfMeasure unitOfMeasure,
             Guid brandId,
             string qrCodeValue,
+            double weight,
             string? description = null
         )
         {
@@ -72,6 +73,7 @@ namespace Domain.Entities
             UnitOfMeasure = unitOfMeasure;
             Description = description;
             QrCodeValue = qrCodeValue;
+            Weight = weight;
             BrandId = brandId;
         }
 

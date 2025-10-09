@@ -3,9 +3,11 @@ using Application.Pagination;
 using Application.Queries.Invoices.GetInvoiceById;
 using Application.Queries.Invoices.GetInvoices;
 using Application.Queries.Invoices.GetInvoicesByCustomer;
+using Application.Queries.Invoices.GetInvoicesByOrder;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Reflection.Metadata;
 
 namespace Host.Controllers.V1
 {
@@ -108,6 +110,48 @@ namespace Host.Controllers.V1
         public async Task<IActionResult> GetByCustomerId(Guid customerId, [FromQuery] PageRequest pageRequest)
         {
             var result = await _mediator.Send(new GetInvoicesByCustomerQuery(pageRequest, customerId));
+            return result.IsSuccess ? Ok(result) : NotFound(result);
+        }
+
+        /// <summary>
+        /// Get paginated invoices for a specific order.
+        /// </summary>
+        /// <param name="orderId">The unique identifier of the Order.</param>
+        /// <remarks>
+        /// Sample request:
+        ///
+        ///     GET /api/invoice/customer/11111111-2222-3333-4444-555555555555?pageNumber=1&amp;pageSize=10
+        ///
+        /// Sample response (200 OK):
+        /// ```json
+        /// {
+        ///   "isSuccess": true,
+        ///   "data": {
+        ///     "items": [
+        ///       {
+        ///         "id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+        ///         "invoiceNumber": "INV-2025-0002",
+        ///         "status": "Paid",
+        ///         "totalAmount": 5000,
+        ///         "dueDate": "2025-09-28T00:00:00Z"
+        ///       }
+        ///     ],
+        ///     "pageNumber": 1,
+        ///     "pageSize": 10,
+        ///     "totalCount": 1,
+        ///     "totalPages": 1
+        ///   }
+        /// }
+        /// ```
+        /// </remarks>
+
+        [HttpGet("order/{orderId:guid}")]
+        [Produces("application/json")]
+        [ProducesResponseType(typeof(Result<IEnumerable<InvoiceDto>>), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<IActionResult> GetByOrderId(Guid orderId)
+        {
+            var result = await _mediator.Send(new GetInvoicesByOrderIdQuery(orderId));
             return result.IsSuccess ? Ok(result) : NotFound(result);
         }
 

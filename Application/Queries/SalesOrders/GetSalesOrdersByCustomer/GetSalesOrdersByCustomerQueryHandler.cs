@@ -2,6 +2,7 @@
 using Application.Interfaces.Repository;
 using Application.Interfaces.Service;
 using Application.Pagination;
+using Domain.Entities;
 using MediatR;
 
 namespace Application.Queries.SalesOrders.GetSalesOrdersByUser
@@ -42,6 +43,8 @@ namespace Application.Queries.SalesOrders.GetSalesOrdersByUser
                     Note = so.Note,
                     DeliveryAssignmentId = so.DeliveryAssignmentId,
                     OverallDeliveryStatus = so.OverallDeliveryStatus,
+                    DeliveredAt = so.DeliveryAssignment.DeliveredAt,
+                    DeliveryFee = so.DeliveryAssignment.DeliveryFee,
                     Total = so.Total,
                     ExpectedDeliveryDate = so.ExpectedDeliveryDate,
                     DateCreated = so.DateCreated,
@@ -53,6 +56,7 @@ namespace Application.Queries.SalesOrders.GetSalesOrdersByUser
                         Quantity = item.Quantity,
                         UnitPrice = item.UnitPrice,
                         DeliveryStatus = item.DeliveryStatus,
+                        ProductImg = item.Product.ImageUrl,
                         FezOrderNo = item.FezOrderNo,
                         ProductName = item.ProductName,
                         SalesOrderId = item.SalesOrderId,

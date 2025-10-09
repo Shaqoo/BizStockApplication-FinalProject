@@ -11,9 +11,11 @@ namespace Application.Dto
         public Guid InvoiceId { get; set; }
         public string InvoiceNumber { get; set; } = default!;
         public DateTime? ExpectedDeliveryDate { get; set; }
+        public DateTime? DeliveredAt { get; set; }
         public OrderStatus Status { get; set; } = default!;    
         public decimal SubTotal { get; set; }
         public decimal Discount { get; set; }
+        public decimal DeliveryFee { get; set; }
         public decimal Tax { get; set; }
         public decimal Total { get; set; }
         public DeliveryStatus OverallDeliveryStatus { get; set; } = default!;
@@ -29,6 +31,7 @@ namespace Application.Dto
         public Guid SalesOrderId { get; set; }
         public Guid ProductId { get; set; }
         public string ProductName { get; set; } = default!;
+        public string ProductImg { get; set; } = default!;
         public int Quantity { get; set; }
         public decimal UnitPrice { get; set; }
         public decimal TotalPrice { get; set; }

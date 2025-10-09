@@ -1,10 +1,12 @@
-﻿using Application.Dto;
+﻿using Application.Commands.SalesOrders.CancelOrder;
+using Application.Dto;
 using Application.Dto.RequestModels;
 using Application.Pagination;
 using Application.Queries.SalesOrders.GetOrderCostAndETA;
 using Application.Queries.SalesOrders.GetSalesOrderById;
 using Application.Queries.SalesOrders.GetSalesOrdersByCustomerId;
 using Application.Queries.SalesOrders.GetSalesOrdersByUser;
+using Application.Queries.SalesOrders.SearchOrders;
 using Application.Queries.SalesOrders.TrackItem;
 using Host.Extensions;
 using MediatR;
@@ -197,5 +199,60 @@ namespace Host.Controllers.V1
             var result = await _mediator.Send(new GetSalesOrderByCustomerIdQuery(customerId, pageRequest));
             return result.IsSuccess ? Ok(result) : NotFound(result);
         }
+
+        /// <summary>
+        /// Cancels a specific sales order.
+        /// </summary>
+        /// <param name="salesOrderId">The unique identifier of the sales order to cancel.</param>
+        /// <returns>Returns a success message if the order was canceled successfully.</returns>
+        /// <remarks>
+        /// Sample request:
+        /// 
+        ///     POST /api/v1/SalesOrders/{salesOrderId}/cancel
+        /// 
+        /// </remarks>
+        [HttpPost("{salesOrderId:guid}/cancel")]
+        [ProducesResponseType(typeof(Result<string>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(Result<string>), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(Result<string>), StatusCodes.Status404NotFound)]
+        [ProducesResponseType(typeof(Result<string>), StatusCodes.Status500InternalServerError)]
+        public async Task<IActionResult> CancelSalesOrder(Guid salesOrderId)
+        {
+            var command = new CancelSalesOrderCommand(salesOrderId, Request.GetRequestMetadata());
+            var result = await _mediator.Send(command);
+
+            if (!result.IsSuccess)
+                return BadRequest(result);
+
+            return Ok(result);
+        }
+
+        /// <summary>
+        /// Searches sales orders by order number, customer email, or phone number.
+        /// </summary>
+        /// <param name="query">Search text (order number, email, or phone)</param>
+        /// <param name="page">Page number (default: 1)</param>
+        /// <param name="pageSize">Number of items per page (default: 10)</param>
+        /// <returns>
+        /// Paginated list of matching sales orders, including customer info and order items.
+        /// </returns>
+        [HttpGet("search")]
+        [ProducesResponseType(typeof(Result<PaginatedList<SalesOrderDto>>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(Result<Unit>), StatusCodes.Status400BadRequest)]
+        public async Task<IActionResult> SearchOrders(
+            [FromQuery] string query,
+            [FromQuery] int page = 1,
+            [FromQuery] int pageSize = 10)
+        {
+            var pageRequest = new PageRequest { Page = page, PageSize = pageSize };
+
+            var result = await _mediator.Send(new SearchOrdersQuery(query, pageRequest));
+
+            if (!result.IsSuccess)
+                return BadRequest(result);
+
+            return Ok(result);
+        }
+
     }
 }

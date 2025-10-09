@@ -2,6 +2,7 @@
 using Application.Extensions;
 using Application.Interfaces.Repository;
 using Application.Pagination;
+using Application.Queries.Payments.GetPaymentStats;
 using Domain.Entities;
 using Domain.Enums;
 using Infrastructures.Persistence.Context;
@@ -67,6 +68,8 @@ namespace Infrastructures.Persistence.Repositories
         public async Task<IEnumerable<Payment>> GetByInvoiceIdAsync(Guid invoiceId)
         {
             return await _context.Payments
+                .Include(p => p.Invoice)
+                .Include(a => a.Payer)
                 .Where(p => p.InvoiceId == invoiceId)
                 .ToListAsync();
         }
@@ -136,6 +139,7 @@ namespace Infrastructures.Persistence.Repositories
             var query = _context.Payments
                 .Include(p => p.Invoice)
                 .Include(p => p.Payer)
+                .Where(a => a.PayerId == customerId)
                 .OrderByDescending(p => p.DateCreated);
 
             var total = await query.CountAsync();
@@ -147,6 +151,22 @@ namespace Infrastructures.Persistence.Repositories
                 .ToListAsync();
 
             return new PaginatedList<PaymentDto>(items, total, pageRequest.Page, pageRequest.PageSize);
+        }
+
+        public async Task<PaymentStatsDto> GetPaymentStatsAsync()
+        {
+            var totalPaymentCount = await _context.Payments.CountAsync();
+            var successfulPaymentCount = await _context.Payments.CountAsync(p => p.Status == PaymentStatus.Completed);
+            var failedPaymentCount = await _context.Payments.CountAsync(p => p.Status == PaymentStatus.Failed);
+            var pendingPaymentCount = await _context.Payments.CountAsync(p => p.Status == PaymentStatus.Pending);
+            var stats = new PaymentStatsDto
+            {
+                TotalPaymentCount = totalPaymentCount,
+                SuccessfulPaymentCount = successfulPaymentCount,
+                FailedPaymentCount = failedPaymentCount,
+                PendingPaymentCount = pendingPaymentCount
+            };
+            return stats;
         }
     }
 

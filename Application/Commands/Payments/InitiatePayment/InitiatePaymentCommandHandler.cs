@@ -92,7 +92,7 @@ namespace Application.Commands.Payments.InitiatePayment
             {
                 try
                 {
-                    var deliveryInfo = _httpContextAccessor.HttpContext?.Session.GetDeliveryInfo();
+                    var deliveryInfo = _httpContextAccessor.HttpContext?.GetDeliveryInfo();
                     if (deliveryInfo == null)
                     {
                         _logger.LogWarning("Delivery information is missing in session for Customer {CustomerId}", request.CustomerId);
@@ -119,7 +119,8 @@ namespace Application.Commands.Payments.InitiatePayment
                         return Result<string>.Failure("Insufficient wallet balance");
                     }
 
-                    
+                    await _unitOfWork.BeginTransactionAsync();
+
                     var payment = new Payment(
                         reference,
                         customer.Id,
@@ -131,7 +132,7 @@ namespace Application.Commands.Payments.InitiatePayment
                     );
  
                     var walletTransaction = new WalletTransaction(
-                        customer.Id,
+                        wallet.Id,
                         request.Amount,
                         TransactionType.Debit,
                         reference,
@@ -142,17 +143,24 @@ namespace Application.Commands.Payments.InitiatePayment
                  
                     wallet.Debit(request.Amount);
 
-
-                   
-                    await _paymentRepository.AddAsync(payment);
-                    await _walletTransactionRepository.AddAsync(walletTransaction);
-                    await _unitOfWork.SaveChangesAsync(cancellationToken);
-
-                   
                     payment.MarkAsCompleted();
-                    await _unitOfWork.SaveChangesAsync(cancellationToken);
 
-                 
+                    await _paymentRepository.AddAsync(payment);
+
+                    await _walletTransactionRepository.AddAsync(walletTransaction);
+
+                    await _unitOfWork.CommitTransactionAsync();
+
+                    var dto = new CreateSalesOrderRequestModel(deliveryInfo.AddressId!.Value, deliveryInfo.ETA ?? DateTime.Now, deliveryInfo.Cost!.Value, payment.PaymentReference);
+                    var result = await _mediator.Send(new CreateSalesOrderCommand(dto, command.RequestMetadata));
+                    if(!result.IsSuccess)
+                    {
+                        await _unitOfWork.RollbackTransactionAsync();
+                        _logger.LogError("Unexpected error processing wallet payment for Customer {CustomerId}", request.CustomerId);
+                        return Result<string>.Failure(result.Message!);
+                    }
+
+
                     await _auditLogRepository.AddAsync(new AuditLog(
                         userId: user.Id,
                         action: "Payment Completed",
@@ -163,12 +171,14 @@ namespace Application.Commands.Payments.InitiatePayment
                         userAgent: command.RequestMetadata.UserAgent
                     ));
 
-                    var dto = new CreateSalesOrderRequestModel(deliveryInfo.AddressId.Value,deliveryInfo.ETA ?? DateTime.Now,deliveryInfo.Cost.Value,payment.PaymentReference);
-                    var result = await _mediator.Send(new CreateSalesOrderCommand(dto,command.RequestMetadata));
+                  
+
+
                     return Result<string>.Success(result.Data.ToString(),"Wallet payment completed successfully");
                 }
                 catch (Exception ex)
                 {
+                    await _unitOfWork.RollbackTransactionAsync();
                     _logger.LogError(ex, "Unexpected error processing wallet payment for Customer {CustomerId}", request.CustomerId);
                     return Result<string>.Failure("An unexpected error occurred while processing wallet payment. Please try again.");
                 }

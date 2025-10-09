@@ -84,7 +84,7 @@ namespace Application.Queries.SalesOrders.GetOrderCostAndETA
                     return Result<GetOrderCostAndETAResponseDto>.Failure(msg);
                 }
 
-                httpContextAccessor.HttpContext?.Session.SetDeliveryInfo(deliveryAddress.Id,itemsCost.Data.Cost.First().Cost,deliveryEstimate.Data.ETA);
+                httpContextAccessor.HttpContext?.SetDeliveryInfo(deliveryAddress.Id,itemsCost.Data.Cost.First().Cost,deliveryEstimate.Data.ETA);
 
                 var response = new GetOrderCostAndETAResponseDto(itemsCost.Data, deliveryEstimate.Data);
 

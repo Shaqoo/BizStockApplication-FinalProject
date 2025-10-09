@@ -83,6 +83,7 @@ namespace Application.Commands.Products.Create
                 unitOfMeasure: request.RequestModel.UnitOfMeasure,
                 description: request.RequestModel.Description,
                 categoryId: request.RequestModel.CategoryId,
+                weight: request.RequestModel.Weight,
                 brandId: request.RequestModel.BrandId
             );
 

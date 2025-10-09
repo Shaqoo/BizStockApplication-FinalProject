@@ -31,7 +31,8 @@ namespace Infrastructures.Persistence.Repositories
 
         public async Task<User?> GetByIdAsync(Guid id)
         {
-            return await _context.Users.Include(a => a.UserRoles).Include(a => a.RecoveryCodes).FirstOrDefaultAsync(a => a.Id == id);
+            return await _context.Users.Include(a => a.UserRoles).Include(a => a.RecoveryCodes)
+                .Include(A => A.FidoCredentials).FirstOrDefaultAsync(a => a.Id == id);
         }
 
         public async Task<bool> CheckIfExists(Expression<Func<User,bool>> expression)

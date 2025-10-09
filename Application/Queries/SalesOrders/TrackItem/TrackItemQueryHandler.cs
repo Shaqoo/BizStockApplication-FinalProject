@@ -1,4 +1,5 @@
-﻿using Application.Dto;
+﻿using Application.Configurations;
+using Application.Dto;
 using Application.Dto.RequestModels;
 using Application.Interfaces.Service;
 using MediatR;
@@ -19,6 +20,7 @@ namespace Application.Queries.SalesOrders.TrackItem
                 {
                     return Result<TrackOrderResponseDto>.Failure(trackResult.Message);
                 }
+                FezHelper.UpdateOrderHistory(trackResult.Data);
                 return Result<TrackOrderResponseDto>.Success(trackResult.Data);
             }, TimeSpan.FromMinutes(10));
 

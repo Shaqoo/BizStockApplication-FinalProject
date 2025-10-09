@@ -127,7 +127,7 @@ namespace Host.Controllers.V1
         public async Task<IActionResult> GetByCustomer(Guid customerId)
         {
             var result = await mediator.Send(new GetDeliveryAddressesByCustomerQuery(customerId));
-            if (!result.IsSuccess || result.Data!.Any()) return NotFound(result);
+            if (!result.IsSuccess || !result.Data!.Any()) return NotFound(result);
             return Ok(result);
         }
 

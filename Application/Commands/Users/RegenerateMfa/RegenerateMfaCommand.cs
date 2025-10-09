@@ -4,6 +4,6 @@ using MediatR;
 
 namespace Application.Commands.Users.RegenerateMfa
 {
-    public record RegenerateMfaCommand(RequestMetadata RequestMetadata) : IRequest<Result<TwoFactorSetupDto>>;
+    public record RegenerateMfaCommand(string code,RequestMetadata RequestMetadata) : IRequest<Result<TwoFactorSetupDto>>;
 
 }

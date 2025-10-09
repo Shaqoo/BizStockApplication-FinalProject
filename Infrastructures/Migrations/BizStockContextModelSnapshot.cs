@@ -465,7 +465,6 @@ namespace Infrastructures.Migrations
                         .HasColumnType("uuid");
 
                     b.Property<Guid?>("DeliveryAgentId")
-                        .IsRequired()
                         .HasColumnType("uuid");
 
                     b.Property<decimal>("DeliveryFee")
@@ -6565,6 +6564,9 @@ namespace Infrastructures.Migrations
                     b.Property<bool>("IsEmailVerified")
                         .HasColumnType("boolean");
 
+                    b.Property<bool>("IsFidoRegistered")
+                        .HasColumnType("boolean");
+
                     b.Property<bool>("IsPhoneNumberVerified")
                         .HasColumnType("boolean");
 
@@ -6615,6 +6617,13 @@ namespace Infrastructures.Migrations
                         .HasColumnType("uuid");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("Email")
+                        .IsUnique();
+
+                    b.HasIndex("SearchVector");
+
+                    NpgsqlIndexBuilderExtensions.HasMethod(b.HasIndex("SearchVector"), "GIN");
 
                     b.HasIndex("WalletId");
 
@@ -6985,8 +6994,7 @@ namespace Infrastructures.Migrations
                     b.HasOne("Domain.Entities.DeliveryAgent", "DeliveryAgent")
                         .WithMany("Assignments")
                         .HasForeignKey("DeliveryAgentId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.Restrict);
 
                     b.HasOne("Domain.Entities.SalesOrder", "SalesOrder")
                         .WithOne("DeliveryAssignment")

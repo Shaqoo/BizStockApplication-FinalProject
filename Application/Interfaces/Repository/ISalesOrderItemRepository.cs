@@ -14,6 +14,7 @@ namespace Application.Interfaces.Repository
         Task<PaginatedList<SalesOrderItem>> GetByDateRangeAsync(DateTime start, DateTime end,PageRequest pageRequest);
         Task<List<TopSellingProductDto>> GetTopSellingProductsAsync(int topN);
         Task<IEnumerable<SalesOrderItem>> GetPendingOrInTransitAsync();
+        Task UpdateAsync(SalesOrderItem salesOrderItem);
     }
 
 

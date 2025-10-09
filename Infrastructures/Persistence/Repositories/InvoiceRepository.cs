@@ -146,6 +146,16 @@ namespace Infrastructures.Persistence.Repositories
                 .Include(i => i.Payments)
                 .FirstOrDefaultAsync(predicate);
         }
+
+        public async Task<IEnumerable<Invoice>> GetInvoicesByOrderIdAsync(Guid orderId)
+        {
+            return await _context.Invoices
+                .Include(a => a.Customer)
+                .Include(a => a.Items)
+                .Include(a => a.SalesOrder)
+                .Where(i => i.SalesOrderId == orderId)
+                .ToListAsync();
+        }
     }
 
 }

@@ -9,6 +9,7 @@ using Application.Commands.Users.RefreshToken;
 using Application.Commands.Users.RegenerateMfa;
 using Application.Commands.Users.RequestChangePassword;
 using Application.Commands.Users.RequestPasswordChange;
+using Application.Commands.Users.RequestRegenerateMfa;
 using Application.Commands.Users.ResetPassword;
 using Application.Commands.Users.SendEmailVerificationToken;
 using Application.Commands.Users.UpdateLostAccessRequest;
@@ -51,11 +52,13 @@ namespace Host.Controllers.V1
     {
         private readonly IMediator _mediator;
         private readonly IFidoCredentialService _fidoService;
+        private readonly ILogger<UsersController> _logger;
 
-        public UsersController(IMediator mediator, IFidoCredentialService fidoCredentialService)
+        public UsersController(IMediator mediator, IFidoCredentialService fidoCredentialService, ILogger<UsersController> logger)
         {
             _mediator = mediator;
             _fidoService = fidoCredentialService;
+            _logger = logger;
         }
 
         /// <summary>Get user by ID</summary>
@@ -546,14 +549,14 @@ namespace Host.Controllers.V1
         /// <response code="403">If the user is not authorized to perform this action.</response>
         /// <response code="500">If an unexpected error occurs.</response>
         [Authorize]
-        [HttpPost("regenerate")]
+        [HttpPost("regenerate/{code}")]
         [ProducesResponseType(typeof(Result<TwoFactorSetupDto>), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> RegenerateMfa()
+        public async Task<IActionResult> RegenerateMfa(string code)
         {
-            var command = new RegenerateMfaCommand(Request.GetRequestMetadata());
+            var command = new RegenerateMfaCommand(code,Request.GetRequestMetadata());
             var result = await _mediator.Send(command);
             return Ok(result);
         }
@@ -630,6 +633,7 @@ namespace Host.Controllers.V1
         /// <param name="pageSize">Number of items per page.</param>
         /// <param name="cancellationToken"></param>
         /// <returns>Paginated list of lost access requests</returns>
+        [Authorize]
         [HttpGet("pending-request")]
         [ProducesResponseType(typeof(Result<PaginatedList<LostAccessRequestDto>>), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -719,5 +723,26 @@ namespace Host.Controllers.V1
             return result.IsSuccess ? Ok(result) : BadRequest(result);
         }
 
+        /// <summary>
+        /// Request MFA regeneration. A verification code will be sent to the user's email.
+        /// </summary>
+        /// <returns>Success message indicating email has been sent</returns>
+        [Authorize]
+        [HttpPost("request-regenerate")]
+        [ProducesResponseType(typeof(Result<string>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(Result<string>), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        public async Task<IActionResult> RequestRegenerate()
+        {
+            var result = await _mediator.Send(new RequestMfaRenerateCommand());
+
+            if (!result.IsSuccess)
+            {
+                _logger.LogWarning("MFA regeneration request failed: {Message}", result.Message);
+                return BadRequest(result);
+            }
+
+            return Ok(result);
+        }
     }
 }

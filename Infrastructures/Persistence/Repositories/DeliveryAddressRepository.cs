@@ -15,6 +15,7 @@ namespace Infrastructures.Persistence.Repositories
             await _context.DeliveryAddresses
                 .Include(a => a.State)
                 .Include(a => a.Lga)
+                .Include(a => a.Customer)
                 .FirstOrDefaultAsync(a => a.Id == id);
 
         public async Task<IEnumerable<DeliveryAddress>> GetByCustomerIdAsync(Guid customerId) =>

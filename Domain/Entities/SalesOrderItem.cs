@@ -32,11 +32,14 @@ namespace Domain.Entities
             SalesOrderId = salesOrderId;
         }
 
-        public void SetTracking(string uniqueId, string fezOrderNo)
+        public void SetTracking(string uniqueId)
         {
             UniqueId = uniqueId;
+        }
+
+        public void UpdateFezOrderNo(string fezOrderNo)
+        {
             FezOrderNo = fezOrderNo;
-            DeliveryStatus = DeliveryStatus.Processing;
         }
 
         public void UpdateDeliveryStatus(DeliveryStatus status)

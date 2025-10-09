@@ -32,7 +32,7 @@ namespace Infrastructures.Service.Messaging
                 sb.AppendLine("<h3>Order Summary</h3>");
                 sb.AppendLine("<table style='width:100%; border-collapse:collapse;'>");
                 sb.AppendLine("<thead>");
-                sb.AppendLine("<tr style='background-color:#f2f2f2;'>");
+                sb.AppendLine("<tr style='background-color:#3B82F6;'>");
                 sb.AppendLine("<th style='padding:8px; border:1px solid #ddd;'>Product</th>");
                 sb.AppendLine("<th style='padding:8px; border:1px solid #ddd;'>SKU</th>");
                 sb.AppendLine("<th style='padding:8px; border:1px solid #ddd;'>Quantity</th>");
@@ -45,7 +45,7 @@ namespace Infrastructures.Service.Messaging
                 foreach (var product in order.Products)
                 {
                     sb.AppendLine("<tr>");
-                    sb.AppendLine($"<td style='padding:8px; border:1px solid #ddd;'><img src='{product.ImageUrl}' alt='{product.Name}' width='50' style='margin-right:10px;' /> {product.Name}</td>");
+                    sb.AppendLine($"<td style='padding:8px; border:1px solid #ddd;'><img src='{product.ImageUrl}' alt='{product.Name}' width='50' style='width:50px; max-width:50px; height:auto; display:block; margin-right:10px;' /> {product.Name}</td>");
                     sb.AppendLine($"<td style='padding:8px; border:1px solid #ddd;'>{product.Sku}</td>");
                     sb.AppendLine($"<td style='padding:8px; border:1px solid #ddd;'>{product.Quantity}</td>");
                     sb.AppendLine($"<td style='padding:8px; border:1px solid #ddd;'>{product.UnitPrice:N0}</td>");

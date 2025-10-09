@@ -5,6 +5,8 @@ using Application.Dto.RequestModels;
 using Application.Pagination;
 using Application.Queries.Payments.GetAllPaymentsPaged;
 using Application.Queries.Payments.GetPaymentsByCustomer;
+using Application.Queries.Payments.GetPaymentsByInvoice;
+using Application.Queries.Payments.GetPaymentStats;
 using Host.Extensions;
 using Infrastructures.Settings;
 using MediatR;
@@ -166,13 +168,42 @@ namespace Host.Controllers.V1
         [HttpGet("all")]
         [Authorize(Roles = "Admin,Manager")]
         [ProducesResponseType(typeof(PaginatedList<PaymentDto>), StatusCodes.Status200OK)]
-        public async Task<IActionResult> GetAllPayments([FromQuery] int page = 1, [FromQuery] int pageSize = 50)
+        public async Task<IActionResult> GetAllPayments([FromQuery] int page = 1, [FromQuery] int pageSize = 10)
         {
             var query = new GetAllPaymentsPagedQuery(new PageRequest { Page = page,PageSize = pageSize});
             var result = await mediator.Send(query);
             return Ok(result);
         }
 
+        /// <summary>
+        /// Gets payment details by Invoice ID.
+        /// </summary>
+        /// <param name="invoiceId">The invoice ID</param>
+        /// <returns>List of payment details for the invoice</returns>
+        [HttpGet("payments/by-invoice/{invoiceId:guid}")]
+        [Authorize]
+        [ProducesResponseType(typeof(Result<List<PaymentDto>>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(Result<Unit>), StatusCodes.Status404NotFound)]
+        public async Task<IActionResult> GetPaymentsByInvoice(Guid invoiceId)
+        {
+            var result = await mediator.Send(new GetPaymentsByInvoiceQuery(invoiceId));
+
+            if (!result.IsSuccess)
+                return NotFound(result);
+
+            return Ok(result);
+        }
+
+
+        [HttpGet("stats")]
+        [Authorize]
+        [ProducesResponseType(typeof(Result<PaymentStatsDto>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(Result<Unit>), StatusCodes.Status404NotFound)]
+        public async Task<IActionResult> GetPaymentsStats()
+        {
+            var result = await mediator.Send(new GetPaymentStatsQuery());
+            return Ok(result);
+        }
     }
 
 }

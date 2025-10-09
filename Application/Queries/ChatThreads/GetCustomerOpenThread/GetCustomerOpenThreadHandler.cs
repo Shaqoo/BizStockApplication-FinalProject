@@ -25,7 +25,7 @@ namespace Application.Queries.ChatThreads.GetCustomerOpenThread
                 return Result<ChatThreadDto>.Failure("Customer not found.");
             }
             var thread = await chatThreadRepository.GetByExpression(a => a.CustomerId == customer.Id && 
-             a.Status == ChatStatus.Open);
+             (a.Status == ChatStatus.Open || a.Status == ChatStatus.InProgress) );
             if (thread == null)
             {
                 return Result<ChatThreadDto>.Failure("No Exiting Chat Thread For This User");

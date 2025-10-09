@@ -46,6 +46,9 @@ namespace Infrastructures.Configuration.EntityTypeConfiguration
                    .HasForeignKey(c => c.UserId)
                    .OnDelete(DeleteBehavior.Cascade);
 
+            builder.HasIndex(c => c.CredentialId)
+                   .IsUnique();
+
         }
     }
 }

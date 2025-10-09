@@ -119,10 +119,17 @@ namespace Infrastructures.Persistence.Repositories
         public async Task<IEnumerable<SalesOrderItem>> GetPendingOrInTransitAsync()
         {
             return await _context.SalesOrderItems
-                .Where(x => x.DeliveryStatus == DeliveryStatus.Pending || x.DeliveryStatus == DeliveryStatus.InTransit || x.DeliveryStatus == DeliveryStatus.Processing)
+                .Include(a => a.SalesOrder)
+                .ThenInclude(a => a.Customer)
+                .Where(x => x.DeliveryStatus == DeliveryStatus.Pending || x.DeliveryStatus == DeliveryStatus.InTransit || x.DeliveryStatus == DeliveryStatus.Processing || x.DeliveryStatus == DeliveryStatus.OutForDelivery)
                 .ToListAsync();
         }
 
+        public async Task UpdateAsync(SalesOrderItem salesOrderItem)
+        {
+            _context.SalesOrderItems.Update(salesOrderItem);
+            await Task.CompletedTask;
+        }
     }
 
 }

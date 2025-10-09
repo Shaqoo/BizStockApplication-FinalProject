@@ -62,6 +62,10 @@ namespace Application.Validations.Product
                     .WithMessage("Description must not exceed 2000 words");
             });
 
+            RuleFor(x => x.Weight)
+                .NotEmpty()
+                .GreaterThanOrEqualTo(0.1);
+
 
 
         }

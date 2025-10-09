@@ -144,7 +144,8 @@ namespace Infrastructures.Service.FidoCredentialService
             var options = JsonSerializer.Deserialize<AssertionOptions>(optionsJson)
                           ?? throw new Exception("Failed to deserialize assertion options");
 
-            var creds = await _credentialRepository.GetByCredentialIdAsync(assertion.Id.ToString())
+            var credentialId = Base64Url.Encode(assertion.Id);
+            var creds = await _credentialRepository.GetByCredentialIdAsync(credentialId)
     ?? throw new Exception("Unknown credential");
 
             var storedPublicKey = Base64Url.Decode(creds.PublicKey);

@@ -11,23 +11,57 @@ namespace Application.Extensions
         private const string DeliveryDateKey = "DeliveryDate";
 
 
-        public static void SetDeliveryInfo(this ISession session, Guid addressId, decimal cost,string eta)
+        public static void SetDeliveryInfo(this HttpContext context, Guid addressId, decimal cost,string eta)
         {
-            session.SetString(DeliveryAddressKey, addressId.ToString());
-            session.SetString(DeliveryCostKey, cost.ToString());
+            if (context is null)
+                throw new ArgumentNullException(nameof(context));
+
+
+            var cookieOptions = new CookieOptions
+            {
+                HttpOnly = true,
+                Secure = true,
+                SameSite = SameSiteMode.None,
+                Expires = DateTimeOffset.UtcNow.AddDays(30),
+                IsEssential = true,
+                MaxAge = TimeSpan.FromDays(30)
+            };
+
+            context.Response.Cookies.Append(DeliveryAddressKey, addressId.ToString(),cookieOptions);
+            context.Response.Cookies.Append(DeliveryCostKey, cost.ToString(),cookieOptions);
             var expectedDate = EtaParser.ParseEta(eta);
             if (expectedDate != null)
-                session.SetString(DeliveryDateKey, expectedDate.Value.ToString("O")); 
+                context.Response.Cookies.Append(DeliveryDateKey, expectedDate.Value.ToString("O"),cookieOptions); 
         }
 
-        public static GetDeliveryInfoDto GetDeliveryInfo(this ISession session)
+        public static GetDeliveryInfoDto GetDeliveryInfo(this HttpContext context)
         {
-            if (session == null)
+            if (context == null)
                 return new GetDeliveryInfoDto(null, null, null);
 
-            var addressIdString = session.GetString(DeliveryAddressKey);
-            var costString = session.GetString(DeliveryCostKey);
-            var etaString = session.GetString(DeliveryDateKey);
+            string addressIdString = "";
+            if (context.Request.Cookies.TryGetValue(DeliveryAddressKey, out var address) &&
+                !string.IsNullOrWhiteSpace(address))
+            {
+                addressIdString = address;
+            }
+
+            string costString = "";
+            if (context.Request.Cookies.TryGetValue(DeliveryCostKey, out var costValue) &&
+                !string.IsNullOrWhiteSpace(costValue))
+            {
+                costString = costValue;
+            }
+
+            string etaString = "";
+            if (context.Request.Cookies.TryGetValue(DeliveryDateKey, out var etaValue) &&
+                !string.IsNullOrWhiteSpace(etaValue))
+            {
+                etaString = etaValue;
+            }
+
+
+           
 
             if (string.IsNullOrEmpty(addressIdString) ||
                 string.IsNullOrEmpty(costString) ||
@@ -42,7 +76,7 @@ namespace Application.Extensions
             return new GetDeliveryInfoDto(addressId, cost, eta);
         }
 
-        public static bool IsValidDeliveryInfo(this ISession session)
+        public static bool IsValidDeliveryInfo(this HttpContext session)
         {
             var info = session.GetDeliveryInfo();
             return info.AddressId.HasValue && info.Cost.HasValue && info.ETA.HasValue;

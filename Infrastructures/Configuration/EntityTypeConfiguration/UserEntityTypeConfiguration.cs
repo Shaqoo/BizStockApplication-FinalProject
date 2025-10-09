@@ -1,5 +1,4 @@
 ﻿using Domain.Entities;
-using Domain.Enums;
 using Domain.ValueObjects;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
@@ -95,6 +94,12 @@ namespace Infrastructures.Configuration.EntityTypeConfiguration
             builder.Metadata
                 .FindNavigation(nameof(User.FidoCredentials))!
                 .SetPropertyAccessMode(PropertyAccessMode.Field);
+
+            builder.HasIndex(a => a.Email)
+                  .IsUnique();
+
+            builder.HasIndex(a => a.SearchVector)
+                    .HasMethod("GIN");
 
             builder.Metadata
             .FindNavigation(nameof(User.UserRoles))!

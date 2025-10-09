@@ -30,7 +30,7 @@ namespace Application.Queries.Users.GetLostAccessRequests
                         ProblemDescription = r.ProblemDescription
                     }).ToList();
                     return new PaginatedList<LostAccessRequestDto>(requestDtos, requests.TotalCount, request.PageRequest.Page, request.PageRequest.PageSize);
-                });
+                },TimeSpan.FromMinutes(5));
 
             return Result<PaginatedList<LostAccessRequestDto>>.Success(cachedResult);
         }

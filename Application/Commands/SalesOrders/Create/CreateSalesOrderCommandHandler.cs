@@ -1,4 +1,5 @@
-﻿using Application.Dto;
+﻿using Application.Commands.StockMovements.ReserveStock;
+using Application.Dto;
 using Application.Dto.RequestModels;
 using Application.Interfaces.Repository;
 using Application.Interfaces.Service;
@@ -7,7 +8,9 @@ using Domain.DomainEvents;
 using Domain.Entities;
 using MassTransit;
 using MediatR;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using System.Text.Json;
 
 namespace Application.Commands.SalesOrders.Create
 {
@@ -15,6 +18,7 @@ namespace Application.Commands.SalesOrders.Create
     {
         private readonly IDeliveryAddressRepository _deliveryAddressRepository;
         private readonly IDeliveryAssignmentRepository _deliveryAssignmentRepository;
+        private readonly IConfiguration _configuration;
         private readonly IPublishEndpoint _publishEndpoint;
         private readonly IMediator _mediator;
         private readonly IFezService _fezService;
@@ -35,6 +39,7 @@ namespace Application.Commands.SalesOrders.Create
             IPublishEndpoint publishEndpoint,
             IMediator mediator,
             IDeliveryAssignmentRepository deliveryAssignmentRepository,
+            IConfiguration configuration,
             IFezService fezService,
             ISalesOrderRepository salesOrderRepository,
             ISalesOrderItemRepository salesOrderItemRepository,
@@ -64,6 +69,7 @@ namespace Application.Commands.SalesOrders.Create
             _paymentRepository = paymentRepository;
             _unitOfWork = unitOfWork;
             _logger = logger;
+            _configuration = configuration;
         }
 
         public async Task<Result<Guid>> Handle(CreateSalesOrderCommand request, CancellationToken cancellationToken)
@@ -94,7 +100,7 @@ namespace Application.Commands.SalesOrders.Create
                     customerId: customer.Id,
                     discount: 0,
                     tax: 0,
-                    expectedDeliveryDate: request.CreateSalesOrderRequestModel.ExpectedDeliveyDate,
+                    expectedDeliveryDate: DateTime.SpecifyKind(request.CreateSalesOrderRequestModel.ExpectedDeliveyDate,DateTimeKind.Utc),
                     note: $"Sales Order For {(string)customer.Email}"
                 );
 
@@ -129,19 +135,27 @@ namespace Application.Commands.SalesOrders.Create
 
                     var uniqueId = $"{order.OrderNumber}-{itemIndex++}";
 
+                    orderItem.SetTracking(uniqueId);
+
                     var fezRequest = new CreateFezOrderRequestItem
                     {
                         RecipientAddress = deliveryAddress.Street,
                         RecipientState = deliveryAddress.State.Name,
-                        RecipientName = deliveryAddress.FullName,
-                        RecipientPhone = deliveryAddress.PhoneNumber,
-                        RecipientEmail = deliveryAddress.Email,
+                        RecipientName = deliveryAddress.FullName ?? deliveryAddress.Customer.FullName,
+                        RecipientPhone = deliveryAddress.PhoneNumber ?? user.PhoneNumber.Value,
+                        RecipientEmail = deliveryAddress.Email ?? (string)customer.Email,
+                        PickUpState = "Lagos",
+                        PickUpAddress = "Shop Address, Lagos",
+                        CustToken = _configuration["FezSettings:ApiKey"], 
                         UniqueID = uniqueId,
                         BatchID = order.OrderNumber,
                         ValueOfItem = cartItem.Product.SellingPrice * cartItem.Quantity,
-                        Weight = (decimal)cartItem.Product.Weight,  
-                        ItemDescription = cartItem.Product.Name
+                        Weight = (decimal)(cartItem.Product.Weight > 0 ? cartItem.Product.Weight : 1),
+                        ItemDescription = cartItem.Product.Name,
+                        AdditionalDetails = $"Sales Order For {customer.Email.Value}"
                     };
+
+
 
                     fezRequestItems.Add(fezRequest);
 
@@ -157,34 +171,30 @@ namespace Application.Commands.SalesOrders.Create
                     await _invoiceItemRepository.AddAsync(invoiceItem);
                 }
 
-               
+                _logger.LogInformation("Fez order request: {Payload}",
+                JsonSerializer.Serialize(fezRequestItems, new JsonSerializerOptions { WriteIndented = true }));
+
                 var fezResponse = await _fezService.CreateOrderAsync(fezRequestItems);
 
-                if (!fezResponse.Success || fezResponse.Data is null)
-                {
-                    await _unitOfWork.RollbackTransactionAsync();
-                    return Result<Guid>.Failure($"Fez order failed: {fezResponse.Message}");
-                }
+                //if (!fezResponse.Success || fezResponse.Data is null)
+                //{
+                //    await _unitOfWork.RollbackTransactionAsync();
+                //    return Result<Guid>.Failure($"Fez order failed: {fezResponse.Message}");
+                //}
 
                 
 
-                foreach (var (uniqueId, fezOrderNo) in fezResponse.Data.OrderNos)
-                {
-                    var item = order.Items.FirstOrDefault(i => i.UniqueId == uniqueId);
-                    if (item != null)
-                        item.SetTracking(uniqueId, fezOrderNo);
-                }
 
-                var batchId = fezResponse.Data.OrderNos.Values.First();
+                var batchId = fezRequestItems.First().BatchID;
 
                 var deliveryAssignment = new DeliveryAssignment(
                    salesOrderId: order.Id,
                    deliveryAddressId: deliveryAddress.Id,
                    deliveryFee: request.CreateSalesOrderRequestModel.DeliveryCost,
                    externalJobId: batchId,
-                   email: deliveryAddress.Email,
-                   phone: deliveryAddress.PhoneNumber,
-                   name: deliveryAddress.FullName,
+                   email: deliveryAddress.Email!,
+                   phone: deliveryAddress.PhoneNumber!,
+                   name: deliveryAddress.FullName!,
                    externalService: "Fez",
                    note: $"Delivey Assignment Created For Order With Order Number {order.OrderNumber}"
                );
@@ -206,6 +216,19 @@ namespace Application.Commands.SalesOrders.Create
 
                 payment.AddInvoice(invoice.Id);
 
+                var productDtos = cart.Items.Select(i => new OrderCreatedProductDto
+                {
+                    ProductId = i.ProductId,
+                    Name = i.Product.Name,
+                    Sku = i.Product.SKU,
+                    ImageUrl = i.Product.ImageUrl,
+                    Quantity = i.Quantity,
+                    UnitPrice = i.Product.SellingPrice,
+                }).ToList();
+
+                var reserveSrockCmdItems = cart.Items.Select(i => new StockItemDto
+            (i.ProductId, i.Product.Name, i.Quantity)).ToList();
+
                 cart.ClearItems();
 
                 await _unitOfWork.CommitTransactionAsync();
@@ -220,16 +243,6 @@ namespace Application.Commands.SalesOrders.Create
                 request.RequestMetadata.UserAgent
                 ));
 
-                var productDtos = cart.Items.Select(i => new OrderCreatedProductDto
-                {
-                    ProductId = i.ProductId,
-                    Name = i.Product.Name,
-                    Sku = i.Product.SKU,
-                    ImageUrl = i.Product.ImageUrl,   
-                    Quantity = i.Quantity,
-                    UnitPrice = i.Product.SellingPrice,
-                }).ToList();
-
                 var orderCreatedEvent = new OrderCreatedEvent(
                     order.Id,
                     userId: user.Id,
@@ -242,9 +255,13 @@ namespace Application.Commands.SalesOrders.Create
                     invoice.SubTotal + deliveryAssignment.DeliveryFee,
                     productDtos
                 );
+                
 
                 await _mediator.Publish(orderCreatedEvent, cancellationToken);
                 await _publishEndpoint.Publish(orderCreatedEvent, cancellationToken);
+                _logger.LogInformation($"OrderCreatedEvent published for OrderId: {order.Id}, OrderNumber: {order.OrderNumber}");
+                var res = await _mediator.Send(new ReserveStockCommand(order.Id,reserveSrockCmdItems));
+                Console.WriteLine(res);
 
 
                 return Result<Guid>.Success(order.Id);

@@ -1,3 +1,4 @@
+using Application.Interfaces.Service;
 using Microsoft.AspNetCore.Mvc;
 using System.ComponentModel.DataAnnotations;
 
@@ -16,10 +17,12 @@ namespace Host.Controllers
         private readonly ILogger<WeatherForecastController> _logger;
 
         private readonly IWebHostEnvironment _environment;
+        private readonly IFezService _fezService;
 
-        public WeatherForecastController(ILogger<WeatherForecastController> logger,IWebHostEnvironment environment)
+        public WeatherForecastController(ILogger<WeatherForecastController> logger, IWebHostEnvironment environment, IFezService fezService)
         {
             _logger = logger;
+            _fezService = fezService;
             _environment = environment;
         }
 
@@ -74,11 +77,39 @@ namespace Host.Controllers
             return Ok(fileUrl);
         }
 
-    }
-    public class PhotoUploadRequest
-    {
-        [Required]
-        public IFormFile File { get; set; } = default!;
+        [HttpGet("orders")]
+        public async Task<IActionResult> GetOrders(
+       [FromQuery] DateTime? startDate,
+       [FromQuery] DateTime? endDate)
+        {
+            var start = startDate ?? DateTime.UtcNow.AddDays(-7);
+            var end = endDate ?? DateTime.UtcNow;
+
+            var result = await _fezService.GetOrdersByStatusAsync(start, end);
+
+            if (!result.Success)
+                return BadRequest(new { message = result.Message });
+
+            return Ok(new
+            {
+                message = result.Message,
+                count = result.Data.Count,
+                orders = result.Data.Select(o => new
+                {
+                    o.OrderNo,
+                    o.RecipientName,
+                    o.OrderStatus,
+                    o.Cost,
+                    o.OrderDate
+                })
+            });
+
+        }
+        public class PhotoUploadRequest
+        {
+            [Required]
+            public IFormFile File { get; set; } = default!;
+        }
     }
 }
 

@@ -105,6 +105,47 @@ namespace Infrastructures.Service.Fez
             };
         }
 
+        public async Task<FezResponse<List<FezOrderSummaryDto>>> GetOrdersByStatusAsync(
+    DateTime startDate,
+    DateTime endDate)
+        {
+            await EnsureAuthHeadersAsync();
+
+            var payload = new
+            {
+                startDate = startDate.ToString("yyyy-MM-dd"),
+                endDate = endDate.ToString("yyyy-MM-dd")
+            };
+
+            var json = JsonSerializer.Serialize(payload);
+            var content = new StringContent(json, Encoding.UTF8, "application/json");
+
+            var response = await _httpClient.PostAsync("orders/search", content);
+            var responseString = await response.Content.ReadAsStringAsync();
+
+            if (!response.IsSuccessStatusCode)
+            {
+                return new FezResponse<List<FezOrderSummaryDto>>
+                {
+                    Success = false,
+                    Message = responseString
+                };
+            }
+
+            var result = JsonSerializer.Deserialize<FezOrderListResponse>(responseString,
+                new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+
+            var orders = result?.Orders?.Data ?? new List<FezOrderSummaryDto>();
+
+            return new FezResponse<List<FezOrderSummaryDto>>
+            {
+                Success = true,
+                Message = result?.Description ?? "Orders fetched successfully",
+                Data = orders
+            };
+        }
+
+
 
         public async Task<FezResponse<CostEstimateResponseDto>> GetCostAsync(CostEstimateRequestDto request)
         {
